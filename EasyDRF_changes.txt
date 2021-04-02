@@ -1,0 +1,42 @@
+EasyDRF Changes - by Daz Man April 3rd, 2021
+
+* This version was compiled from the HamDRM DLL source combined with an older version of the WinDRM source - both by HB9TLK
+* Dialog.cpp contains the most modifications
+* Modified GUI menus to more closely match the latest version of WinDRM
+* Added extra GUI functions
+* Fixed audio device list and selection menu
+* Added Mode E selection to menus and logic
+* Disabled execution of received files for better security
+* Modified Dialog.cpp to work with new BSR code - One window only
+* Added transparent Gzip compression/decompression for specific file types
+* Added "automatic file sequence add" function in TX File menu
+* Changed transmit bandpass filter to correct bandwidth
+* Changed offsets to match new bandpass filter
+* Improved LPC10 speech codec buffer problem by adding additional buffer
+* Extended switching delay to avoid transmit audio cutoff
+* About info updated
+* Application name changed
+* SNR time constants in ChannelEstimation.h shortened to 10% of original values
+* Waterfall visual AGC improved
+* GUI Stats window added
+* Updated mixer control exe name to sndvol.exe
+
+New Features
+------------
+
+Transparent automatic gzip function:
+* Compresses file types: html,htm,css,js,xml,json,ico,svg,mid,txt
+* Maximum file size 500kB
+* Automatic decompress before file save
+* Typical compression on html files is about 2.5:1
+
+Automatic sequence add:
+* Adds all files in a numbered sequence to the transmit list
+* Filename must match for each file
+* File extensions can be anything (not matched)
+* Numbers can have gaps in their order
+* Separator must be a hyphen
+* Only the last number group before the dot is processed (incremented)
+* Filename can contain numbers and hyphens also - they are matched but not incremented
+* Format is: filename-nn.ext
+

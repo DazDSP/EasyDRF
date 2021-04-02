@@ -1,0 +1,55 @@
+LIBRARY     hamdrm.dll
+
+EXPORTS
+    getFatalErr
+    SetParams             
+    SetCall           
+    SetDCFreq
+    GetParams             
+    GetCall 
+    GetData                   
+    GetState
+    GetAudNumDevIn              
+    GetAudDeviceNameIn 
+    SetAudDeviceIn          
+    GetAudNumDevOut              
+    GetAudDeviceNameOut           
+    SetAudDeviceOut
+    SetFileTX
+    GetFileRX
+    GetPercentTX
+    StartThreadRX                
+    StartThreadTX                
+    StopThreads
+    ControlRX
+    ControlTX 
+    GetSpectrum
+    GetSPSD
+    GetTF
+    GetIR
+    GetFAC
+    GetMSC
+    GetSNR
+    GetLevel
+    GetDCFreq
+    SetRXFileSavePath
+    SetRXCorruptSavePath
+    SetBSRPath
+    GetCorruptFileRX
+    GetBSR  
+    SendBSR                  
+    readthebsrfile
+    writebsrselsegments
+    ResetRX
+    SetStartDelay
+    GetLastTID
+    GetSegPosTX
+    SetCommDevice
+    SetPTT
+    GetActSegm
+
+
+
+
+
+                 

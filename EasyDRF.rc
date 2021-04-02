@@ -1,0 +1,564 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "EasyDRF.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+DLG_MAIN DIALOGEX 110, 110, 290, 164
+STYLE DS_SETFONT | DS_3DLOOK | WS_MINIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOPARENTNOTIFY
+CAPTION "EasyDRF"
+MENU IDR_MENU1
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "",IDB_START,243,123,42,22,NOT WS_TABSTOP
+    CONTROL         "Call",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,5,119,14,10
+    EDITTEXT        IDC_EDIT,23,117,52,12,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    GROUPBOX        "State",IDC_STATIC,5,4,39,84
+    RADIOBUTTON     "IO",IDC_LED_IO,10,18,33,10
+    RADIOBUTTON     "Time",IDC_LED_TIME,10,40,30,10
+    RADIOBUTTON     "Frame",IDC_LED_FRAME,10,51,33,10
+    RADIOBUTTON     "FAC",IDC_LED_FAC,10,62,33,10
+    RADIOBUTTON     "MSC",IDC_LED_MSC,10,73,32,10
+    CONTROL         "",IDS_WAVE_PANE,"GraphClass",0x0,50,3,187,108
+    EDITTEXT        IDC_EDIT2,159,132,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    CONTROL         "Mode",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,139,135,19,10
+    EDITTEXT        IDC_EDIT3,31,132,44,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    CONTROL         "Codec",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,135,23,10
+    CONTROL         "SNR",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,84,119,18,10
+    CONTROL         "Stats",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,152,18,10
+    EDITTEXT        IDC_EDIT6,24,150,260,12,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT4,104,117,29,12,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_DCFREQ,104,132,29,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    CONTROL         "DC",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,86,135,14,10
+    PUSHBUTTON      "RESET",IDC_RESETACQ,5,96,39,14
+    PUSHBUTTON      "",IDB_STARTPIC,243,99,42,22,NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT5,159,116,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    PUSHBUTTON      "TUNE",IDC_TUNINGTONE,243,83,42,14,NOT WS_TABSTOP
+    PUSHBUTTON      "ID",IDC_IDTONE,243,67,42,14,NOT WS_TABSTOP
+    PUSHBUTTON      "SPA",IDC_GETPICANY,243,19,42,14,NOT WS_TABSTOP
+    PUSHBUTTON      "Rx Files",IDC_RXFILES,243,35,42,14,NOT WS_TABSTOP
+    LTEXT           "Info",IDC_STATIC,142,119,14,10
+    PUSHBUTTON      "BSR",IDC_SENDBSR,243,3,42,14,NOT WS_TABSTOP
+    PUSHBUTTON      "G",IDC_GTONE,243,51,21,14
+    PUSHBUTTON      "B",IDC_BTONE,265,51,20,14
+    CONTROL         "Freq",IDC_LED_FREQ,"Button",BS_AUTORADIOBUTTON,10,29,28,10
+END
+
+DLG_ABOUT DIALOGEX 0, 0, 259, 246
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "EasyDRF Info"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,113,223,36,14
+    CTEXT           "EasyDRF is based on WinDRM by HB9TLK",IDC_STATIC,7,7,247,9
+    CTEXT           "WinDRM was based on the DREAM software by",IDC_STATIC,7,28,247,9
+    CTEXT           "Volker Fisher and Alexander Kurpiers",IDC_STATIC,7,40,247,9
+    CTEXT           "Darmstadt University of Technology",IDC_STATIC,7,50,247,9
+    CTEXT           "Carrier number reduction, Codec implementation, GUI Design and Concept by",IDC_STATIC,7,127,247,10
+    CTEXT           "Francesco Lanza,  HB9TLK",IDC_STATIC,7,138,247,9
+    CTEXT           "The Software is provided under the GNU General Public License (GPL) ",IDC_STATIC,7,158,247,9
+    CTEXT           "The speech codecs used are :",IDC_STATIC,7,79,247,9
+    CTEXT           "LPC-10 from HawkVoice ( www.hawksoft.com )",IDC_STATIC,7,92,247,9
+    CTEXT           "SPEEX  ( www.speex.org )",IDC_STATIC,7,105,247,9
+    CTEXT           "( www.tu-darmstadt.de/fb/et/uet/fguet/mitarbeiter/vf/DRM/DRM.html )",IDC_STATIC,7,63,247,9
+    CTEXT           "Copyright (C) 2004, 2005",IDC_STATIC,7,180,247,9
+    CTEXT           "Modified by Daz Man, 2021",IDC_STATIC,7,201,247,9
+END
+
+DLG_PICTURE_TX DIALOGEX 0, 0, 220, 365
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Select Files"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "TX",IDOK,152,337,53,18
+    EDITTEXT        IDC_PICFILE_TX,7,4,206,273,ES_CENTER | ES_MULTILINE | ES_READONLY
+    DEFPUSHBUTTON   "Add File",ID_CHOOSEFILE,152,292,53,18
+    RADIOBUTTON     "2 Instances",IDC_SENDTWICE,7,302,53,10
+    RADIOBUTTON     "1 Instance",IDC_SENDONCE,7,287,49,10
+    RADIOBUTTON     "3 Instances",IDC_SENDTHREE,7,318,53,10
+    DEFPUSHBUTTON   "Remove All",ID_DELALLFILES,81,292,53,18
+    RADIOBUTTON     "Sequence Add",IDC_ADDALLFILES,73,313,65,18
+    DEFPUSHBUTTON   "Return",ID_CANCELPICTX,152,314,53,18
+    RADIOBUTTON     "Long Leadin",IDC_LEADINLONG,7,340,55,10
+END
+
+DLG_SENDBSR DIALOG 0, 0, 196, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Send Bad Segment Report"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Send",IDOK,139,56,50,14
+    PUSHBUTTON      "Close",IDCANCEL,7,56,50,14
+    EDITTEXT        IDC_SENDBSR_FNAME,38,30,151,14,ES_CENTER | ES_READONLY
+    LTEXT           "Request",IDC_STATIC,5,9,28,8
+    EDITTEXT        IDC_SENDBSR_NOSEG,38,7,44,14,ES_CENTER | ES_READONLY
+    LTEXT           "Segments from",IDC_STATIC,87,10,50,8
+    EDITTEXT        IDC_BSRINST,67,55,20,14,ES_READONLY | ES_NUMBER | NOT WS_VISIBLE | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_SENDBSR_FROMCALL,143,7,46,14,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    LTEXT           "for File",IDC_STATIC,6,33,23,8
+END
+
+DLG_ANSWERBSR DIALOG 0, 0, 207, 79
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Send Segments"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Send",IDOK,150,58,50,14
+    PUSHBUTTON      "Close",IDCANCEL,7,58,50,14
+    EDITTEXT        IDC_SENDNOBSR,34,15,52,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_SENDNAMEBSR,33,36,167,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Send",IDC_STATIC,7,18,24,8
+    LTEXT           "Segments to",IDC_STATIC,95,17,42,8
+    EDITTEXT        IDC_SENDCALLBSR,145,15,55,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    LTEXT           "for File",IDC_STATIC,7,39,22,8
+    EDITTEXT        ID_ABSRINST,66,58,22,14,ES_READONLY | ES_NUMBER | NOT WS_VISIBLE | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    DLG_MAIN, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 243
+        VERTGUIDE, 285
+        BOTTOMMARGIN, 151
+        HORZGUIDE, 129
+        HORZGUIDE, 132
+        HORZGUIDE, 145
+    END
+
+    DLG_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 254
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 237
+    END
+
+    DLG_PICTURE_TX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        VERTGUIDE, 15
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 355
+        HORZGUIDE, 277
+    END
+
+    DLG_SENDBSR, DIALOG
+    BEGIN
+    END
+
+    DLG_ANSWERBSR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 200
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+DLG_CALLSIGN DIALOG 0, 0, 164, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Your Callsign"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,64,39,36,14
+    EDITTEXT        IDC_EDIT1,86,14,55,14,ES_CENTER | ES_AUTOHSCROLL
+    CTEXT           "Enter Your Callsign",IDC_STATIC,15,17,65,10
+END
+
+DLG_DRMSETTINGS DIALOGEX 0, 0, 180, 228
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "TX Settings"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,123,207,50,14
+    GROUPBOX        "Mode",IDC_STATIC,19,14,58,57
+    GROUPBOX        "Interleave",IDC_STATIC,90,14,72,57
+    GROUPBOX        "MSC Coding",IDC_STATIC,90,82,72,55
+    GROUPBOX        "MSC Protection",IDC_STATIC,19,82,58,55
+    EDITTEXT        IDC_DCOFFS,102,169,48,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    RADIOBUTTON     "A",ID_MODE_ROBMODEA,30,25,26,10
+    RADIOBUTTON     "B",ID_MODE_ROBMODEB,30,40,26,10
+    RADIOBUTTON     "E",ID_MODE_ROBMODEE,30,54,26,10
+    RADIOBUTTON     "Normal",ID_SETTINGS_MSCPROTECTION_NORMAL,30,102,40,10
+    RADIOBUTTON     "Low",ID_SETTINGS_MSCPROTECTION_LOW,30,118,35,10
+    RADIOBUTTON     "Short 400ms",ID_INTERLEAVE_SHORT400MS,102,33,52,10
+    RADIOBUTTON     "Long 2s",ID_INTERLEAVE_LONG2S,102,51,45,10
+    RADIOBUTTON     "16 QAM",ID_MSCCODING_16QAM,102,109,45,10
+    RADIOBUTTON     "64 QAM",ID_MSCCODING_64QAM,102,121,45,10
+    GROUPBOX        "BandWidth",IDC_STATIC,19,145,58,55
+    GROUPBOX        "DC Offset",IDC_STATIC,90,146,72,54
+    RADIOBUTTON     "2.5 KHz",ID_SETTINGS_BW_25,30,161,41,10
+    RADIOBUTTON     "2.3 KHz",ID_SETTINGS_BW_23,30,177,41,10
+    PUSHBUTTON      "Default",ID_SET_B_DEFAULT,43,207,34,14
+    PUSHBUTTON      "Speed",ID_SET_A_MAXSPEED,84,207,31,14
+    RADIOBUTTON     "4 QAM",ID_MSCCODING_4QAM,102,97,38,10
+    PUSHBUTTON      "Robust",ID_SET_B_ROBUST,7,207,30,14
+END
+
+DLG_TEXTMESSAGE DIALOGEX 200, 10, 207, 119
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Text Message"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,150,98,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,81,98,50,14
+    EDITTEXT        IDC_TEXTMESSAGE,7,7,193,79,ES_MULTILINE | WS_VSCROLL,WS_EX_DLGMODALFRAME
+    RADIOBUTTON     "Enable Text",IDC_USETEXTMESSAGE,17,99,56,10
+END
+
+DLG_RXTEXTMESSAGE DIALOGEX 220, 20, 207, 114
+STYLE DS_SETFONT | DS_MODALFRAME | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "RX Text Message"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,150,93,50,14
+    EDITTEXT        IDC_RXTEXTMESSAGE,7,7,193,79,ES_MULTILINE | ES_READONLY | WS_VSCROLL,WS_EX_DLGMODALFRAME
+    DEFPUSHBUTTON   "Save",IDSAVE,7,93,50,14,NOT WS_VISIBLE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    DLG_CALLSIGN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 159
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
+    END
+
+    DLG_DRMSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 173
+        VERTGUIDE, 19
+        VERTGUIDE, 30
+        VERTGUIDE, 77
+        VERTGUIDE, 90
+        VERTGUIDE, 102
+        VERTGUIDE, 162
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 221
+        HORZGUIDE, 71
+        HORZGUIDE, 137
+        HORZGUIDE, 200
+    END
+
+    DLG_TEXTMESSAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 200
+        TOPMARGIN, 7
+    END
+
+    DLG_RXTEXTMESSAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 200
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "Setup"
+    BEGIN
+        POPUP "PTT Port"
+        BEGIN
+            MENUITEM "None",                        ID_PTTPORT_NONE
+            MENUITEM "Com 1",                       ID_PTTPORT_COM1
+            MENUITEM "Com 2",                       ID_PTTPORT_COM2
+            MENUITEM "Com 3",                       ID_PTTPORT_COM3
+            MENUITEM "Com 4",                       ID_PTTPORT_COM4
+            MENUITEM "Com 5",                       ID_PTTPORT_COM5
+            MENUITEM "Com 6",                       ID_PTTPORT_COM6
+            MENUITEM "Com 7",                       ID_PTTPORT_COM7
+            MENUITEM "Com 8",                       ID_PTTPORT_COM8
+            MENUITEM SEPARATOR
+            MENUITEM "RTS High on FAC",             ID_SETTINGS_PTTPORT_RTSHIGHONFAC
+            MENUITEM "DTR High on FAC",             ID_SETTINGS_PTTPORT_DTRHIGHONFAC
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Callsign",                    ID_SETTINGS_CALLSIGN
+        MENUITEM SEPARATOR
+        POPUP "Codec"
+        BEGIN
+            MENUITEM "SPEEX",                       ID_CODEC_SPEEX
+            MENUITEM "LPC 10",                      ID_CODEC_LPC10, CHECKED
+        END
+        MENUITEM SEPARATOR
+        POPUP "Text Message"
+        BEGIN
+            MENUITEM "Edit TX Text Message",        ID_SETTINGS_TEXTMESSAGE
+            MENUITEM "Allow RX Text Message",       ID_SETTINGS_TEXTMESSAGE_OPENRXTEXTMESSAGE, CHECKED
+        END
+        POPUP "File Transfer"
+        BEGIN
+            MENUITEM "Save Received Files",         ID_SETTINGS_FILETRANSFER_SAVERECEIVEDFILES, CHECKED
+            MENUITEM "Open Received Folder",        ID_SETTINGS_FILETRANSFER_SHOWRECEIVEDFILES
+            MENUITEM "Show only first instance",    ID_SETTINGS_FILETRANSFER_SHOWONLYONE, CHECKED
+        END
+    END
+    POPUP "Soundcard"
+    BEGIN
+        POPUP "Open Mixer"
+        BEGIN
+            MENUITEM "RX Input",                    ID_SOUNDCARD_OPENMIXER_RXINPUT
+            MENUITEM "TX Output",                   ID_SOUNDCARD_OPENMIXER_TXOUTPUT
+            MENUITEM "Voice Input",                 ID_SOUNDCARD_OPENMIXER_VOICEINPUT
+            MENUITEM "Voice Output",                ID_SOUNDCARD_OPENMIXER_VOICEOUTPUT
+        END
+        MENUITEM "Mixer Settings",              ID_SOUNDCARD_AUTOMIXERSWITCH
+        MENUITEM SEPARATOR
+        MENUITEM "RX Input",                    ID_SOUNDCARD_
+    END
+    POPUP "Display"
+    BEGIN
+        MENUITEM "Spectrum",                    ID_DISPLAY_SPECTRUM, CHECKED
+        MENUITEM "Static Waterfall",            ID_SETTINGS_DISPLAY_WATERFALL
+        MENUITEM "Waterfall",                   ID_SETTINGS_DISPLAY_TEST
+        MENUITEM "Input Level",                 ID_DISPLAY_LEVEL
+        MENUITEM "Shifted PSD",                 ID_DISPLAY_PSD
+        MENUITEM "Transfer Function",           ID_SETTINGS_DISPLAY_TRANSFERFUNCTION
+        MENUITEM "Impulse Response",            ID_SETTINGS_DISPLAY_IMPULSERESPONSE
+        MENUITEM "FAC Phase",                   ID_SETTINGS_DISPLAY_FACPHASE
+        MENUITEM "MSC Phase/Amplitude",         ID_SETTINGS_DISPLAY_MSCPHASE
+    END
+    POPUP "Settings"
+    BEGIN
+        MENUITEM "TX Settings",                 ID_SETTINGS_DRMSETTINGS
+        MENUITEM "RX Settings",                 ID_SETTINGS_DRMSETTINGSRX
+    END
+    POPUP "BSR"
+    BEGIN
+        MENUITEM "Load last RX file",           ID_SETTINGS_LOADLASTRXFILE
+    END
+    POPUP "About"
+    BEGIN
+        MENUITEM "Info",                        ID_ABOUT_TEST
+        MENUITEM "Help",                        ID_ABOUT_HELP
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <windows.h>\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral (Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Switzerland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+DLG_HELP DIALOG 0, 0, 261, 209
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Main Problems"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,204,188,50,14
+    LTEXT           "EasyDRF runs on WinXP with 1 or 2 soundcards.",IDC_STATIC,17,18,158,10
+    LTEXT           "on Win2000 it needs TWO soundcards to run.",IDC_STATIC,17,28,153,8
+    LTEXT           "if you have only 1 soundcard and Win2000 you can choose to run only the TX or only the RX or only Picture mode.  Use the startup options",IDC_STATIC,17,41,217,26
+    LTEXT           "EasyDRF.exe -r   for Receive only     ",IDC_STATIC,17,71,210,8
+    LTEXT           "EasyDRF.exe -t   for Transmit only",IDC_STATIC,17,79,237,8
+    LTEXT           "EasyDRF.exe -p   for Picture mode only, RX and TX ",IDC_STATIC,17,87,171,8
+    GROUPBOX        "First",IDC_STATIC,8,7,246,101
+    GROUPBOX        "Second",IDC_STATIC,8,116,246,56
+    LTEXT           "The TUNE and ID buttons will always play the sound on the default soundcard. There is no way to change that.  And, those buttons work only with WinXP !",IDC_STATIC,17,126,222,29
+    GROUPBOX        "More Info to come...",IDC_STATIC,8,176,172,26
+    LTEXT           "",IDC_STATIC,17,188,145,8
+    LTEXT           "Tune plays tune.wav,    ID -> id.wav,    G -> g.wav,    B -> b.wav",IDC_STATIC,17,157,222,8
+END
+
+DLG_RXSETTINGS DIALOG 0, 0, 120, 204
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "RX Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,73,183,40,14
+    GROUPBOX        "Freq. Acq. Sens.",IDC_STATIC,7,7,106,52
+    GROUPBOX        "Search Window Size",IDC_STATIC,7,67,106,64
+    EDITTEXT        IDC_FREQACC,33,34,40,14,ES_CENTER | ES_NUMBER
+    EDITTEXT        IDC_SEARCHWINLOWER,53,81,40,14,ES_CENTER | ES_NUMBER
+    EDITTEXT        IDC_SEARCHWINUPPER,53,106,40,14,ES_CENTER | ES_NUMBER
+    LTEXT           "Low = 0  Hi = 100",IDC_STATIC,24,21,56,8
+    LTEXT           "Center Hz",IDC_STATIC,13,84,37,8
+    LTEXT           "Width Hz",IDC_STATIC,15,108,35,8
+    DEFPUSHBUTTON   "USE",IDAPP,7,183,40,14
+    GROUPBOX        "Audio Filter",IDC_STATIC,7,140,51,35
+    RADIOBUTTON     "RX Filter",ID_SETTINGS_AUDIOFILTER_RXFILTER,13,156,41,10
+    GROUPBOX        "Auto Reset",IDC_STATIC,63,140,50,35
+    RADIOBUTTON     "Fast",IDC_SETTINGS_FASTRESET,72,156,29,10
+END
+
+DLG_MIXERSETTING DIALOG 0, 0, 245, 210
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Mixer Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,188,189,50,14
+    EDITTEXT        IDC_SOUNDCARDNAME,29,20,187,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Soundcard",IDC_STATIC,7,7,231,38
+    GROUPBOX        "ON RX",IDC_STATIC,7,52,231,60
+    GROUPBOX        "ON TX",IDC_STATIC,7,121,231,61
+    LISTBOX         IDC_LISTRX,84,63,146,43,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LISTTX,84,132,146,41,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Switch input to",IDC_STATIC,21,66,50,8
+    LTEXT           "Switch input to",IDC_STATIC,21,135,50,8
+    DEFPUSHBUTTON   "Disable Mixer",ID_SETDEFMIXER,7,189,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    DLG_HELP, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        RIGHTMARGIN, 254
+        VERTGUIDE, 17
+        VERTGUIDE, 239
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 202
+    END
+
+    DLG_RXSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 113
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 197
+    END
+
+    DLG_MIXERSETTING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 238
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 203
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Switzerland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

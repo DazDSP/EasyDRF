@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{63C400C4-0F35-4B19-802D-11837E8AF409}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(Projectname)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <TargetName>$(Projectname)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\Debug\EasyDRF.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\EasyDRF.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0807</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\EasyDRF.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>.\Debug\EasyDRF.exe</OutputFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\Release\EasyDRF.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Release\EasyDRF.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0807</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release\EasyDRF.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>.\Release\EasyDRF.exe</OutputFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="common\audiofir.cpp" />
+    <ClCompile Include="common\bsr.cpp" />
+    <ClCompile Include="common\callsign2.cpp" />
+    <ClCompile Include="common\chanest\ChanEstTime.cpp" />
+    <ClCompile Include="common\chanest\ChannelEstimation.cpp" />
+    <ClCompile Include="common\chanest\TimeLinear.cpp" />
+    <ClCompile Include="common\chanest\TimeWiener.cpp" />
+    <ClCompile Include="common\CRC.cpp" />
+    <ClCompile Include="common\Data.cpp" />
+    <ClCompile Include="common\datadecoding\DABMOT.cpp" />
+    <ClCompile Include="common\datadecoding\DataDecoder.cpp" />
+    <ClCompile Include="common\datadecoding\MOTSlideShow.cpp" />
+    <ClCompile Include="common\datadecoding\picpool.cpp" />
+    <ClCompile Include="common\DrmReceiver.cpp" />
+    <ClCompile Include="common\DRMSignalIO.cpp" />
+    <ClCompile Include="common\DrmTransmitter.cpp" />
+    <ClCompile Include="common\FAC\FAC.cpp" />
+    <ClCompile Include="common\fir.cpp" />
+    <ClCompile Include="common\InputResample.cpp" />
+    <ClCompile Include="common\interleaver\BlockInterleaver.cpp" />
+    <ClCompile Include="common\interleaver\SymbolInterleaver.cpp" />
+    <ClCompile Include="common\libs\poolid.cpp" />
+    <ClCompile Include="common\list.cpp" />
+    <ClCompile Include="common\matlib\MatlibSigProToolbox.cpp" />
+    <ClCompile Include="common\matlib\MatlibStdToolbox.cpp" />
+    <ClCompile Include="common\mlc\BitInterleaver.cpp" />
+    <ClCompile Include="common\mlc\ChannelCode.cpp" />
+    <ClCompile Include="common\mlc\ConvEncoder.cpp" />
+    <ClCompile Include="common\mlc\EnergyDispersal.cpp" />
+    <ClCompile Include="common\mlc\Metric.cpp" />
+    <ClCompile Include="common\mlc\MLC.cpp" />
+    <ClCompile Include="common\mlc\QAMMapping.cpp" />
+    <ClCompile Include="common\mlc\TrellisUpdateMMX.cpp" />
+    <ClCompile Include="common\mlc\TrellisUpdateSSE2.cpp" />
+    <ClCompile Include="common\mlc\ViterbiDecoder.cpp" />
+    <ClCompile Include="common\MSCMultiplexer.cpp" />
+    <ClCompile Include="common\OFDM.cpp" />
+    <ClCompile Include="common\ofdmcellmapping\CellMappingTable.cpp" />
+    <ClCompile Include="common\ofdmcellmapping\OFDMCellMapping.cpp" />
+    <ClCompile Include="common\Parameter.cpp" />
+    <ClCompile Include="common\resample\Resample.cpp" />
+    <ClCompile Include="common\settings.cpp" />
+    <ClCompile Include="common\sourcedecoders\AudioSourceDecoder.cpp" />
+    <ClCompile Include="common\sync\FreqSyncAcq.cpp" />
+    <ClCompile Include="common\sync\SyncUsingPil.cpp" />
+    <ClCompile Include="common\sync\TimeSync.cpp" />
+    <ClCompile Include="common\sync\TimeSyncTrack.cpp" />
+    <ClCompile Include="common\TextMessage.cpp" />
+    <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="getfilenam.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="sound\Sound.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common\AudioFile.h" />
+    <ClInclude Include="common\audiofir.h" />
+    <ClInclude Include="common\bsr.h" />
+    <ClInclude Include="common\Buffer.h" />
+    <ClInclude Include="common\chanest\ChanEstTime.h" />
+    <ClInclude Include="common\chanest\ChannelEstimation.h" />
+    <ClInclude Include="common\chanest\TimeLinear.h" />
+    <ClInclude Include="common\chanest\TimeWiener.h" />
+    <ClInclude Include="common\CRC.h" />
+    <ClInclude Include="common\Data.h" />
+    <ClInclude Include="common\datadecoding\DABMOT.h" />
+    <ClInclude Include="common\datadecoding\DataDecoder.h" />
+    <ClInclude Include="common\datadecoding\Journaline.h" />
+    <ClInclude Include="common\datadecoding\MOTSlideShow.h" />
+    <ClInclude Include="common\datadecoding\picpool.h" />
+    <ClInclude Include="common\DrmReceiver.h" />
+    <ClInclude Include="common\DRMSignalIO.h" />
+    <ClInclude Include="common\DrmTransmitter.h" />
+    <ClInclude Include="common\FAC\FAC.h" />
+    <ClInclude Include="common\fir.h" />
+    <ClInclude Include="common\GlobalDefinitions.h" />
+    <ClInclude Include="common\InputResample.h" />
+    <ClInclude Include="common\interleaver\BlockInterleaver.h" />
+    <ClInclude Include="common\interleaver\SymbolInterleaver.h" />
+    <ClInclude Include="common\libs\graphwin.h" />
+    <ClInclude Include="common\libs\lpc10.h" />
+    <ClInclude Include="common\libs\poolid.h" />
+    <ClInclude Include="common\list.h" />
+    <ClInclude Include="common\matlib\Matlib.h" />
+    <ClInclude Include="common\matlib\MatlibSigProToolbox.h" />
+    <ClInclude Include="common\matlib\MatlibStdToolbox.h" />
+    <ClInclude Include="common\mlc\BitInterleaver.h" />
+    <ClInclude Include="common\mlc\ChannelCode.h" />
+    <ClInclude Include="common\mlc\ConvEncoder.h" />
+    <ClInclude Include="common\mlc\EnergyDispersal.h" />
+    <ClInclude Include="common\mlc\Metric.h" />
+    <ClInclude Include="common\mlc\MLC.h" />
+    <ClInclude Include="common\mlc\QAMMapping.h" />
+    <ClInclude Include="common\mlc\ViterbiDecoder.h" />
+    <ClInclude Include="common\Modul.h" />
+    <ClInclude Include="common\MSCMultiplexer.h" />
+    <ClInclude Include="common\OFDM.h" />
+    <ClInclude Include="common\ofdmcellmapping\CellMappingTable.h" />
+    <ClInclude Include="common\ofdmcellmapping\OFDMCellMapping.h" />
+    <ClInclude Include="common\Parameter.h" />
+    <ClInclude Include="common\resample\Resample.h" />
+    <ClInclude Include="common\resample\ResampleFilter.h" />
+    <ClInclude Include="common\settings.h" />
+    <ClInclude Include="common\sourcedecoders\AudioSourceDecoder.h" />
+    <ClInclude Include="common\speex\speex.h" />
+    <ClInclude Include="common\speex\speex_bits.h" />
+    <ClInclude Include="common\speex\speex_callbacks.h" />
+    <ClInclude Include="common\speex\speex_header.h" />
+    <ClInclude Include="common\speex\speex_stereo.h" />
+    <ClInclude Include="common\sync\FreqSyncAcq.h" />
+    <ClInclude Include="common\sync\SyncUsingPil.h" />
+    <ClInclude Include="common\sync\TimeSync.h" />
+    <ClInclude Include="common\sync\TimeSyncFilter.h" />
+    <ClInclude Include="common\sync\TimeSyncTrack.h" />
+    <ClInclude Include="common\tables\TableCarMap.h" />
+    <ClInclude Include="common\tables\TableCarrier.h" />
+    <ClInclude Include="common\tables\TableDRMGlobal.h" />
+    <ClInclude Include="common\tables\TableFAC.h" />
+    <ClInclude Include="common\tables\TableMLC.h" />
+    <ClInclude Include="common\tables\TableQAMMapping.h" />
+    <ClInclude Include="common\TextMessage.h" />
+    <ClInclude Include="common\TransmitterFilter.h" />
+    <ClInclude Include="common\Vector.h" />
+    <ClInclude Include="Dialog.h" />
+    <ClInclude Include="getfilenam.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="sound\Sound.h" />
+    <ClInclude Include="zconf.h" />
+    <ClInclude Include="zlib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="EasyDRF.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="EasyDRF.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

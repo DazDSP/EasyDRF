@@ -1,0 +1,59 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.bin
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Executables
+#*.exe #might include the exe...
+*.out
+*.app
+
+#Text
+*.txt
+!EasyDRF_changes.txt
+
+#Special
+Release/*.log
+Release/*.pdb
+Release/*.recipe
+Release/*.res
+Release/*.FileListAbsolute.txt
+Release/*.bin
+Release/settings.txt
+Release/Corrupt/
+Release/EasyDRF.tlog/
+Release/Pictures-OLD/
+Release/Received Files/
+Release/Rx Files/
+
+#Folders
+Backups/
+Corrupt/
+Debug/
+Pictures/
+Received Files/
+Rx Files/
+Old/
