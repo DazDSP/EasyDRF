@@ -97,6 +97,9 @@ string rxcall     = "nocall";
 string lastrxcall = "nocall";
 string consrxcall = "nocall"; 
 
+int	RSmode = 2; //added DM
+//int KKvar = 192; //added DM
+
 int numdevIn; //edited DM
 int numdevOut; //edited DM
 
@@ -1256,8 +1259,9 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						//sprintf(tempstr, "", filename); //This is where the receiver stats are displayed DM
 //						SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive filename DM TEST
 
-						wsprintf(tempstr, "MSCbits: %d  DDbits: %d  File: %s", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumDataDecoderBits, DMfilename);
-						SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive blocksize DM ================
+//						wsprintf(tempstr, "MSCbits: %d  DDbits: %d  File: %s", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumDataDecoderBits, DMfilename);
+						wsprintf(tempstr, "File: %s", DMfilename); //removed the debugging info DM
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //removed the debugging info DM
 
 					}
 				}
@@ -2202,19 +2206,74 @@ BOOL CALLBACK TXPictureDlgProc
     case WM_INITDIALOG:
 		putfiles(hwnd);
 		if (LeadIn == 2) {
-			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
-			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)1, 0);
-			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			//2 instances
+			SendMessage(GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
 		else if (LeadIn == 3) {
+			//3 instances
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+		}
+		else if (LeadIn == 4) {
+			//For RS1
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+		}
+		else if (LeadIn == 5) {
+			//For RS2
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+		}
+		else if (LeadIn == 6) {
+			//For RS3
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+		}
+		else if (LeadIn == 7) {
+			//For RS4
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)1, 0);
 		}
 		else {
-			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)1, 0);
-			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
-			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			//1 instance
+			SendMessage(GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
 		if (longleadin)
 			SendMessage (GetDlgItem (hwnd, IDC_LEADINLONG ), BM_SETCHECK, (WPARAM)1, 0);
@@ -2366,18 +2425,70 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_SENDTWICE:
 			LeadIn = 2;
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_SENDTHREE:
 			LeadIn = 3;
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+			return TRUE;
+		case IDC_RS1:
+			LeadIn = 4;
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+			return TRUE;
+		case IDC_RS2:
+			LeadIn = 5;
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+			return TRUE;
+		case IDC_RS3:
+			LeadIn = 6;
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
+			return TRUE;
+		case IDC_RS4:
+			LeadIn = 7;
+			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS1), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS2), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
+			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)1, 0);
 			return TRUE;
 		case IDC_LEADINLONG:
 			if (longleadin)
@@ -2453,7 +2564,7 @@ void fixname(char* wildpath, char* filename) {
 	//find the last backslash in the path
 	while ((test != 92) && (pos > 0)) {
 		pos--;
-		test = wildpath[pos]; //try combining this into the if statement
+		test = wildpath[pos]; //try combining this into the conditional
 	}
 	if (test == 92) {
 		//found it, pos = a pointer to the \...

@@ -154,7 +154,7 @@ void SetTXmode(BOOL ispic)
 {
 	if (ispic)
 	{
-		int k,i;
+		int k,i,j;
 		CVector<short>  dummy;
 		dummy.Init(0);
 		DRMTransmitter.GetParameters()->iNumAudioService = 0;
@@ -167,9 +167,10 @@ void SetTXmode(BOOL ispic)
 		DRMTransmitter.GetAudSrcEnc()->ClearPicFileNames();
 		DRMTransmitter.Init();
 		DRMTransmitter.GetParameters()->Service[0].DataParam.iPacketLen = calcpacklen(DRMTransmitter.GetParameters()->iNumDecodedBitsMSC);
-
+		j = LeadIn;
+		if (j > 3) { j = 1; } //if it's an RS level, set 1 instance DM
 		for (k = 0; k < TXpicpospt; k++) {
-				for (i=0;i < LeadIn; i++) DRMTransmitter.GetAudSrcEnc()->SetPicFileName(pictfile[k], filetitle[k], dummy);
+				for (i=0;i < j; i++) DRMTransmitter.GetAudSrcEnc()->SetPicFileName(pictfile[k], filetitle[k], dummy);
 			}
 		
 	}

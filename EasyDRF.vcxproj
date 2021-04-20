@@ -258,6 +258,7 @@
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="getfilenam.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sound\Sound.h" />
     <ClInclude Include="zconf.h" />
     <ClInclude Include="zlib.h" />

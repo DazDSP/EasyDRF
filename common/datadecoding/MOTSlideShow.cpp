@@ -106,7 +106,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		// obtain file size : (there might be a more elegant way to do this...)
 		fseek(pFiBody, 0, SEEK_END);
 		filesize = ftell(pFiBody);
-		if (filesize > BUFSIZE) filesize = BUFSIZE; //prevent buffer overrun - limit to 512k
+		if (filesize > BUFSIZE) filesize = BUFSIZE; //prevent buffer overrun - limit to 512k - Shouldn't this be BUFSIZE-1?
 		rewind(pFiBody);
 
 		//Daz Man:
@@ -141,10 +141,6 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		fclose(pFiBody); //close file
 //=============================================================================================================================
 //RS encoding can go here DM
-
-
-
-
 //=============================================================================================================================
 //		FILE* pFiBody = fopen(strFileName.c_str(), "rb"); //Open file - Now we read from buffer only DM
 
@@ -179,6 +175,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 					vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
 //					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t) byIn, SIZEOF__BYTE);
 					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
+//					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)whichbuffer[dd], SIZEOF__BYTE); //from buffer
 					dd++; //next
 				}
 	
@@ -218,6 +215,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 			vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
 //			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t) byIn, SIZEOF__BYTE);
 			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 DM
+//			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)whichbuffer[dd], SIZEOF__BYTE); //from new buffer
 			dd++; //next
 		}
 
