@@ -1197,20 +1197,20 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		{
 			CParameter::EAudCod ecodec;
 			firstnorx = TRUE;
-			rxcall = DRMReceiver.GetParameters()->Service[0].strLabel;
-			if (rxcall == lastrxcall) consrxcall = rxcall;
-			else if (rxcall.length() >= 3) lastrxcall = rxcall;
+			rxcall = DRMReceiver.GetParameters()->Service[0].strLabel; //Get callsign from the incoming data DM
+			if (rxcall == lastrxcall) consrxcall = rxcall;				//?
+			else if (rxcall.length() >= 3) lastrxcall = rxcall;			//?
 			SendMessage (GetDlgItem (hwnd, IDC_EDIT), WM_SETTEXT, 0,(LPARAM)rxcall.c_str());
-			snr = (float)DRMReceiver.GetChanEst()->GetSNREstdB();
-			sprintf(tempstr,"%.1f",snr);
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr);
+			snr = (float)DRMReceiver.GetChanEst()->GetSNREstdB();	//Get SNR DM
+			sprintf(tempstr,"%.1f",snr);							//Format for display DM
+			SendMessage (GetDlgItem (hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr); //Display SNR DM
 			snr = DRMReceiver.GetParameters()->GetDCFrequency();
 			sprintf(tempstr,"%d",(int)snr);
 			SendMessage (GetDlgItem (hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)tempstr);
 
 			if (DRMReceiver.GetParameters()->Service[0].eAudDataFlag == CParameter::SF_AUDIO)
 			{
-				sprintf(tempstr,"%d ",DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ========================
+				sprintf(tempstr,"%d ",DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ======================== This is for speech mode DM
 				SendMessage (GetDlgItem (hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
 				wsprintf(tempstr, "MSCbits = %d  AudioBits = %d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits);
@@ -1228,11 +1228,11 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			}
 			else
 			{
-				CMOTObject NewPic;
+				CMOTObject NewPic; //This is data mode (file receive) DM
 				SendMessage (GetDlgItem (hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"Data");
-				int totsize = DRMReceiver.GetDataDecoder()->GetTotSize();
-				int actsize = DRMReceiver.GetDataDecoder()->GetActSize();
-				int actpos = DRMReceiver.GetDataDecoder()->GetActPos();
+				int totsize = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
+				int actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM
+				int actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
 				/*
 				if (totsize > 0) DMpercent = max(DMpercent,(actsize*100 / totsize)); //add percent DM *NEW*
 				if ((DMcounter < 5) && (DMpercent == 100)) DMcounter++; //2 second delay DM //after 100% is reached, hold the value for two seconds
@@ -1253,6 +1253,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				if (DRMReceiver.GetDataDecoder()->GetSlideShowPartPicture(NewPic))
 				{
 					if (NewPic.strName.c_str()) {
+						//If there is a valid filename, display it DM
 						strcpy(DMfilename, NewPic.strName.c_str());
 						//wsprintf(tempstr, "Filename = %s", DMfilename);
 						//wsprintf(tempstr, "Numbits = %d  Filename = %s", DRMTransmitter.GetParameters()->iNumDecodedBitsMSC, DMfilename);
@@ -1268,7 +1269,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 				if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic))
 				{
-
+					//This executes when a complete file is received DM
 					char filename[260]; //was 130 DM - (Windows max path length is 255 characters)
 					unsigned int picsize; //edited DM
 					int filnamsize;
@@ -1310,7 +1311,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							{
 								if (bsr_onscreen_arr[el] == TRUE)
 								{
-										if (acthash == hasharr[el])  //This is now set to zero DM
+										if (acthash == hasharr[el])  //This is now set to zero DM - This should be OK, as it appears to just be a unique number for the BSR window DM
 									{
 										if (bsrcall[el] == consrxcall)
 										{
