@@ -1331,12 +1331,13 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		if (y == 0) { y = 1; } //don't divide by zero!
 
 		//int n = width / max(totsize, DecTotalSegs);
-		int n = float (width << 12) / (y << 12);
+//		int n = float(width << 12) / (y << 12);
+		int n = (width * 1000) /y;
 		//this executes every 100mS, so make sure it doesn't run too often
 		if ((BarLastSeg != x) && (CRCOK)) {
 			int d = 0;
 
-			if (n > 1) { n = 1; } //Don't stretch bargraph
+			if (n > 1000) { n = 1000; } //Don't stretch bargraph
 
 			HDC hdc = GetDC(hwnd);
 			MoveToEx(hdc, BARL, BARY, NULL);
@@ -1382,8 +1383,8 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			//Erase the last black line - for the 2nd/3rd pass etc.
 			if (x < BarLastSeg) {
 				SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
-				MoveToEx(hdc, (BarLastSeg* n), BARB, NULL);
-				LineTo(hdc, (BarLastSeg* n), BART); //erase
+				MoveToEx(hdc, ((BarLastSeg* n) / 1000), BARB, NULL);
+				LineTo(hdc, ((BarLastSeg* n) / 1000), BART); //erase
 			}
 
 			//data is good and we have a valid new segment - so update the graph
@@ -1397,13 +1398,13 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		
 				if (d == 0) {
 					SelectObject(hdc, penr); //select red pen
-					MoveToEx(hdc, i* n, BARB, NULL); //
-					LineTo(hdc, i* n, BART); //draw a red line up
+					MoveToEx(hdc, (i * n) / 1000, BARB, NULL); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
 				}
 				if (d == 1) {
 					SelectObject(hdc, peng);//select green pen
-					MoveToEx(hdc, i* n, BARB, NULL); //
-					LineTo(hdc, i* n, BART); //draw a green line up
+					MoveToEx(hdc, (i * n) / 1000, BARB, NULL); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
 				}
 			}
 
@@ -1411,13 +1412,13 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 //			LineTo(hdc, floor((x + 3) * n), BARY); //draw a black tip on the line
 
 			SelectObject(hdc, penb);
-			MoveToEx(hdc, (x* n), BARB, NULL);
-			LineTo(hdc, (x* n), BART); //draw a black tip on the line
+			MoveToEx(hdc, ((x * n) / 1000), BARB, NULL);
+			LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
 
 			//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
 			if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
 				SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
-				MoveToEx(hdc, (x * n)+5, BARY, NULL);
+				MoveToEx(hdc, ((x * n) / 1000)+5, BARY, NULL);
 				LineTo(hdc, BARR, BARY); //erase the rest of the window
 				BarTransportID = DecTransportID;
 				BarLastTot = y; //update totsegs
