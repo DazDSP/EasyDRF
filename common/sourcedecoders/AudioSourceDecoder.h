@@ -91,7 +91,7 @@ public:
 	int getdecodperc();
 
 protected:
-	enum EInitErr {ET_ALL, ET_AAC}; /* ET: Error type */
+	enum EInitErr {ET_ALL, ET_AAC}; /* ET: Error type */ //class added DM =====================
 	class CInitErr 
 	{
 	public:

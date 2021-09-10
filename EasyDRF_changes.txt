@@ -1,3 +1,13 @@
+EasyDRF Changes - by Daz Man September 11th, 2021
+
+New Features
+------------
+
+* Interleaved RS4 mode Reed-Solomon coding, with erasure processing for best performance
+* Green/Red good/bad segment CRC bargraph
+* RS4 protocol changes to avoid single points of failure (NOT EasyPal compatible)
+* RS4 file header to guarantee file decoding even with segment zero missing
+
 EasyDRF Changes - by Daz Man April 3rd, 2021
 
 * This version was compiled from the HamDRM DLL source combined with an older version of the WinDRM source - both by HB9TLK

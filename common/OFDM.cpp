@@ -124,8 +124,7 @@ void COFDMDemodulation::ProcessDataInternal(CParameter& ReceiverParam)
 
 	/* Total frequency offset from acquisition and tracking (we calculate the
 	   normalized frequency offset) */
-	rNormCurFreqOffset = (_REAL) 2.0 * crPi * (ReceiverParam.rFreqOffsetAcqui +
-		ReceiverParam.rFreqOffsetTrack - rInternIFNorm);
+	rNormCurFreqOffset = (_REAL) 2.0 * crPi * (ReceiverParam.rFreqOffsetAcqui +	ReceiverParam.rFreqOffsetTrack - rInternIFNorm);
 	//rNormCurFreqOffset = (_REAL) 2.0 * crPi * (2500.0/24000.0);
 
 	/* New rotation vector for exp() calculation */
@@ -136,8 +135,7 @@ void COFDMDemodulation::ProcessDataInternal(CParameter& ReceiverParam)
 	{
 		/* To get a continuous counter we need to take the guard-interval and
 		   timing corrections into account */
-		rSkipGuardIntPhase = rNormCurFreqOffset *
-			((iGuardSize - zffiltlen) - (*pvecInputData).GetExData().iCurTimeCorr);
+		rSkipGuardIntPhase = rNormCurFreqOffset * ((iGuardSize - zffiltlen) - (*pvecInputData).GetExData().iCurTimeCorr);
 
 		/* Apply correction */
 		cCurExp *= _COMPLEX(cos(rSkipGuardIntPhase), sin(rSkipGuardIntPhase));
@@ -154,8 +152,7 @@ void COFDMDemodulation::ProcessDataInternal(CParameter& ReceiverParam)
 	{
 		/* To get a continuous counter we need to take the guard-interval and
 		   timing corrections into account */
-		rSkipGuardIntPhase = rNormCurFreqOffset *
-			((iGuardSize) - (*pvecInputData).GetExData().iCurTimeCorr);
+		rSkipGuardIntPhase = rNormCurFreqOffset * ((iGuardSize) - (*pvecInputData).GetExData().iCurTimeCorr);
 
 		/* Apply correction */
 		cCurExp *= _COMPLEX(cos(rSkipGuardIntPhase), sin(rSkipGuardIntPhase));
@@ -172,8 +169,7 @@ void COFDMDemodulation::ProcessDataInternal(CParameter& ReceiverParam)
 
 	/* Use only useful carriers and normalize with the block-size ("N") */
 	for (i = iShiftedKmin; i < iShiftedKmax + 1; i++)
-		(*pvecOutputData)[i - iShiftedKmin] =
-			veccFFTOutput[i] / (CReal) iDFTSize;
+		(*pvecOutputData)[i - iShiftedKmin] = veccFFTOutput[i] / (CReal) iDFTSize;
 
 
 	/* Save averaged spectrum for plotting ---------------------------------- */
@@ -202,8 +198,7 @@ void COFDMDemodulation::InitInternal(CParameter& ReceiverParam)
 	/* Vector for power density spectrum of input signal */
 	iLenPowSpec = iDFTSize / 2;
 	vecrPowSpec.Init(iLenPowSpec, (_REAL) 0.0);
-	rLamPSD = IIR1Lam(TICONST_PSD_EST_OFDM, (CReal) SOUNDCRD_SAMPLE_RATE /
-		ReceiverParam.iSymbolBlockSize); /* Lambda for IIR filter */
+	rLamPSD = IIR1Lam(TICONST_PSD_EST_OFDM, (CReal) SOUNDCRD_SAMPLE_RATE / ReceiverParam.iSymbolBlockSize); /* Lambda for IIR filter */
 
 	/* Allocate memory for intermediate result of fftw */
 	veccFFTInput.Init(iDFTSize); //@@

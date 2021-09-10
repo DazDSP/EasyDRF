@@ -148,7 +148,7 @@ void compressBSR(char * filenamein, char * filenameout)
 	inf = fopen(filenamein,"rt");
 	outf = fopen(filenameout,"wt");
 
-	fscanf(inf,"%s",&tmpstr);
+	fscanf(inf,"%s",&tmpstr); //all changed to fscanf_s DM
 	fprintf(outf,"%s\n",tmpstr);
 	fscanf(inf,"%s",&tmpstr);
 	fprintf(outf,"%s\n",tmpstr);
@@ -158,7 +158,7 @@ void compressBSR(char * filenamein, char * filenameout)
 
 	while (!feof(inf))
 	{
-		fscanf(inf,"%d",&segno);
+		fscanf_s(inf,"%d",&segno);
 		if (segno == -99) 
 		{
 			fprintf(outf,"%d\n",lastseg);
@@ -233,7 +233,7 @@ void decompressBSR(char * filenamein, char * filenameout)
 			{
 				if (segno == -1)
 				{
-					fscanf(bsrin,"%d",&segno);
+					fscanf_s(bsrin,"%d",&segno);
 					if (segno > oldsegno)
 					{
 						int i;
@@ -250,9 +250,9 @@ void decompressBSR(char * filenamein, char * filenameout)
 				oldsegno = segno;
 			}
 		}
+		fclose(bsrin); //moved these inside the if, so they are only closed if they are opened DM
+		fclose(bsrout);
 	}
-	fclose(bsrin);
-	fclose(bsrout);
 }
 
 void writeselsegments(int num = 1)

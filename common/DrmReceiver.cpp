@@ -168,15 +168,13 @@ void CDRMReceiver::Run()
 					}
 
 					/* MLC decoder */
-					if (MSCMLCDecoder.ProcessData(ReceiverParam, DeintlBuf,
-						MSCMLCDecBuf))
+					if (MSCMLCDecoder.ProcessData(ReceiverParam, DeintlBuf, MSCMLCDecBuf))
 					{
 						bEnoughData = TRUE;
 					}
 
 					/* MSC data/audio demultiplexer */
-					if (MSCDemultiplexer.ProcessData(ReceiverParam,
-						MSCMLCDecBuf, MSCDeMUXBufAud, MSCDeMUXBufData))
+					if (MSCDemultiplexer.ProcessData(ReceiverParam, MSCMLCDecBuf, MSCDeMUXBufAud, MSCDeMUXBufData))
 					{
 						bEnoughData = TRUE;
 					}

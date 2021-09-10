@@ -82,7 +82,7 @@ protected:
 	class CPilotCorr
 	{
 	public:
-		int			iIdx1, iIdx2;
+		int			iIdx1{}, iIdx2{}; //init DM
 		CComplex	cPil1, cPil2;
 	};
 

@@ -4,7 +4,8 @@
  *
  * Author(s):
  *	Volker Fischer
- *
+ *  Daz Man 2021
+ * 
  * Description:
  *	Global definitions
  *
@@ -49,7 +50,7 @@ using namespace std; /* Because of the library: "complex" */
 #undef _DEBUG_
 
 #ifndef VERSION
-# define VERSION						"25.0" //"24.1" //updated DM
+# define VERSION						"25.1" //"25.0" //"24.1" //updated DM
 #endif
 
 
@@ -208,9 +209,7 @@ public:
 void PostWinMessage(const _MESSAGE_IDENT MessID, const int iMessageParam = 0);
 
 /* Debug error handling */
-void DebugError(const char* pchErDescr, const char* pchPar1Descr,
-				const double dPar1, const char* pchPar2Descr,
-				const double dPar2);
+void DebugError(const char* pchErDescr, const char* pchPar1Descr, const double dPar1, const char* pchPar2Descr,	const double dPar2);
 
 void ErrorMessage(string strErrorString);
 

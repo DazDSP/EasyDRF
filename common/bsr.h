@@ -56,3 +56,4 @@ int segnobsrfile();					// returns number of segments in bsrreq.bin
 void writeselsegments(int num);		// writes selected segments to tx buffer
 
 #endif
+

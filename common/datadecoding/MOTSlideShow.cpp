@@ -35,6 +35,9 @@
 #include "MOTSlideShow.h"
 #include "../../zlib.h"  //added DM
 #include "../../getfilenam.h"
+#include "../../RS-defs.h" //added DM for RS code
+//#include "../RS/RS4-coder.cpp"
+#include "../RS/RS4-coder.h"
 
 
 /* Implementation *************************************************************/
@@ -86,6 +89,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 {
 	/* Only ContentSubType "JFIF" (JPEG) and ContentSubType "PNG" are allowed
 	   for SlideShow application (not tested here!) */
+	/* For Ham-DRM this doesn't matter - any file works! DM */
 	/* Try to open file binary */
 
 	int iOldNumObj;
@@ -96,7 +100,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		//		_BYTE byIn; //this is the original file buffer - only 1 byte long DM
 		//=============================================================================================================================
 		const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
-		_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
+		_BYTE* buffer1 = new _BYTE[BUFSIZE*2]; //File read buffer - now 1M to fit RS encoding
 		_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib compression buffer
 		uLongf filesize;
 		unsigned int dd;
@@ -106,8 +110,49 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		// obtain file size : (there might be a more elegant way to do this...)
 		fseek(pFiBody, 0, SEEK_END);
 		filesize = ftell(pFiBody);
-		if (filesize > BUFSIZE) filesize = BUFSIZE; //prevent buffer overrun - limit to 512k - Shouldn't this be BUFSIZE-1?
+		if (filesize > BUFSIZE) filesize = BUFSIZE; //prevent buffer overrun - limit to 512k
 		rewind(pFiBody);
+
+		//Daz Man: Before we make the header, we need to figure out what the filename extension is going to be
+		LPSTR dx1 = const_cast<char*>(strFileNamenoDir.c_str()); //the filename that is being sent
+		const string& dx2 = ".gz"; //the 2nd filename extension that denotes zlib compression is used
+//		if (LeadIn > 3) {
+//			const string& dx2 = ".gzz"; //can't modify a constant - DM
+//		}
+		string strFileNamenoDirX; //the variable that holds the modified filename
+		_BOOLEAN gzipit = !checkext(dx1); //check list of file types
+//		gzipit = FALSE; //TEST ===================================================================================================================
+
+		if (gzipit) {
+			strFileNamenoDirX = strFileNamenoDir.c_str() + dx2; //attach extra file extension to denote compression is used
+		}
+		else {
+			strFileNamenoDirX = strFileNamenoDir.c_str(); //copy normal filename
+		}
+		
+		//Only add the new header if using the new RS mode
+		int HeaderSize = 0;
+		if (LeadIn > 3) {
+			//Daz Man:
+			//Write a header for all files, containing the filename, the filesize and the header size to guarantee this data is available if the file decodes ok.
+			//write header into buffer2 before file copy or gzip write, then read it out directly or RS code it into buffer1
+			string EZHeaderID = "EasyDRFHeader/|000000" + strFileNamenoDirX; //reserve space for numerics using zeroes
+			HeaderSize = size(EZHeaderID); //length of header - add to the filesize used in the header
+			int i = 15; //first byte after version number
+			EZHeaderID[i++] = (2); //version number
+			EZHeaderID[i++] = (HeaderSize & 0xFF); //byte 1 of header size
+			EZHeaderID[i++] = (HeaderSize & 0xFF00) >> 8; //byte 2 of header size
+			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF); //byte 1 of file size
+			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF00) >> 8; //byte 2 of file size
+			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF0000) >> 16; //byte 3 of file size
+
+			//Now write it into buffer2
+			i = 0;
+			while (i < HeaderSize) {
+				buffer2[i] = EZHeaderID[i]; //this is normally buffer2
+				i++;
+			}
+		}
 
 		//Daz Man:
 		//if the input data is compressible (selected file types) then send data to buffer1
@@ -116,31 +161,53 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		//keep the filename data intact - just append the extra .gz extension to strFileNamenoDir
 		//change the existing routines below to read from the buffer output
 		//
-		LPSTR dx1 = const_cast<char*>(strFileNamenoDir.c_str()); //the filename that is being sent
-		//LPSTR ds = strFileNamenoDir;
-		const string& dx2 = ".gz"; //the 2nd filename extension that denotes zlib compression is used
-		string strFileNamenoDirX; //the variable that holds the modified filename
 		//test the filename extension
-		if (!checkext(dx1)) {
-			//read into buffer1 if it's text
+		if (gzipit) {
+			//read into buffer1 if it's compressible
 			result = fread(buffer1, 1, filesize, pFiBody); //read the file to send into buffer1 if it is text
-			//add zlib compression here
 			uLongf ds = BUFSIZE; //tell zlib the buffer size we are using
-			compress2(buffer2, &ds, buffer1, filesize, 9); //zlib compress text data and compressible files
+			//start at buffer2 + Headersize to avoid overwriting the header (if no header is used, Headersize is zero)
+			compress2(buffer2 + HeaderSize, &ds, buffer1, filesize, 9); //zlib compress text data and compressible files (use the headerless filesize)
 			filesize = ds; //update filesize with the new compressed file data size
-			strFileNamenoDirX = strFileNamenoDir.c_str() + dx2; //attach extra file extension to denote compression was used
 		}
 		else {
 			//read into buffer2 directly for all else
-			result = fread(buffer2, 1, filesize, pFiBody);
-			strFileNamenoDirX = strFileNamenoDir.c_str(); //copy normal filename
+			//start at buffer2 + Headersize to avoid overwriting the header (if no header is used, Headersize is zero)
+			result = fread(buffer2 + HeaderSize, 1, filesize, pFiBody); //this is normally buffer2
 		}
 
 		//if (result != filesize) { fputs("Reading error", stderr); exit(3); } //does it need error checking?
 
 		fclose(pFiBody); //close file
 //=============================================================================================================================
-//RS encoding can go here DM
+		//RS encoding can go here, with header added first  DM
+		//Only execute this if LeadIn is > 3
+
+		if (LeadIn > 3) {
+
+			//Put RS coding routine here - Daz Man 2021
+			//Compressed or uncompressed data (+header) is in buffer2
+			//RS encode the data from buffer2 and put it in buffer1
+			//buffer1 is bigger for this reason
+			//Then read out buffer1 to the sending routine next
+			//or read out buffer2 if RS is not used
+
+			//RS encode here
+			filesize = filesize + HeaderSize; //add size of new header in
+			int lasterror = 0;
+ 			lasterror = rs4encode(buffer2, buffer1, filesize); //
+			filesize = ceil((float)filesize / 128) * 255; //allow for bigger data size
+
+			//compute the data exactly for the transmission, but don't let the RS decoder decode junk
+			//make sure the number of RS blocks to be decoded is the same as what was encoded
+			//Special interleaver test
+			//it is critical that the same filesize be used for interleaving and deinterleaving
+			bool rev = 0;
+			distribute(buffer1, buffer2, filesize, rev); //output is put back into buffer2
+		}
+
+		//data should be in buffer 2 now
+
 //=============================================================================================================================
 //		FILE* pFiBody = fopen(strFileName.c_str(), "rb"); //Open file - Now we read from buffer only DM
 
@@ -168,20 +235,28 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 					vecMOTSegments[iOldNumObj][k] = k;
 	
 				dd = 0;
-				while (dd < filesize)  //Read from buffer up to size - This is a read for the leadin - not all of it is used
-//				while (fread((void*) &byIn, size_t(1), size_t(1), pFiBody) != size_t(0)) //edited DM
-				{
-					/* Add one byte = SIZEOF__BYTE bits */
-					vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
-//					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t) byIn, SIZEOF__BYTE);
-					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
-//					vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)whichbuffer[dd], SIZEOF__BYTE); //from buffer
-					dd++; //next
+				//LeadIn only
+				//If no RS coding is used, read from buffer2
+				//If RS coding is used, read from buffer1 but write the new header first
+				if (LeadIn > 3) {
+					while (dd < filesize)  //Read from buffer up to data size This is a read for the leadin - not all of it is used
+					{
+						/* Add one byte = SIZEOF__BYTE bits */
+						vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
+						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+//						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+						dd++; //next
+					}
 				}
-	
-				/* Close the file afterwards */
-//				fclose(pFiBody);
-//				pFiBody = fopen(strFileName.c_str(), "rb");
+				else {
+					while (dd < filesize)  //Read from buffer up to data size - This is a read for the leadin - not all of it is used
+					{
+					/* Add one byte = SIZEOF__BYTE bits */
+						vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
+						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
+						dd++; //next
+					}
+				}
 
 				actsize += iSegmentSize;
 				actsize += vecMOTPicture[iOldNumObj].vecbRawData.Size() / SIZEOF__BYTE;
@@ -208,19 +283,27 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		vecMOTPicture[iOldNumObj].bIsLeader = FALSE;
 
 		dd = 0;
-		while (dd < filesize)  //Read from buffer up to size
-//		while (fread((void*) &byIn, size_t(1), size_t(1), pFiBody) != size_t(0))
-		{
-			/* Add one byte = SIZEOF__BYTE bits */
-			vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
-//			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t) byIn, SIZEOF__BYTE);
-			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 DM
-//			vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)whichbuffer[dd], SIZEOF__BYTE); //from new buffer
-			dd++; //next
+		if (LeadIn > 3) {
+			//FOR RS CODING
+			while (dd < filesize)  //Read from buffer up to data size
+			{
+				/* Add one byte = SIZEOF__BYTE bits */
+				vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
+				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+//				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+				dd++; //next
+			}
 		}
-
-		/* Close the file afterwards */
-//		fclose(pFiBody);
+		else {
+			//NO RS CODING
+			while (dd < filesize)  //Read from buffer up to data size
+			{
+				/* Add one byte = SIZEOF__BYTE bits */
+				vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
+				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
+				dd++; //next
+			}
+		}
 
 		//remove the buffer arrays from the heap DM
 		delete[] buffer1;
@@ -290,7 +373,7 @@ _BOOLEAN CMOTSlideShowDecoder::GetPartPicture(CMOTObject& NewPic)
 	NewPic.Reset();
 
 	/* Only copy picture content if picture is available */
-	return MOTDAB.GetActMOTObject(NewPic);
+	return MOTDAB.GetActMOTObject(NewPic); //edited DM
 }
 
 

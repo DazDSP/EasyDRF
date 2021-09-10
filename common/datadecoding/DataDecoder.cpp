@@ -253,7 +253,7 @@ void CDataDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 			/* Act on parameters given in header */
 			/* Continuity index: this 3-bit field shall increment by one
 			   modulo-8 for each packet with this packet Id */
-			if ((iContInd[iPacketID] + 1) % 8 != iNewContInd)
+			if ((iContInd[iPacketID] + 1) % 8 != iNewContInd) //this detects if there are missing packets? DM
 				DataUnit[iPacketID].bOK = FALSE;
 
 			/* Store continuity index */
@@ -263,10 +263,11 @@ void CDataDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 			   a new data unit */
 			if (biFirstFlag == TRUE)
 			{
-				DataUnit[iPacketID].Reset();
+				DataUnit[iPacketID].Reset(); //clears and resets vecbiData DM
 
 				DataUnit[iPacketID].bOK = TRUE;
 			}
+
 
 			/* If all packets are received correctely, data unit is ready */
 			if (biLastFlag == TRUE)

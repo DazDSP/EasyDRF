@@ -401,6 +401,9 @@ FodyWeavers.xsd
 *.txt
 !EasyDRF_changes.txt
 
+#Archive
+*.7z
+
 #Special
 Release/*.log
 Release/*.pdb

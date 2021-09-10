@@ -34,7 +34,6 @@
 #include "../Vector.h"
 #include "../CRC.h"
 
-
 /* Classes ********************************************************************/
 class CMOTObjectRaw
 {
@@ -45,10 +44,9 @@ public:
 		CDataUnit() {Reset();}
 
 		void Reset();
-		void Add(CVector<_BINARY>& vecbiNewData,
-			const int iSegmentSize, const int iSegNum);
-
+		void Add(CVector<_BINARY>& vecbiNewData, const int iSegmentSize, const int iSegNum);
 		CVector<_BINARY>	vecbiData;
+
 		_BOOLEAN			bOK, bReady;
 		int					iDataSegNum;
 	};
@@ -59,13 +57,12 @@ public:
 		CDataUnitRx() {Reset();}
 
 		void Reset();
-		void Add(CVector<_BINARY>& vecbiNewData,
-			const int iSegmentSize, const int iSegNum);
-
+		void Add(CVector<_BINARY>& vecbiNewData, const int iSegmentSize, const int iSegNum);
 		CVector<CVector<_BINARY> > vvbiSegment;
 		_BOOLEAN			bOK, bReady{}; //init DM
 		int					iDataSegNum{}; //init DM
 		int					iTotSegments{}; //init DM
+
 	};
 
 	int			iTransportID{}; //init DM
@@ -80,8 +77,7 @@ class CMOTObject
 {
 public:
 	CMOTObject() {Reset();}
-	CMOTObject(const CMOTObject& NewObj) : vecbRawData(NewObj.vecbRawData),
-		strName(NewObj.strName) {}
+	CMOTObject(const CMOTObject& NewObj) : vecbRawData(NewObj.vecbRawData),	strName(NewObj.strName) {}
 
 	inline CMOTObject& operator=(const CMOTObject& NewObj)
 	{
@@ -130,15 +126,9 @@ protected:
 		CVector<_BINARY>		   vecbiToSend;
 	};
 
-	void GenMOTSegments(CMOTObjSegm& MOTObjSegm);
-	void PartitionUnits(CVector<_BINARY>& vecbiSource,
-						CVector<CVector<_BINARY> >& vecbiDest,
-						const int iPartiSize,
-						int ishead);
+	void PartitionUnits(CVector<_BINARY>& vecbiSource, CVector<CVector<_BINARY> >& vecbiDest, const int iPartiSize, int ishead);
 
-	void GenMOTObj(CVector<_BINARY>& vecbiData, CVector<_BINARY>& vecbiSeg,
-				   const _BOOLEAN bHeader, const int iSegNum,
-				   const int iTranspID, const _BOOLEAN bLastSeg);
+	void GenMOTObj(CVector<_BINARY>& vecbiData, CVector<_BINARY>& vecbiSeg, const _BOOLEAN bHeader, const int iSegNum, const int iTranspID, const _BOOLEAN bLastSeg);
 
 	CMOTObject		MOTObject;
 	CMOTObjSegm		MOTObjSegments;
@@ -167,9 +157,10 @@ public:
 	_BOOLEAN	GetActMOTSegs(CVector<_BINARY>& vSegs);
 	_BOOLEAN	GetActMOTObject(CMOTObject& NewMOTObject);
 	_BOOLEAN	GetActBSR(int * iNumSeg, string * bsr_name, char * path, int * iHash);
-	void		GetMOTObject(CMOTObject& NewMOTObject)
-					{NewMOTObject = MOTObject; /* Simply copy object */}
-	int GetObjectTotSize() { return MOTObjectRaw.BodyRx.vvbiSegment.Size(); }
+	void		GetMOTObject(CMOTObject& NewMOTObject) {NewMOTObject = MOTObject; /* Simply copy object */}
+	int GetObjectTotSize() { return MOTObjectRaw.BodyRx.vvbiSegment.Size(); } //this isn't computing the total segments after the first file, even when all the info has been received... DM
+	//int GetObjectTotSize() { return (int)ceil((_REAL)iBodySize / iSegmentSize); //Does it need to be something like this..?
+	
 	int GetObjectActSize() 
 	{ 
 		if (MOTObjectRaw.BodyRx.iDataSegNum >= 0) 
@@ -185,6 +176,7 @@ protected:
 
 	CMOTObject		MOTObject;
 	CMOTObjectRaw	MOTObjectRaw;
+
 };
 
 

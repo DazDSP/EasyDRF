@@ -20,12 +20,12 @@ extern int disptype;
 extern int newdata;
 extern int specarr[530];
 extern int specarrim[530];
-extern int specarrlen; //edited DM
+extern int specarrlen;
 extern int DCFreq;
 extern int level;
 extern char robmode;
 extern int specocc;
-extern int messtate[10];
+extern int messtate[20]; //edited DM was 10
 
 
 /*--------------------------------------------------------------------

@@ -47,7 +47,6 @@ _REAL rxaverdc = 0.0;
 /* Transmitter -------------------------------------------------------------- */
 void CReadData::ProcessDataInternal(CParameter& TransmParam)
 {
-	_REAL temp;
 	rxdcsum = 0.0;
 
 	if (TransmParam.bOnlyPicture) return;
@@ -56,6 +55,8 @@ void CReadData::ProcessDataInternal(CParameter& TransmParam)
 	pSound->Read(vecsSoundBuffer);
 
 #ifdef MIX_INPUT_CHANNELS
+	_REAL temp; //moved to inside the ifdef DM
+
 	/* Write data to output buffer */
 	for (int i = 0; i < iOutputBlockSize; i++) //+=2
 	{

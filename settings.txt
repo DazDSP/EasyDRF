@@ -8,7 +8,7 @@ Call Call
 7 Display_Type
 0 RX_Audfilt
 0 FAC_mute
-4 QAM
+64 QAM
 1 MODE
 1 BW
 1 Interleave

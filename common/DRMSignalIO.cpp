@@ -98,7 +98,7 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	/* Choose correct filter for chosen DRM bandwidth. Also, adjust offset
 	   frequency for different modes. E.g., 5 kHz mode is on the right side
 	   of the DC frequency */
-	float* pCurFilt{}; //added init DM
+	float* pCurFilt = fTransmFilt2_8c; //added init DM
 	CReal rNormCurFreqOffset{}; //added init DM
 
 	switch (TransmParam.GetSpectrumOccup())
@@ -213,7 +213,7 @@ void CReceiveData::ProcessDataInternal(CParameter& Parameter)
 		/* If enf-of-file is reached, stop simulation */
 		float tIn;
 
-		if (fscanf(pFileReceiver, "%e\n", &tIn) == EOF)
+		if (fscanf_s(pFileReceiver, "%e\n", &tIn) == EOF)
 		{
 			Parameter.bRunThread = FALSE;
 

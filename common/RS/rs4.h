@@ -10,14 +10,15 @@
  * implies standard values for MM, KK, B0 and PRIM.
  */
 /* #undef CCSDS 1 */
+#ifndef CCSDS
 
-#define MM 8
-
-#define RSDSIZERS1 224
-#define RSDSIZERS2 192
-#define RSDSIZERS3 160
-#define RSDSIZERS4 128
-
+/* Otherwise, leave CCSDS undefined and set the parameters below:
+ *
+ * Set MM to be the size of each code symbol in bits. The Reed-Solomon
+ * block size will then be NN = 2**M - 1 symbols. Supported values are
+ * defined in rs.c.
+ */
+#define MM 8 /* Symbol size in bits */
 
 /*
  * Set KK to be the number of data symbols in each block, which must be
@@ -25,6 +26,7 @@
  * to NN-KK erasures or (NN-KK)/2 errors, or combinations thereof with
  * each error counting as two erasures.
  */
+#define KK 128 /* Number of data symbols per block   pa0mbo was 223 */
 
 /* Set B0 to the first root of the generator polynomial, in alpha form, and
  * set PRIM to the power of alpha used to generate the roots of the
@@ -38,9 +40,22 @@
 /* If you want to select your own field generator polynomial, you'll have
  * to edit that in rs.c.
  */
-//#define	NN ((1 << MM) - 1)
-#define	NN 255 //((1 << MM) - 1)
+
+#else /* CCSDS */
+/* Don't change these, they're CCSDS standard */
+#define MM 8
+#define KK 223
+#define B0 112
+#define PRIM 11
+#endif
+
+#define	NN ((1 << MM) - 1)
+
+#if MM <= 8
 typedef unsigned char dtype;
+#else
+typedef unsigned int dtype;
+#endif
 
 /* Reed-Solomon encoding
  * data[] is the input block, parity symbols are placed in bb[]
@@ -58,4 +73,3 @@ int encode_rs(dtype data[], dtype bb[]);
  * uncorrectible, the data array is unchanged and -1 is returned
  */
 int eras_dec_rs(dtype data[], int eras_pos[], int no_eras);
-void init_rs(int kk);

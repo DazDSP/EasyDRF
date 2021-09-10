@@ -69,7 +69,8 @@ float audioGain = 1; //AGC TODO
 struct lpc10_e_state *es;
 struct lpc10_d_state *ds;
 
-short wavdata[LPC10_SAMPLES_PER_FRAME]; //Array for Codec input
+//short wavdata[LPC10_SAMPLES_PER_FRAME]; //Array for Codec input
+short wavdata[LPC10_SAMPLES_PER_FRAME*2]; //Array for Codec input - does this need to be x2 as well?
 unsigned char encbytes[LPC10_BITS_IN_COMPRESSED_FRAME + 2]; //Array for Codec output
 unsigned char chksum[130];
 
@@ -474,7 +475,7 @@ int CAudioSourceDecoder::getdecodperc(void)
 {
 	double tot;
 	double fact;
-	tot = succdecod + errdecod;
+	tot = (double)succdecod + (double)errdecod; //edited DM added (double)
 	if (tot == 0.0) return 0;
 	fact = 100.0/tot;
 	percentage = (int)(succdecod*fact);

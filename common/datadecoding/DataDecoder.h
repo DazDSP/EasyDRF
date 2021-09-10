@@ -35,6 +35,7 @@
 #include "../CRC.h"
 #include "../Vector.h"
 #include "MOTSlideShow.h"
+#include "../../RS-defs.h" //Added DM
 
 
 /* Definitions ****************************************************************/
@@ -71,8 +72,7 @@ protected:
 class CDataDecoder : public CReceiverModul<_BINARY, _BINARY>
 {
 public:
-	CDataDecoder() : iServPacketID(0), DoNotProcessData(TRUE),
-		eAppType(AT_NOT_SUP) {}
+	CDataDecoder() : iServPacketID(0), DoNotProcessData(TRUE), eAppType(AT_NOT_SUP) {}
 	virtual ~CDataDecoder() {}
 	enum EAppType {AT_NOT_SUP, AT_MOTSLISHOW, AT_JOURNALINE};
 
@@ -99,13 +99,14 @@ protected:
 			bOK = FALSE;
 			bReady = FALSE;
 		}
+
 	};
 
 	int						iTotalPacketSize{}; //init DM
 	int						iNumDataPackets{}; //init DM
 	int						iMaxPacketDataSize{}; //init DM
 	int						iServPacketID{}; //init DM
-	CVector<int>			veciCRCOk{}; //init DM
+	CVector<int>			veciCRCOk{}; //init DM <--- This may be useful as an erasure list? DM
 
 	_BOOLEAN				DoNotProcessData{}; //init DM
 

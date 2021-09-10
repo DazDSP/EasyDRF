@@ -35,13 +35,14 @@
 #include "../CRC.h"
 #include "DABMOT.h"
 
+extern int SetSegSize;
 
 /* Classes ********************************************************************/
 /* Encoder ------------------------------------------------------------------ */
 class CMOTSlideShowEncoder
 {
 public:
-	CMOTSlideShowEncoder() : vecMOTPicture(0), vecMOTSegments(0) { SetMyStartDelay(12); Init(116); }
+	CMOTSlideShowEncoder() : vecMOTPicture(0), vecMOTSegments(0) { SetMyStartDelay(12); Init(116); } //
 	virtual ~CMOTSlideShowEncoder() {}
 
 	void Init(int iSegSize);
@@ -54,7 +55,7 @@ public:
 	void ClearAllFileNames() {vecMOTPicture.Init(0); vecMOTSegments.Init(0); }
 
 	void SetMyStartDelay(int delay);
-//	void SetStartDelay(int delay); //Added DM
+
 	int GetNoOfPic(void) { return vecMOTPicture.Size(); };
 	int GetPicCnt(void) { return MOTDAB.GetPicCount(); };
 	int GetPicPerc(void);
@@ -87,7 +88,7 @@ public:
 	_BOOLEAN GetActSegments(CVector<_BINARY>& NewSeg);
 	_BOOLEAN GetPartBSR(int * iNumSeg, string * bsrname, char * path);
 
-	int GetTotSize(void) { return MOTDAB.GetObjectTotSize(); };
+	int GetTotSize(void) { return MOTDAB.GetObjectTotSize(); }; //Original code - this fails after the first file.. Why? DM It's related to the way the incoming raw data array is sized...
 	int GetActSize(void) { return MOTDAB.GetObjectActSize(); };
 	int GetActPos(void)  { return MOTDAB.GetObjectActPos(); };
 
