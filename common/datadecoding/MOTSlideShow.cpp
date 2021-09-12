@@ -100,7 +100,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 		//=============================================================================================================================
 		const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
 		_BYTE* buffer1 = new _BYTE[BUFSIZE*2]; //File read buffer - now 1M to fit RS encoding
-		_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib compression buffer
+		_BYTE* buffer2 = new _BYTE[BUFSIZE*2]; //zlib & interleaver buffer - now 1M to fit RS encoding
 		uLongf filesize;
 		unsigned int dd;
 		int result;

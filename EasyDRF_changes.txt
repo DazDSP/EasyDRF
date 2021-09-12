@@ -1,5 +1,10 @@
 EasyDRF Changes - by Daz Man September 13th, 2021
 
+* Fixed buffer overflow on files > 512k after RS encoding
+
+
+EasyDRF Changes - by Daz Man September 13th, 2021
+
 * All RS modes 1-4 are now functional
 * Transmit instance (repeats) and RS mode setting is now loaded and saved from settings.txt
 * In RS mode, bargraph uses new protocol for sending file size for reliability

@@ -411,7 +411,7 @@ Release/*.recipe
 Release/*.res
 Release/*.FileListAbsolute.txt
 Release/*.bin
-Release/settings.txt
+#Release/settings.txt
 Release/Corrupt/
 Release/EasyDRF.tlog/
 Release/Pictures-OLD/
