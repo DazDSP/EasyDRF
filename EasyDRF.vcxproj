@@ -178,7 +178,7 @@
     <ClCompile Include="common\ofdmcellmapping\OFDMCellMapping.cpp" />
     <ClCompile Include="common\Parameter.cpp" />
     <ClCompile Include="common\resample\Resample.cpp" />
-    <ClCompile Include="common\RS\RS4-coder.cpp" />
+    <ClCompile Include="common\RS\RS-coder.cpp" />
     <ClCompile Include="common\settings.cpp" />
     <ClCompile Include="common\sourcedecoders\AudioSourceDecoder.cpp" />
     <ClCompile Include="common\sync\FreqSyncAcq.cpp" />
@@ -239,7 +239,7 @@
     <ClInclude Include="common\Parameter.h" />
     <ClInclude Include="common\resample\Resample.h" />
     <ClInclude Include="common\resample\ResampleFilter.h" />
-    <ClInclude Include="common\RS\RS4-coder.h" />
+    <ClInclude Include="common\RS\RS-coder.h" />
     <ClInclude Include="common\settings.h" />
     <ClInclude Include="common\sourcedecoders\AudioSourceDecoder.h" />
     <ClInclude Include="common\speex\speex.h" />

@@ -36,8 +36,7 @@
 #include "../../zlib.h"  //added DM
 #include "../../getfilenam.h"
 #include "../../RS-defs.h" //added DM for RS code
-//#include "../RS/RS4-coder.cpp"
-#include "../RS/RS4-coder.h"
+#include "../RS/RS-coder.h"
 
 
 /* Implementation *************************************************************/
@@ -195,8 +194,26 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 			//RS encode here
 			filesize = filesize + HeaderSize; //add size of new header in
 			int lasterror = 0;
- 			lasterror = rs4encode(buffer2, buffer1, filesize); //
-			filesize = ceil((float)filesize / 128) * 255; //allow for bigger data size
+			if (LeadIn == 4) {
+				//RS1
+				lasterror = rs1encode(buffer2, buffer1, filesize); //
+				filesize = ceil((float)filesize / 224) * 255; //allow for bigger data size
+			}
+			else if (LeadIn == 5) {
+				//RS2
+				lasterror = rs2encode(buffer2, buffer1, filesize); //
+				filesize = ceil((float)filesize / 192) * 255; //allow for bigger data size
+			}
+			else if (LeadIn == 6) {
+				//RS3
+				lasterror = rs3encode(buffer2, buffer1, filesize); //
+				filesize = ceil((float)filesize / 160) * 255; //allow for bigger data size
+			}
+			else if (LeadIn == 7) {
+				//RS4
+				lasterror = rs4encode(buffer2, buffer1, filesize); //
+				filesize = ceil((float)filesize / 128) * 255; //allow for bigger data size
+			}
 
 			//compute the data exactly for the transmission, but don't let the RS decoder decode junk
 			//make sure the number of RS blocks to be decoded is the same as what was encoded
@@ -243,8 +260,8 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 					{
 						/* Add one byte = SIZEOF__BYTE bits */
 						vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
-						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
-//						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
+//						vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer1
 						dd++; //next
 					}
 				}
@@ -289,8 +306,8 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 			{
 				/* Add one byte = SIZEOF__BYTE bits */
 				vecMOTPicture[iOldNumObj].vecbRawData.Enlarge(SIZEOF__BYTE);
-				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
-//				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer2 ============= CHANGE THIS TO buffer1 when RS is added!!! ===============
+				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer2[dd], SIZEOF__BYTE); //from new buffer2
+//				vecMOTPicture[iOldNumObj].vecbRawData.Enqueue((uint32_t)buffer1[dd], SIZEOF__BYTE); //from new buffer1
 				dd++; //next
 			}
 		}

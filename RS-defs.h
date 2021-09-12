@@ -28,9 +28,10 @@
 #if !defined(RSDEF_)
 #define RSDEF_ 1
 extern int LeadIn; //Moved from ..? DM
+extern int DMmodehash;
 extern string EZHeaderID; //header ID string
 extern int EncFileSize; //Encoder current file size
-extern int EncSegSize; //Decoder current segment size
+extern int EncSegSize; //Encoder current segment size
 extern int DecFileSize; //Decoder current file size
 extern int totsize; //Decoder total segment count global
 extern int DecSegSize; //Decoder current segment size
@@ -64,10 +65,12 @@ extern int erasureflags;
 extern int DecPrevSeg;
 extern int DecHighSeg;
 
-extern char GlobalDMRxRSData[1048576];
+extern char GlobalDMRxRSData[1100000];
 extern int DMRSindex;
 extern int DMRSpsize;
 
 extern char DMfilename[260];
+
+extern int DMmodehash;
 
 #endif
