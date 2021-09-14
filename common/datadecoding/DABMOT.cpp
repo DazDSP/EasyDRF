@@ -810,6 +810,9 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits now!
 					DecSegSize = 0; //reset
 
+					//clear old header filename?
+
+
 					erasureflags = erasureflags || (1 << erasureswitch); //mark block as used for background erasing
 
 					//Also, swap the erasure buffer to write to each time the Transport ID changes
@@ -824,7 +827,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					*/ 
 
 					//should the file size be reset here also?
-					HdrFileSize = 0; //
+					//HdrFileSize = 0; //
 					CompTotalSegs = 0; //
 				}
 			}
@@ -888,7 +891,8 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			DecSegSize = iSegmentSize; //global copy DM =============================================================================
 			//also, save the segment size that was used for each erasure buffer DM
 			erasuressegsize[erasureswitch] = iSegmentSize; //save to the correct array - this should be made to only update once... (although the LAST segment is SMALLER - but in RS mode, data is rounded up to 255 byte blocks)
-			DMfilename[0] = 0; //clear filename
+			//DMfilename[0] = 0; //clear filename?
+			strcpy(DMdecodestat, "WAIT"); //RS decoder stats message
 		}
 
 		//Header is 88 bytes to here
@@ -931,6 +935,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					/* Add new segment data */
 					MOTObjectRaw.Header.Add(vecbiNewData, iSegmentSize, iSegmentNum);
 
+//					GetName(MOTObjectRaw); //added to read the filename and size from the old header DM ======================================
 				}
 				else
 				{
@@ -980,16 +985,19 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						//NEW CODE DM =================================
 						//This code copies the bit data in byte form to the new RS buffer, even if segment 0 (header) is missing
 						//WORKING 2:45am 10th Sep 2021
-						if (iSegmentSize > DMRSpsize) {
-							DMRSpsize = iSegmentSize;
-						};
-						int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
-						DMRSpsize = iSegmentSize; //update
-						int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
-						if (k > 0) {
-							for (int i = 0; i < k; i++)
-							{
-								GlobalDMRxRSData[j + i] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+						//only execute if the CRC is good
+						if (bCRCOk) {
+							if (iSegmentSize > DMRSpsize) {
+								DMRSpsize = iSegmentSize;
+							};
+							int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
+							DMRSpsize = iSegmentSize; //update
+							int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
+							if (k > 0) {
+								for (int i = 0; i < k; i++)
+								{
+									GlobalDMRxRSData[j + i] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+								}
 							}
 						}
 						//NEW CODE DM =================================
@@ -999,7 +1007,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					{
 						// store in pool
 						PicPool.storeinpool(MOTObjectRaw);
-						PicPool.getfrompool(iTransportID, MOTObjectRaw);
+						PicPool.getfrompool(iTransportID, MOTObjectRaw);  //why? DM
 						if (biLastFlag == FALSE) MOTObjectRaw.iSegmentSize = iSegmentSize;
 					}
 				}
@@ -1065,19 +1073,23 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		}
 	}
 
+	if ((iSegmentNum == 0) && (bCRCOk)) {
+		GetName(MOTObjectRaw); //added to read the filename and size from the old header DM ======================================
+	}
+
 	/* Return status of MOT object decoding */
 	return bMOTObjectReady;
 }
 
-//string strName; //this is probably where the received filename is saved...
-string strName2 = {0}; //this is probably where the received filename is saved... DM edited
+//string strName; //this is where the received filename is saved for the GetName routine DM
+string strName2 = {0}; //this is where the received filename is saved for the GetName routine DM
 
 void GetName(CMOTObjectRaw& MOTObjectRaw)
 {
 	int				i;
 	unsigned char	ucDatafield;
 	MOTObjectRaw.Header.vecbiData.ResetBitAccess();
-	i = (int) MOTObjectRaw.Header.vecbiData.Separate(28);
+	HdrFileSize = (int) MOTObjectRaw.Header.vecbiData.Separate(28); //Read file size from header
 
 	const int iHeaderSize = (int) MOTObjectRaw.Header.vecbiData.Separate(13);
 	i = (int) MOTObjectRaw.Header.vecbiData.Separate(15);
@@ -1114,12 +1126,32 @@ void GetName(CMOTObjectRaw& MOTObjectRaw)
 				iDataFieldLen = (int)MOTObjectRaw.Header.vecbiData.Separate(15);
 				iSizeRec -= 2;
 			}
+
+			//Updated code
+			int j = 0;
+			i = 0;
+			if (iDataFieldLen > 80) { iDataFieldLen = 80; } //bounds check DM
+			while (i < iDataFieldLen) {
+				ucDatafield = (unsigned char)MOTObjectRaw.Header.vecbiData.Separate(8);
+				if (ucDatafield != 0) {
+					strName2 += ucDatafield;		//Read incoming filename DM
+					DMfilename[j] = ucDatafield; //save here too DM
+					j++;
+				}
+				i++;
+			}
+			DMfilename[j] = 0; //null terminate DM
+
+			//Original code:
+			/*
 			strName2 = "";
 			for (i = 0; i < iDataFieldLen; i++)
 			{
-				ucDatafield = (unsigned char)MOTObjectRaw.Header.vecbiData.Separate(8); //The received filename is decoded from the original header and saved here DM
+				ucDatafield = (unsigned char)MOTObjectRaw.Header.vecbiData.Separate(8);
 				if (ucDatafield != 0) strName2 += ucDatafield;
+				DMfilename
 			}
+			*/
 			break;
 		}
 	}

@@ -13,4 +13,4 @@ Call Call
 1 BW
 1 Interleave
 0 FastReset
-4 Instances/RS
+1 Instances/RS

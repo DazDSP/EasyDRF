@@ -71,6 +71,8 @@ extern int DMRSpsize;
 
 extern char DMfilename[260];
 
+extern char DMdecodestat[15];
+
 extern int DMmodehash;
 
 #endif

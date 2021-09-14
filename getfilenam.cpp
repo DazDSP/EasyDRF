@@ -72,7 +72,7 @@ BOOL GetFileName (HWND hDlg, LPSTR lpszFile, LPSTR lpszFileTitle, int iMaxFileNm
     ofn.lpstrFile         = lpszFile;
     ofn.nMaxFile          = iMaxFileNmLen;
     ofn.lpstrFileTitle    = lpszFileTitle;
-    ofn.nMaxFileTitle     = 80;
+	ofn.nMaxFileTitle     = 260; //edited DM (was 80)
     ofn.lpstrInitialDir   = NULL;
     ofn.lpstrTitle        = NULL;
     ofn.nFileOffset       = 0;

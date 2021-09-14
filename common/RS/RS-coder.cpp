@@ -668,8 +668,8 @@ int rs4decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
 //This data interleaver/deinterleaver routine from QSSTV, heavily modified by Daz Man 2021
 void distribute(unsigned char* src, unsigned char* dst, unsigned int filesize, bool reverse) {
     //filesize = RS encoded data size DM
-    int rows = 255; //the block size of the RS coder is always 255
-    int cols = (filesize / rows); //cols depend on the data size (how many 255 byte blocks)
+    unsigned int rows = 255; //the block size of the RS coder is always 255
+    unsigned int cols = (filesize / rows); //cols depend on the data size (how many 255 byte blocks)
     unsigned int i, j, rd;
     rd = 0;
 

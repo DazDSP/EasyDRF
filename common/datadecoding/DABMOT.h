@@ -179,5 +179,6 @@ protected:
 
 };
 
+void GetName(CMOTObjectRaw& MOTObjectRaw);
 
 #endif // !defined(DABMOT_H__3B0UBVE98732KJVEW363E7A0D31912__INCLUDED_)

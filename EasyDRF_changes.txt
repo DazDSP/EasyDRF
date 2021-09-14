@@ -1,3 +1,16 @@
+EasyDRF Changes - by Daz Man September 14th, 2021
+
+* Added titlebar build timestamp
+* Filename is displayed immediately if available from old header
+* Stats display simplified
+* RS decoding status message added
+
+
+EasyDRF Changes - by Daz Man September 13th, 2021
+
+* Fixed RS transmit mode codec display
+
+
 EasyDRF Changes - by Daz Man September 13th, 2021
 
 * Fixed buffer overflow on files > 512k after RS encoding

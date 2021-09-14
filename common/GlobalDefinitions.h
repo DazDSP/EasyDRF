@@ -50,7 +50,8 @@ using namespace std; /* Because of the library: "complex" */
 #undef _DEBUG_
 
 #ifndef VERSION
-# define VERSION						"25.1" //"25.0" //"24.1" //updated DM
+# define VERSION "25.1" //"25.0" //"24.1" //updated DM
+# define BUILD __DATE__ " " __TIME__ //added DM
 #endif
 
 

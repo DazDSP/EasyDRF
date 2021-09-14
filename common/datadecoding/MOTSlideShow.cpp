@@ -228,6 +228,12 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName,
 //=============================================================================================================================
 //		FILE* pFiBody = fopen(strFileName.c_str(), "rb"); //Open file - Now we read from buffer only DM
 
+		//Truncate filename if it's longer than 79 characters DM
+		if (strFileNamenoDirX.length() > 79) {
+			strFileNamenoDirX[80] = 0;
+		}
+
+
 		if (vecMOTPicture.Size() == 0)
 		{
 			int i,k;

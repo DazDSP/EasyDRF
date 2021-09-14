@@ -30,8 +30,8 @@
 
 void CopyNew(CMOTObjectRaw::CDataUnitRx& input, CMOTObjectRaw::CDataUnitRx& output)
 {
-	int segsize;
-	int segno = 0;
+	int segsize = 0; //init DM
+	int segno = 0; //unused?? DM
 	output.bOK = input.bOK;
 	output.bReady = input.bReady;
 	output.iDataSegNum = input.iDataSegNum;
@@ -47,7 +47,7 @@ void CopyNew(CMOTObjectRaw::CDataUnitRx& input, CMOTObjectRaw::CDataUnitRx& outp
 }
 void CopyNewH(CMOTObjectRaw::CDataUnit& input, CMOTObjectRaw::CDataUnit& output)
 {
-	int segsize;
+	int segsize = 0; //init DM
 	output.bOK = input.bOK;
 	output.bReady = input.bReady;
 	output.iDataSegNum = input.iDataSegNum;
@@ -61,7 +61,7 @@ void CopyNewH(CMOTObjectRaw::CDataUnit& input, CMOTObjectRaw::CDataUnit& output)
 
 void CopyOld(CMOTObjectRaw::CDataUnitRx& input, CMOTObjectRaw::CDataUnitRx& output)
 {
-	int segsizein,segsizeout;
+	int segsizein = 0,segsizeout = 0; //init DM
 	int segno = 0;
 	if (input.bOK) output.bOK = TRUE;
 	if (input.bReady) output.bReady = TRUE;
@@ -82,7 +82,7 @@ void CopyOld(CMOTObjectRaw::CDataUnitRx& input, CMOTObjectRaw::CDataUnitRx& outp
 }
 void CopyOldH(CMOTObjectRaw::CDataUnit& input, CMOTObjectRaw::CDataUnit& output)
 {
-	int segsizein,segsizeout;
+	int segsizein = 0,segsizeout = 0; //init DM
 	if (input.bOK) output.bOK = TRUE;
 	if (input.bReady) output.bReady = TRUE;
 	if (input.iDataSegNum >= output.iDataSegNum) input.iDataSegNum = output.iDataSegNum;
@@ -97,7 +97,7 @@ void CopyOldH(CMOTObjectRaw::CDataUnit& input, CMOTObjectRaw::CDataUnit& output)
 
 void CPicPool::storeinpool(CMOTObjectRaw& input)
 {
-	int position;
+	int position = 0; //init DM
 
 	if (!poolID.ispoolid(input.iTransportID)) return;
 
@@ -116,7 +116,7 @@ void CPicPool::storeinpool(CMOTObjectRaw& input)
 
 void CPicPool::getfrompool(int transid, CMOTObjectRaw& output)
 {
-	int position;
+	int position = 0;
 	if (poolID.getfrompool(transid,&position))	// found in pool
 	{
 		CopyNew(picpool[position].BodyRx,output.BodyRx);
@@ -135,7 +135,7 @@ void CPicPool::getfrompool(int transid, CMOTObjectRaw& output)
 
 void CPicPool::poolremove(int transid)
 {
-	int position;
+	int position = 0;
 	if (poolID.poolremove(transid,&position))	// found in pool
 	{
 		picpool[position].Body.Reset();

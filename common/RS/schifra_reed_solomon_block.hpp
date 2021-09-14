@@ -66,7 +66,7 @@ namespace schifra
            unrecoverable(false),
            error(e_no_error)
          {
-            traits::validate_reed_solomon_block_parameters<code_length,fec_length,data_length>();
+            const auto _ = traits::validate_reed_solomon_block_parameters<code_length,fec_length,data_length>(); //EDITED DM ==============================================
          }
 
          block(const std::string& _data, const std::string& _fec)
