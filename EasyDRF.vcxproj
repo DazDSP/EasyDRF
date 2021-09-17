@@ -46,7 +46,7 @@
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <TargetName>$(Projectname)</TargetName>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -54,7 +54,7 @@
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>$(Projectname)</TargetName>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -206,7 +206,6 @@
     <ClInclude Include="common\Data.h" />
     <ClInclude Include="common\datadecoding\DABMOT.h" />
     <ClInclude Include="common\datadecoding\DataDecoder.h" />
-    <ClInclude Include="common\datadecoding\Journaline.h" />
     <ClInclude Include="common\datadecoding\MOTSlideShow.h" />
     <ClInclude Include="common\datadecoding\picpool.h" />
     <ClInclude Include="common\DrmReceiver.h" />

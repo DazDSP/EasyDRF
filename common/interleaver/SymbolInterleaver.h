@@ -2,10 +2,10 @@
  * Technische Universitaet Darmstadt, Institut fuer Nachrichtentechnik
  * Copyright (c) 2001
  *
- * Author(s){}; //init DM
+ * Author(s);
  *	Volker Fischer
  *
- * Description{}; //init DM
+ * Description;
  *	See SymbolInterleaver.cpp
  *
  ******************************************************************************
@@ -52,11 +52,11 @@ public:
 	virtual ~CSymbInterleaver() {}
 
 protected:
-	int					iN_MUX{}; //init DM
-	CMatrix<_COMPLEX>	matcInterlMemory{}; //init DM
-	CVector<int>		veciCurIndex{}; //init DM
-	CVector<int>		veciIntTable{}; //init DM
-	int					iD{}; //init DM
+	int					iN_MUX;
+	CMatrix<_COMPLEX>	matcInterlMemory;
+	CVector<int>		veciCurIndex;
+	CVector<int>		veciIntTable;
+	int					iD;
 
 	virtual void InitInternal(CParameter& TransmParam);
 	virtual void ProcessDataInternal(CParameter& TransmParam);
@@ -70,12 +70,12 @@ public:
 	virtual ~CSymbDeinterleaver() {}
 
 protected:
-	int					iN_MUX{}; //init DM
-	CMatrix<CEquSig>	matcDeinterlMemory{}; //init DM
-	CVector<int>		veciCurIndex{}; //init DM
-	CVector<int>		veciIntTable{}; //init DM
-	int					iD{}; //init DM
-	int					iInitCnt{}; //init DM
+	int					iN_MUX;
+	CMatrix<CEquSig>	matcDeinterlMemory;
+	CVector<int>		veciCurIndex;
+	CVector<int>		veciIntTable;
+	int					iD;
+	int					iInitCnt;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

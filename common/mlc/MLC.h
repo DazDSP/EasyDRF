@@ -52,23 +52,23 @@ public:
 	void CalculateParam(CParameter& Parameter, int iNewChannelType);
 
 protected:
-	int	iLevels{}; //init DM
+	int	iLevels;
 	/* No input bits for each level. First index: Level, second index:
 	   Protection level.
 	   For three levels: [M_0,l  M_1,l  M2,l]
 	   For six levels: [M_0,lRe  M_0,lIm  M_1,lRe  M_1,lIm  M_2,lRe  ...  ] */
-	int	iM[MC_MAX_NUM_LEVELS][2]{}; //init DM
-	int iN[2]{}; //init DM
-	int iL[3]{}; //init DM
-	int iN_mux{}; //init DM
-	int iCodeRate[MC_MAX_NUM_LEVELS][2]{}; //init DM
+	int	iM[MC_MAX_NUM_LEVELS][2];
+	int iN[2];
+	int iL[3];
+	int iN_mux;
+	int iCodeRate[MC_MAX_NUM_LEVELS][2];
 
-	const int* piInterlSequ{}; //init DM
+	const int* piInterlSequ;
 
-	int	iNumEncBits{}; //init DM
+	int	iNumEncBits;
 
-	CParameter::EChanType	eChannelType{}; //init DM
-	CParameter::ECodScheme	eCodingScheme{}; //init DM
+	CParameter::EChanType	eChannelType;
+	CParameter::ECodScheme	eCodingScheme;
 };
 
 class CMLCEncoder : public CTransmitterModul<_BINARY, _COMPLEX>, 
@@ -107,30 +107,30 @@ public:
 	int GetInitNumIterations() const {return iInitNumIterations;}
 
 protected:
-	CViterbiDecoder		ViterbiDecoder[MC_MAX_NUM_LEVELS]{}; //init DM
-	CMLCMetric			MLCMetric{}; //init DM
+	CViterbiDecoder		ViterbiDecoder[MC_MAX_NUM_LEVELS];
+	CMLCMetric			MLCMetric;
 	/* Two different types of deinterleaver table */
-	CBitDeinterleaver	BitDeinterleaver[2]{}; //init DM
-	CBitInterleaver		BitInterleaver[2]{}; //init DM
-	CConvEncoder		ConvEncoder[MC_MAX_NUM_LEVELS]{}; //init DM
-	CEngergyDispersal	EnergyDisp{}; //init DM
+	CBitDeinterleaver	BitDeinterleaver[2];
+	CBitInterleaver		BitInterleaver[2];
+	CConvEncoder		ConvEncoder[MC_MAX_NUM_LEVELS];
+	CEngergyDispersal	EnergyDisp;
 
 	/* Internal buffers */
-	CVector<CDistance>	vecMetric{}; //init DM
+	CVector<CDistance>	vecMetric;
 
-	CVector<_BINARY>	vecbiDecOutBits[MC_MAX_NUM_LEVELS]{}; //init DM
-	CVector<_BINARY>	vecbiSubsetDef[MC_MAX_NUM_LEVELS]{}; //init DM
-	int					iNumOutBits{}; //init DM
+	CVector<_BINARY>	vecbiDecOutBits[MC_MAX_NUM_LEVELS];
+	CVector<_BINARY>	vecbiSubsetDef[MC_MAX_NUM_LEVELS];
+	int					iNumOutBits;
 
 	/* Accumulated metric */
-	_REAL				rAccMetric{}; //init DM
+	_REAL				rAccMetric;
 
 	/* Internal buffer for GetVectorSpace function */
-	CVector<_COMPLEX>	vecSigSpacBuf{}; //init DM
+	CVector<_COMPLEX>	vecSigSpacBuf;
 
-	int					iNumIterations{}; //init DM
-	int					iInitNumIterations{}; //init DM
-	int					iIndexLastBranch{}; //init DM
+	int					iNumIterations;
+	int					iInitNumIterations;
+	int					iIndexLastBranch;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

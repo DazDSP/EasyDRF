@@ -38,7 +38,7 @@
 class CMOTObjectRaw
 {
 public:
-	class CDataUnit
+	class CDataUnit //this is Body
 	{
 	public:
 		CDataUnit() {Reset();}
@@ -51,23 +51,21 @@ public:
 		int					iDataSegNum;
 	};
 
-	class CDataUnitRx
+	class CDataUnitRx //this is BodyRx
 	{
 	public:
 		CDataUnitRx() {Reset();}
-
 		void Reset();
 		void Add(CVector<_BINARY>& vecbiNewData, const int iSegmentSize, const int iSegNum);
 		CVector<CVector<_BINARY> > vvbiSegment;
-		_BOOLEAN			bOK, bReady{}; //init DM
-		int					iDataSegNum{}; //init DM
-		int					iTotSegments{}; //init DM
-
+		_BOOLEAN			bOK, bReady;
+		int					iDataSegNum;
+		int					iTotSegments;
 	};
 
-	int			iTransportID{}; //init DM
-	int			iSegmentSize{}; //init DM
-	int			iActSegment{}; //init DM
+	int			iTransportID;
+	int			iSegmentSize;
+	int			iActSegment;
 	CDataUnit	Header;
 	CDataUnit	Body;
 	CDataUnitRx	BodyRx;
@@ -96,11 +94,11 @@ public:
 		bIsLeader = FALSE;
 	}
 
-	CVector<_BYTE>	vecbRawData{}; //init DM
-	string			strName{}; //init DM
-	string			strNameandDir{}; //init DM
-	_BOOLEAN		bIsLeader{}; //init DM
-	int				iTransportID{}; //init DM
+	CVector<_BYTE>	vecbRawData;
+	string			strName;
+	string			strNameandDir;
+	_BOOLEAN		bIsLeader;
+	int				iTransportID;
 };
 
 
@@ -133,16 +131,16 @@ protected:
 	CMOTObject		MOTObject;
 	CMOTObjSegm		MOTObjSegments;
 
-	int				iSegmCnt{}; //init DM
-	int				iTotSegm{}; //init DM
-	int				iTxPictCnt{}; //init DM
-	_BOOLEAN		bCurSegHeader{}; //init DM
+	int				iSegmCnt;
+	int				iTotSegm;
+	int				iTxPictCnt;
+	_BOOLEAN		bCurSegHeader;
 
-	int				iContIndexHeader{}; //init DM
-	int				iContIndexBody{}; //init DM
+	int				iContIndexHeader;
+	int				iContIndexBody;
 
-	int				iTransportID{}; //init DM
-	int				iSegmentSize{}; //init DM
+	int				iTransportID;
+	int				iSegmentSize;
 };
 
 

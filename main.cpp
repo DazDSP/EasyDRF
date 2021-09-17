@@ -30,7 +30,7 @@
 #include "common/libs/graphwin.h"
 #include "resource.h"
 
-HINSTANCE TheInstance = 0;
+HINSTANCE TheInstance = nullptr; //edited DM was 0
 
 char runmode = 'A';
 

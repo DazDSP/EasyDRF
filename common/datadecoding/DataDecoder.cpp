@@ -35,8 +35,8 @@
 \******************************************************************************/
 void CDataEncoder::GeneratePacket(CVector<_BINARY>& vecbiPacket)
 {
-	int			i;
-	_BOOLEAN	bLastFlag;
+	int			i = 0;
+	_BOOLEAN	bLastFlag = 0;
 
 	/* Init size for whole packet, not only body */
 	vecbiPacket.Init(iTotalPacketSize);
@@ -181,15 +181,15 @@ const int iCurSelDataServ = 0;
 \******************************************************************************/
 void CDataDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int			i, j;
-	int			iPacketID;
-	int			iNewContInd;
-	int			iNewPacketDataSize;
-	int			iOldPacketDataSize;
-	int			iNumSkipBytes;
-	_BINARY		biFirstFlag;
-	_BINARY		biLastFlag;
-	_BINARY		biPadPackInd;
+	int			i = 0, j = 0; //init DM
+	int			iPacketID = 0; //init DM;
+	int			iNewContInd = 0; //init DM
+	int			iNewPacketDataSize = 0; //init DM
+	int			iOldPacketDataSize = 0; //init DM
+	int			iNumSkipBytes = 0; //init DM
+	_BINARY		biFirstFlag = 0; //init DM
+	_BINARY		biLastFlag = 0; //init DM
+	_BINARY		biPadPackInd = 0; //init DM
 	CCRC		CRCObject;
 
 	/* Check if something went wrong in the initialization routine */
@@ -369,10 +369,10 @@ void CDataDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 
 void CDataDecoder::InitInternal(CParameter& ReceiverParam)
 {
-	int iTotalNumInputBits;
-	int iTotalNumInputBytes;
-	int	iCurDataStreamID;
-	int iCurSelDataServ;
+	int iTotalNumInputBits = 0; //init DM
+	int iTotalNumInputBytes = 0; //init DM
+	int	iCurDataStreamID = 0; //init DM
+	int iCurSelDataServ = 0; //init DM
 
 	/* Init error flag */
 	DoNotProcessData = FALSE;

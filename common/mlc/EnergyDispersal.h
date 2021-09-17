@@ -44,11 +44,11 @@ public:
 	void Init(int iNewNumInBits, int iNewLengthVSPP);
 
 protected:
-	int			iNumInBits{}; //init DM
-	int			iStartIndVSPP{}; //init DM
-	int			iEndIndVSPP{}; //init DM
-	_UINT32BIT	iShiftRegisterSPP{}; //init DM
-	_UINT32BIT	iShiftRegisterVSPP{}; //init DM
+	int			iNumInBits;
+	int			iStartIndVSPP;
+	int			iEndIndVSPP;
+	_UINT32BIT	iShiftRegisterSPP;
+	_UINT32BIT	iShiftRegisterVSPP;
 };
 
 

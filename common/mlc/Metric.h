@@ -104,8 +104,8 @@ protected:
 	}
 
 
-	int						iInputBlockSize{}; //init DM
-	CParameter::ECodScheme	eMapType{}; //init DM
+	int						iInputBlockSize;
+	CParameter::ECodScheme	eMapType;
 };
 
 

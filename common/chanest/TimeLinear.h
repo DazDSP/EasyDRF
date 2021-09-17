@@ -55,15 +55,15 @@ public:
 						   CVector<_COMPLEX>& veccPilotCells, _REAL rSNR);
 
 protected:
-	int					iNumCarrier{}; //init DM
-	int					iNumIntpFreqPil{}; //init DM
-	int					iScatPilFreqInt{}; //init DM
-	CMatrix<_COMPLEX>	matcChanEstHist{}; //init DM
+	int					iNumCarrier;
+	int					iNumIntpFreqPil;
+	int					iScatPilFreqInt;
+	CMatrix<_COMPLEX>	matcChanEstHist;
 
-	int					iLenHistBuff{}; //init DM
+	int					iLenHistBuff;
 
-	CShiftRegister<int>	vecTiCorrHist{}; //init DM
-	int					iLenTiCorrHist{}; //init DM
+	CShiftRegister<int>	vecTiCorrHist;
+	int					iLenTiCorrHist;
 };
 
 

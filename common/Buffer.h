@@ -186,9 +186,9 @@ template<class TData> void CCyclicBuffer<TData>::Clear()
 
 template<class TData> CVectorEx<TData>* CCyclicBuffer<TData>::Get(const int iRequestedSize)
 {
-	int	i;
-	int	iAvailSpace;
-	int iElementCount;
+	int	i = 0;
+	int	iAvailSpace = 0;
+	int iElementCount = 0;
 
 	/* Test if enough data is available for reading */
 	iAvailSpace = iPut - iGet;
@@ -246,9 +246,9 @@ template<class TData> CVectorEx<TData>* CCyclicBuffer<TData>::Get(const int iReq
 
 template<class TData> void CCyclicBuffer<TData>::Put(const int iOfferedSize)
 {
-	int	iAvailSpace;
-	int	i;
-	int iElementCount;
+	int	iAvailSpace = 0;
+	int	i = 0;
+	int iElementCount = 0;
 
 	/* Test if enough data is available for writing */
 	iAvailSpace = iGet - iPut;

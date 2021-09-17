@@ -347,7 +347,7 @@ int rs1decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
     //loop through buffer and read data in blocks of 255 bytes to feed it, until done to length DM
     int i = filesize % code_length; //if there is any remainder, decode one extra time
     if (i > 0) { i = 1; }
-    int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
+    const int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
     int k = 0;
     i = 0;
     int errors = 0;
@@ -436,7 +436,7 @@ int rs2decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
     //loop through buffer and read data in blocks of 255 bytes to feed it, until done to length DM
     int i = filesize % code_length; //if there is any remainder, decode one extra time
     if (i > 0) { i = 1; }
-    int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
+    const int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
     int k = 0;
     i = 0;
     int errors = 0;
@@ -525,7 +525,7 @@ int rs3decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
     //loop through buffer and read data in blocks of 255 bytes to feed it, until done to length DM
     int i = filesize % code_length; //if there is any remainder, decode one extra time
     if (i > 0) { i = 1; }
-    int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
+    const int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
     int k = 0;
     i = 0;
     int errors = 0;
@@ -614,7 +614,7 @@ int rs4decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
     //loop through buffer and read data in blocks of 255 bytes to feed it, until done to length DM
     int i = filesize % code_length; //if there is any remainder, decode one extra time
     if (i > 0) { i = 1; }
-    int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
+    const int times = (filesize / code_length) + i; //round up to nearest multiple of code_length
     int k = 0;
     i = 0;
     int errors = 0;
@@ -670,7 +670,7 @@ void distribute(unsigned char* src, unsigned char* dst, unsigned int filesize, b
     //filesize = RS encoded data size DM
     unsigned int rows = 255; //the block size of the RS coder is always 255
     unsigned int cols = (filesize / rows); //cols depend on the data size (how many 255 byte blocks)
-    unsigned int i, j, rd;
+    unsigned int i = 0, j = 0, rd = 0;
     rd = 0;
 
     if (reverse == 0) {

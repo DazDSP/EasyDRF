@@ -32,7 +32,7 @@
 /* Implementation *************************************************************/
 void CSyncUsingPil::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int i;
+	int i = 0; //init DM
 
 	/**************************************************************************\
 	* Frame synchronization detection										   *
@@ -337,7 +337,7 @@ fflush(pFile);
 
 void CSyncUsingPil::InitInternal(CParameter& ReceiverParam)
 {
-	int			i;
+	int i = 0; //init DM
 	_COMPLEX	cPhaseCorTermDivi;
 
 	/* Init base class for modifying the pilots (rotation) */

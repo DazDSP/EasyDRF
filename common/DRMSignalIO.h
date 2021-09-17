@@ -92,21 +92,21 @@ public:
 		{rDefCarOffset = rNewCarOffset;}
 
 protected:
-	CSound*			pSound{}; //init DM
-	CVector<short>	vecsDataOut{}; //init DM
-	int				iBlockCnt{}; //init DM
-	int				iNumBlocks{}; //init DM
-	EOutFormat		eOutputFormat{}; //init DM
+	CSound*			pSound;
+	CVector<short>	vecsDataOut;
+	int				iBlockCnt;
+	int				iNumBlocks;
+	EOutFormat		eOutputFormat;
 
-	CReal			rDefCarOffset{}; //init DM
-	CRealVector		rvecA{}; //init DM
-	CRealVector		rvecB{}; //init DM
-	CRealVector		rvecZReal{}; //init DM /* State memory real part */
-	CRealVector		rvecZImag{}; //init DM /* State memory imaginary part */
-	CRealVector		rvecDataReal{}; //init DM
-	CRealVector		rvecDataImag{}; //init DM
+	CReal			rDefCarOffset;
+	CRealVector		rvecA;
+	CRealVector		rvecB;
+	CRealVector		rvecZReal; /* State memory real part */
+	CRealVector		rvecZImag; /* State memory imaginary part */
+	CRealVector		rvecDataReal;
+	CRealVector		rvecDataImag;
 
-	CReal			rNormFactor{}; //init DM
+	CReal			rNormFactor;
 
 	virtual void InitInternal(CParameter& TransmParam);
 	virtual void ProcessDataInternal(CParameter& Parameter);

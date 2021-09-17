@@ -82,36 +82,36 @@ protected:
 	class CPilotCorr
 	{
 	public:
-		int			iIdx1{}, iIdx2{}; //init DM
+		int			iIdx1{}, iIdx2;
 		CComplex	cPil1, cPil2;
 	};
 
 	/* Variables for frequency pilot estimation */
-	CVector<int>			iPosFreqPil{}; //init DM
-	CVector<CComplex>		cOldFreqPil{}; //init DM
+	CVector<int>			iPosFreqPil;
+	CVector<CComplex>		cOldFreqPil;
 
-	CReal					rNormConstFOE{}; //init DM
-	CReal					rSampleFreqEst{}; //init DM
+	CReal					rNormConstFOE;
+	CReal					rSampleFreqEst;
 
-	int						iSymbCntFraSy{}; //init DM
-	int						iInitCntFraSy{}; //init DM 
+	int						iSymbCntFraSy;
+	int						iInitCntFraSy; 
 
-	int						iNumSymPerFrame{}; //init DM
-	int						iNumCarrier{}; //init DM
+	int						iNumSymPerFrame;
+	int						iNumCarrier;
 
-	_BOOLEAN				bBadFrameSync{}; //init DM
-	_BOOLEAN				bInitFrameSync{}; //init DM
-	_BOOLEAN				bFrameSyncWasOK{}; //init DM
+	_BOOLEAN				bBadFrameSync;
+	_BOOLEAN				bInitFrameSync;
+	_BOOLEAN				bFrameSyncWasOK;
 
-	_BOOLEAN				bSyncInput{}; //init DM
+	_BOOLEAN				bSyncInput;
 
-	_BOOLEAN				bAquisition{}; //init DM
-	_BOOLEAN				bTrackPil{}; //init DM
+	_BOOLEAN				bAquisition;
+	_BOOLEAN				bTrackPil;
 
-	int						iMiddleOfInterval{}; //init DM
+	int						iMiddleOfInterval;
 
-	CReal					rLamFreqOff{}; //init DM
-	CComplex				cFreqOffVec{}; //init DM
+	CReal					rLamFreqOff;
+	CComplex				cFreqOffVec;
 
 
 	/* Variables for frame synchronization */
@@ -125,15 +125,15 @@ protected:
 	CFftPlans				FftPlan;
 #else
 	/* DRM frame synchronization based on time pilots */
-	CVector<CPilotCorr>		vecPilCorr{}; //init DM
-	int						iNumPilPairs{}; //init DM
-	CComplex				cR_HH{}; //init DM
+	CVector<CPilotCorr>		vecPilCorr;
+	int						iNumPilPairs;
+	CComplex				cR_HH;
 #endif
 
-	ERobMode				eCurRobMode{}; //init DM
+	ERobMode				eCurRobMode;
 
-	CReal					rAvFreqPilDistToDC{}; //init DM
-	CReal					rPrevSamRateOffset{}; //init DM
+	CReal					rAvFreqPilDistToDC;
+	CReal					rPrevSamRateOffset;
 
 #ifdef USE_SAMOFFS_TRACK_FRE_PIL
 	CReal					rLamSamRaOff;

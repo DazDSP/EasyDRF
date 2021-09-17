@@ -81,12 +81,12 @@ public:
 		CAudioParam() : strTextMessage("") {}
 
 		/* Text-message */
-		string		strTextMessage{}; //init DM /* Max length is (8 * 16 Bytes) */	
+		string		strTextMessage; /* Max length is (8 * 16 Bytes) */	
 
-		int			iStreamID{}; //init DM /* Stream Id of the stream which carries the audio service */
+		int			iStreamID; /* Stream Id of the stream which carries the audio service */
 
-		EAudCod		eAudioCoding{}; //init DM /* This field indicated the source coding system */
-		_BOOLEAN	bTextflag{}; //init DM /* Indicates whether a text message is present or not */
+		EAudCod		eAudioCoding; /* This field indicated the source coding system */
+		_BOOLEAN	bTextflag; /* Indicates whether a text message is present or not */
 
 
 /* TODO: Copy operator. Now, default copy operator is used! */
@@ -146,19 +146,19 @@ public:
 
 		_BOOLEAN IsActive() {return iServiceID != SERV_ID_NOT_USED;}
 
-		_UINT32BIT	iServiceID{}; //init DM
-		int			iLanguage{}; //init DM
-		ETyOServ	eAudDataFlag{}; //init DM
-		int			iServiceDescr{}; //init DM
+		_UINT32BIT	iServiceID;
+		int			iLanguage;
+		ETyOServ	eAudDataFlag;
+		int			iServiceDescr;
 
 		/* Label of the service */
-		string		strLabel{}; //init DM
+		string		strLabel;
 
 		/* Audio parameters */
-		CAudioParam	AudioParam{}; //init DM
+		CAudioParam	AudioParam;
 
 		/* Data parameters */
-		CDataParam	DataParam{}; //init DM
+		CDataParam	DataParam;
 	};
 
 	class CStream
@@ -252,7 +252,7 @@ public:
 	void SetStreamLen(const int iStreamID, const int iNewLenPartB);
 
 	/* Protection levels for MSC */
-	CMSCProtLev			MSCPrLe{}; //init DM
+	CMSCProtLev			MSCPrLe;
 
 	CVector<CStream>	Stream;
 	CService			Service[MAX_NUM_SERVICES];

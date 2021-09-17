@@ -97,71 +97,71 @@ public:
 	_BOOLEAN IsMaxCorr() {return bMaxCorr;}
 
 protected:
-	int							iCorrCounter{}; //init DM
-	int							iAveCorr{}; //init DM
-	int							iStepSizeGuardCorr{}; //init DM
+	int							iCorrCounter;
+	int							iAveCorr;
+	int							iStepSizeGuardCorr;
 
-	CShiftRegister<_REAL>		HistoryBuf{}; //init DM
-	CShiftRegister<_COMPLEX>	HistoryBufCorr{}; //init DM
-	CShiftRegister<_REAL>		pMaxDetBuffer{}; //init DM
-	CRealVector					vecrHistoryFilt{}; //init DM
-	CRealVector					pMovAvBuffer{}; //init DM
+	CShiftRegister<_REAL>		HistoryBuf;
+	CShiftRegister<_COMPLEX>	HistoryBufCorr;
+	CShiftRegister<_REAL>		pMaxDetBuffer;
+	CRealVector					vecrHistoryFilt;
+	CRealVector					pMovAvBuffer;
 
-	CRealVector					vecCorrAvBuf{}; //init DM
-	int							iCorrAvInd{}; //init DM
+	CRealVector					vecCorrAvBuf;
+	int							iCorrAvInd;
 
-	int							iMaxDetBufSize{}; //init DM
-	int							iCenterOfMaxDetBuf{}; //init DM
+	int							iMaxDetBufSize;
+	int							iCenterOfMaxDetBuf;
 
-	int							iMovAvBufSize{}; //init DM
-	int							iTotalBufferSize{}; //init DM
-	int							iSymbolBlockSize{}; //init DM
-	int							iDecSymBS{}; //init DM
-	int							iGuardSize{}; //init DM
-	int							iTimeSyncPos{}; //init DM
-	int							iDFTSize{}; //init DM
-	CReal						rStartIndex{}; //init DM
+	int							iMovAvBufSize;
+	int							iTotalBufferSize;
+	int							iSymbolBlockSize;
+	int							iDecSymBS;
+	int							iGuardSize;
+	int							iTimeSyncPos;
+	int							iDFTSize;
+	CReal						rStartIndex;
 
-	int							iPosInMovAvBuffer{}; //init DM
-	CReal						rGuardEnergy{}; //init DM
+	int							iPosInMovAvBuffer;
+	CReal						rGuardEnergy;
 
-	int							iCenterOfBuf{}; //init DM
+	int							iCenterOfBuf;
 
-	_BOOLEAN					bMaxCorr{}; //init DM
-	int							iTimeCorr{}; //init DM
-	int							iRobCorr{}; //init DM
+	_BOOLEAN					bMaxCorr;
+	int							iTimeCorr;
+	int							iRobCorr;
 
-	_BOOLEAN					bInitTimingAcqu{}; //init DM
-	_BOOLEAN					bTimingAcqu{}; //init DM
-	_BOOLEAN					bRobModAcqu{}; //init DM
-	_BOOLEAN					bAcqWasActive{}; //init DM
+	_BOOLEAN					bInitTimingAcqu;
+	_BOOLEAN					bTimingAcqu;
+	_BOOLEAN					bRobModAcqu;
+	_BOOLEAN					bAcqWasActive;
 
-	int							iSelectedMode{}; //init DM
+	int							iSelectedMode;
 
-	CRealVector					rvecZ{}; //init DM
-	CComplexVector				cvecB{}; //init DM
-	CVector<_COMPLEX>			cvecOutTmpInterm{}; //init DM
+	CRealVector					rvecZ;
+	CComplexVector				cvecB;
+	CVector<_COMPLEX>			cvecOutTmpInterm;
 
-	CReal						rLambdaCoAv{}; //init DM
+	CReal						rLambdaCoAv;
 
 
 	/* Intermediate correlation results and robustness mode detection */
 	CComplexVector				veccIntermCorrRes[NUM_ROBUSTNESS_MODES];
 	CRealVector					vecrIntermPowRes[NUM_ROBUSTNESS_MODES];
-	CVector<int>				iLengthIntermCRes{}; //init DM
-	CVector<int>				iPosInIntermCResBuf{}; //init DM
-	CVector<int>				iLengthOverlap{}; //init DM
-	CVector<int>				iLenUsefPart{}; //init DM
-	CVector<int>				iLenGuardInt{}; //init DM
+	CVector<int>				iLengthIntermCRes;
+	CVector<int>				iPosInIntermCResBuf;
+	CVector<int>				iLengthOverlap;
+	CVector<int>				iLenUsefPart;
+	CVector<int>				iLenGuardInt;
 
-	CComplexVector				cGuardCorr{}; //init DM
-	CComplexVector				cGuardCorrBlock{}; //init DM
-	CRealVector					rGuardPow{}; //init DM
-	CRealVector					rGuardPowBlock{}; //init DM
+	CComplexVector				cGuardCorr;
+	CComplexVector				cGuardCorrBlock;
+	CRealVector					rGuardPow;
+	CRealVector					rGuardPowBlock;
 
 	CRealVector					vecrRMCorrBuffer[NUM_ROBUSTNESS_MODES];
 	CRealVector					vecrCos[NUM_ROBUSTNESS_MODES];
-	int							iRMCorrBufSize{}; //init DM
+	int							iRMCorrBufSize;
 
 #ifdef USE_FRQOFFS_TRACK_GUARDCORR
 	CShiftRegister<_COMPLEX>	HistoryBufTrGuCorr;

@@ -673,17 +673,17 @@ CPicPool PicPool;
 
 _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 {
-	int			i;
-	int			j; //j for junk reads... DM
+	int			i = 0; //init DM
+	int			j = 0; //j for junk reads... DM
 	int			iSegmentNum = 0; //init DM
-	int			iLenIndicat;
-	int			iLenGroupDataField;
-	int			iSegmentSize;
+	int			iLenIndicat = 0; //init DM
+	int			iLenGroupDataField = 0; //init DM
+	int			iSegmentSize = 0; //init DM
 	int			iTransportID = 0; //init DM
 	_BINARY		biLastFlag = 0; //init DM
-	_BINARY		biTransportIDFlag;
+	_BINARY		biTransportIDFlag = 0; //init DM
 	CCRC		CRCObject;
-	_BOOLEAN	bCRCOk;
+	_BOOLEAN	bCRCOk = FALSE; //init DM
 
 	/* Init return value with "not ready". If not MOT object is ready after
 	   adding this new data group, this flag is overwritten with "TRUE" */
@@ -718,7 +718,8 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 	const _BINARY biExtensionFlag = (_BINARY)vecbiNewData.Separate(1);
 
 	/* CRC flag */
-	const _BINARY biCRCFlag = (_BINARY)vecbiNewData.Separate(1);
+	const _BINARY biCRCFlag = 1; //set CRC ON always! DM
+	j = (_BINARY)vecbiNewData.Separate(1); //junk read, to keep bit sync DM
 
 	/* Segment flag */
 	const _BINARY biSegmentFlag = (_BINARY)vecbiNewData.Separate(1);
@@ -809,9 +810,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					SerialFileSize = 0; //reset 
 					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits now!
 					DecSegSize = 0; //reset
-
-					//clear old header filename?
-
 
 					erasureflags = erasureflags || (1 << erasureswitch); //mark block as used for background erasing
 
@@ -935,7 +933,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					/* Add new segment data */
 					MOTObjectRaw.Header.Add(vecbiNewData, iSegmentSize, iSegmentNum);
 
-//					GetName(MOTObjectRaw); //added to read the filename and size from the old header DM ======================================
 				}
 				else
 				{
@@ -982,30 +979,40 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						MOTObjectRaw.BodyRx.Add(vecbiNewData, iSegmentSize, iSegmentNum); //This is where the incoming segment bits get added DM
 						MOTObjectRaw.iActSegment = iSegmentNum;
 
+#define NEWCODE TRUE
+#if NEWCODE
 						//NEW CODE DM =================================
 						//This code copies the bit data in byte form to the new RS buffer, even if segment 0 (header) is missing
 						//WORKING 2:45am 10th Sep 2021
 						//only execute if the CRC is good
-						if (bCRCOk) {
-							if (iSegmentSize > DMRSpsize) {
-								DMRSpsize = iSegmentSize;
-							};
-							int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
-							DMRSpsize = iSegmentSize; //update
-							int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
-							if (k > 0) {
-								for (int i = 0; i < k; i++)
-								{
-									GlobalDMRxRSData[j + i] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+							if (bCRCOk) {
+								if (iSegmentSize > DMRSpsize) {
+									DMRSpsize = iSegmentSize;
+								};
+								MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].ResetBitAccess(); //Start reading from zero
+								unsigned int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
+								DMRSpsize = iSegmentSize; //update
+								unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
+								unsigned int a = 0;
+								unsigned char dat = 0;
+								const unsigned limit = size(GlobalDMRxRSData); //get the buffer size
+								if (k > 0) {
+									for (unsigned int i = 0; i < k; i++)
+									{
+										//a bounds check on the computed index might be wise... DM
+										a = j + i;
+										if (a > limit) { a = limit - 1; } //bounds limit
+										GlobalDMRxRSData[a] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+									}
 								}
 							}
-						}
-						//NEW CODE DM =================================
-
+						//}
+						//END NEW CODE DM =================================
+#endif //NEWCODE
 					}
 					else
 					{
-						// store in pool
+						// store in pool - when the ID changes (new file)
 						PicPool.storeinpool(MOTObjectRaw);
 						PicPool.getfrompool(iTransportID, MOTObjectRaw);  //why? DM
 						if (biLastFlag == FALSE) MOTObjectRaw.iSegmentSize = iSegmentSize;

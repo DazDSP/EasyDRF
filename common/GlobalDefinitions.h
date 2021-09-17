@@ -171,8 +171,8 @@ public:
 class CEquSig
 {
 public:
-	_COMPLEX	cSig{}; //init DM /* Actual signal */
-	_REAL		rChan{}; //init DM /* Channel power at this cell */
+	_COMPLEX	cSig; /* Actual signal */
+	_REAL		rChan; /* Channel power at this cell */
 };
 
 /* Mutex object to access data safely from different threads */

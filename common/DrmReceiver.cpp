@@ -38,7 +38,7 @@ BOOL isfirstrx = FALSE;
 /* Implementation *************************************************************/
 void CDRMReceiver::Run()
 {
-	_BOOLEAN bEnoughData;
+	_BOOLEAN bEnoughData = FALSE;
 
 	/* Reset all parameters to start parameter settings */
 	SetInStartMode();
@@ -283,6 +283,7 @@ void CDRMReceiver::Init()
 	/* Reset flags */
 	bDoInitRun = FALSE;
 	ReceiverParam.bRunThread = FALSE;
+
 }
 
 void CDRMReceiver::InitReceiverMode()

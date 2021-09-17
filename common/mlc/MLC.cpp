@@ -36,8 +36,8 @@
 \******************************************************************************/
 void CMLCEncoder::ProcessDataInternal(CParameter& Parameter)
 {
-	int	i, j;
-	int iElementCounter;
+	int	i = 0, j = 0; //init DM
+	int iElementCounter = 0; //init DM
 
 	/* Energy dispersal ----------------------------------------------------- */
 	/* VSPP is treated as a separate part for energy dispersal */
@@ -189,9 +189,9 @@ void CMLCEncoder::InitInternal(CParameter& TransmParam)
 \******************************************************************************/
 void CMLCDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int			i, j, k;
-	int			iElementCounter;
-	_BOOLEAN	bIteration;
+	int			i = 0, j = 0, k = 0; //init DM
+	int			iElementCounter = 0; //init DM
+	_BOOLEAN	bIteration = FALSE; //init DM
 
 	/* Save input signal for signal constellation. We cannot use the copy
 	   operator of vector because the input vector is not of the same size as
@@ -339,7 +339,7 @@ fflush(pFile);
 
 void CMLCDecoder::InitInternal(CParameter& ReceiverParam)
 {
-	int i;
+	int i = 0; //init DM
 
 	/* First, calculate all necessary parameters for decoding process */
 	CalculateParam(ReceiverParam, eChannelType);
@@ -435,8 +435,8 @@ void CMLCDecoder::GetVectorSpace(CVector<_COMPLEX>& veccData)
 \******************************************************************************/
 void CMLC::CalculateParam(CParameter& Parameter, int iNewChannelType)
 {
-	int i;
-	int iMSCDataLenPartA;
+	int i = 0; //init DM
+	int iMSCDataLenPartA = 0; //init DM
 
 	switch (iNewChannelType)
 	{

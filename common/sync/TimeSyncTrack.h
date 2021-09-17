@@ -105,49 +105,49 @@ public:
 	ETypeTiSyncTrac GetTiSyncTracType() {return TypeTiSyncTrac;}
 
 protected:
-	CComplexVector			veccPilots{}; //init DM
-	int						iNumIntpFreqPil{}; //init DM
-	CFftPlans				FftPlan{}; //init DM
-	int						iScatPilFreqInt{}; //init DM
-	int						iNumCarrier{}; //init DM
-	CRealVector				vecrAvPoDeSp{}; //init DM
-	CReal					rLamAvPDS{}; //init DM
+	CComplexVector			veccPilots;
+	int						iNumIntpFreqPil;
+	CFftPlans				FftPlan;
+	int						iScatPilFreqInt;
+	int						iNumCarrier;
+	CRealVector				vecrAvPoDeSp;
+	CReal					rLamAvPDS;
 
-	CRealVector				vecrHammingWindow{}; //init DM
-	CReal					rConst1{}; //init DM
-	CReal					rConst2{}; //init DM
-	int						iStPoRot{}; //init DM
-	CRealVector				vecrAvPoDeSpRot{}; //init DM
-	int						iSymDelay{}; //init DM
-	CShiftRegister<int>		vecTiCorrHist{}; //init DM
-	CShiftRegister<int>		veciNewMeasHist{}; //init DM
+	CRealVector				vecrHammingWindow;
+	CReal					rConst1;
+	CReal					rConst2;
+	int						iStPoRot;
+	CRealVector				vecrAvPoDeSpRot;
+	int						iSymDelay;
+	CShiftRegister<int>		vecTiCorrHist;
+	CShiftRegister<int>		veciNewMeasHist;
 	
-	CReal					rFracPartTiCor{}; //init DM
-	int						iTargetTimingPos{}; //init DM
+	CReal					rFracPartTiCor;
+	int						iTargetTimingPos;
 
-	_BOOLEAN				bTiSyncTracking{}; //init DM
-	_BOOLEAN				bSamRaOffsAcqu{}; //init DM
+	_BOOLEAN				bTiSyncTracking;
+	_BOOLEAN				bSamRaOffsAcqu;
 
-	int						iDFTSize{}; //init DM
+	int						iDFTSize;
 
-	CReal					rBoundLower{}; //init DM
-	CReal					rBoundHigher{}; //init DM
-	CReal					rGuardSizeFFT{}; //init DM
+	CReal					rBoundLower;
+	CReal					rBoundHigher;
+	CReal					rGuardSizeFFT;
 
-	CReal					rEstPDSEnd{}; //init DM /* Estimated end of PSD */
-	CReal					rEstPDSBegin{}; //init DM /* Estimated beginning of PSD */
+	CReal					rEstPDSEnd; /* Estimated end of PSD */
+	CReal					rEstPDSBegin; /* Estimated beginning of PSD */
 
-	CReal					rFracPartContr{}; //init DM  
+	CReal					rFracPartContr;  
 
-	ETypeTiSyncTrac			TypeTiSyncTrac{}; //init DM
+	ETypeTiSyncTrac			TypeTiSyncTrac;
 
-	CShiftRegister<int>		veciSRTiCorrHist{}; //init DM
-	int						iLenCorrectionHist{}; //init DM
-	long int				iIntegTiCorrections{}; //init DM
-	CReal					rSymBloSiIRDomain{}; //init DM
-	int						iResOffsetAcquCnt{}; //init DM
-	int						iResOffAcqCntMax{}; //init DM
-	int						iOldNonZeroDiff{}; //init DM
+	CShiftRegister<int>		veciSRTiCorrHist;
+	int						iLenCorrectionHist;
+	long int				iIntegTiCorrections;
+	CReal					rSymBloSiIRDomain;
+	int						iResOffsetAcquCnt;
+	int						iResOffAcqCntMax;
+	int						iOldNonZeroDiff;
 
 	CReal GetSamOffHz(int iDiff, int iLen);
 };

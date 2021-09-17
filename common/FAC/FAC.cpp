@@ -172,7 +172,7 @@ void CFACTransmit::FACParam(CVector<_BINARY>* pbiFACData, CParameter& Parameter)
 
 	/* Label 21 bit */
 	{
-		int	iLenLabel;
+		int	iLenLabel = 0; //init DM
 		int iframet = Parameter.iFrameIDTransm;
 		const int iLenLabelTmp = Parameter.Service[0].strLabel.length();
 		if (iLenLabelTmp > 9)
@@ -212,7 +212,7 @@ void CFACTransmit::FACParam(CVector<_BINARY>* pbiFACData, CParameter& Parameter)
 
 void CFACTransmit::Init(CParameter& Parameter)
 {
-	int				i;
+	int				i = 0; //init DM
 	CVector<int>	veciActServ;
 
 	/* Get active services */
@@ -292,7 +292,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 		bool imscprot = false;
 		bool imscqam = false;
 		bool imsclowqam = false;
-		int	MSCPrLe;
+		int	MSCPrLe = 0; //init DM
 
 		/* CRC-check successful, extract data from FAC-stream */
 		/* Reset separation function */

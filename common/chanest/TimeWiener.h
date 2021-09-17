@@ -102,40 +102,40 @@ protected:
 	_REAL UpdateFilterCoef(_REAL rNewSNR, _REAL rNewSigma);
 	CReal ModLinRegr(CComplexVector& veccCorrEst);
 
-	int					iNumCarrier{}; //init DM
+	int					iNumCarrier;
 
-	int					iLengthWiener{}; //init DM
-	int					iNoFiltPhasTi{}; //init DM
-	CRealMatrix			matrFiltTime{}; //init DM
+	int					iLengthWiener;
+	int					iNoFiltPhasTi;
+	CRealMatrix			matrFiltTime;
 	
-	CMatrix<_COMPLEX>	matcChanAtPilPos{}; //init DM
+	CMatrix<_COMPLEX>	matcChanAtPilPos;
 
-	CComplexVector		veccTiCorrEst{}; //init DM
-	CReal				rLamTiCorrAv{}; //init DM
+	CComplexVector		veccTiCorrEst;
+	CReal				rLamTiCorrAv;
 
-	int					iScatPilFreqInt{}; //init DM /* Frequency interpolation */
-	int					iScatPilTimeInt{}; //init DM /* Time interpolation */
-	int					iNumSymPerFrame{}; //init DM
+	int					iScatPilFreqInt; /* Frequency interpolation */
+	int					iScatPilTimeInt; /* Time interpolation */
+	int					iNumSymPerFrame;
 
 	/* Number of first symbol with pilot at carrier-number 0 */
-	int					iFirstSymbWithPi{}; //init DM
+	int					iFirstSymbWithPi;
 
-	int					iLenHistBuff{}; //init DM
+	int					iLenHistBuff;
 
-	CShiftRegister<int>	vecTiCorrHist{}; //init DM
-	int					iLenTiCorrHist{}; //init DM
-	int					iNumTapsSigEst{}; //init DM
-	int					iUpCntWienFilt{}; //init DM
+	CShiftRegister<int>	vecTiCorrHist;
+	int					iLenTiCorrHist;
+	int					iNumTapsSigEst;
+	int					iUpCntWienFilt;
 
-	_REAL				Ts{}; //init DM
-	_REAL				rSigma{}; //init DM
-	_REAL				rSigmaMax{}; //init DM
+	_REAL				Ts;
+	_REAL				rSigma;
+	_REAL				rSigmaMax;
 
-	_REAL				rMMSE{}; //init DM
-	_REAL				rAvSNR{}; //init DM
-	int					iAvSNRCnt{}; //init DM
+	_REAL				rMMSE;
+	_REAL				rAvSNR;
+	int					iAvSNRCnt;
 
-	_BOOLEAN			bTracking{}; //init DM
+	_BOOLEAN			bTracking;
 };
 
 

@@ -50,8 +50,8 @@ public:
 protected:
 	CCRC CRCObject;
 
-	CVector<int>	FACRepetition{}; //init DM /* See 6.3.6 */
-	int				FACNumRep{}; //init DM
+	CVector<int>	FACRepetition; /* See 6.3.6 */
+	int				FACNumRep;
 };
 
 class CFACReceive

@@ -36,7 +36,7 @@
 /* Implementation *************************************************************/
 void CEngergyDispersal::ProcessData(CVector<_BINARY>* pbiData)
 {
-	int			i;
+	int			i = 0; //init DM
 	_UINT32BIT	iTempShiftRegister;
 	_BINARY		biPRBSbit;
 

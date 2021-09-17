@@ -38,11 +38,11 @@ FILE* ofile;
 /* Implementation *************************************************************/
 void CFreqSyncAcq::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int			i;
-	int			iMaxIndex;
+	int			i = 0; //init DM
+	int			iMaxIndex = 0; //init DM
 	fftw_real	rMaxValue;
-	int			iNumDetPeaks;
-	_BOOLEAN	bNoPeaksLeft;
+	int			iNumDetPeaks = 0; //init DM
+	_BOOLEAN	bNoPeaksLeft = FALSE; //init DM
 	CRealVector vecrPSDPilPoin(3);
 
 	if (bAquisition == TRUE)

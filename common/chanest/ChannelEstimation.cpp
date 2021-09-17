@@ -32,12 +32,12 @@
 /* Implementation *************************************************************/
 void CChannelEstimation::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int			i, j, k;
-	int			iModSymNum;
+	int			i = 0, j = 0, k = 0; //init DM
+	int			iModSymNum = 0; //init DM
 	_COMPLEX	cModChanEst;
-	_REAL		rSNRAftTiInt;
-	_REAL		rCurSNREst;
-	_REAL		rOffsPDSEst;
+	_REAL		rSNRAftTiInt = 0; //init DM
+	_REAL		rCurSNREst = 0; //init DM
+	_REAL		rOffsPDSEst = 0; //init DM
 
 	/* Check if symbol ID index has changed by the synchronization unit. If it
 	   has changed, reinit this module */
@@ -516,14 +516,10 @@ void CChannelEstimation::InitInternal(CParameter& ReceiverParam)
 	iMaxOutputBlockSize = iNumCarrier; 
 }
 
-CComplexVector CChannelEstimation::FreqOptimalFilter(int iFreqInt, int iDiff,
-													 CReal rSNR,
-													 CReal rRatPDSLen,
-													 CReal rRatPDSOffs,
-													 int iLength)
+CComplexVector CChannelEstimation::FreqOptimalFilter(int iFreqInt, int iDiff, CReal rSNR, CReal rRatPDSLen, CReal rRatPDSOffs, int iLength)
 {
-	int				i;
-	int				iCurPos;
+	int				i = 0;  //init DM
+	int				iCurPos = 0; //init DM
 	CComplexVector	veccReturn(iLength);
 	CComplexVector	veccRpp(iLength);
 	CComplexVector	veccRhp(iLength);
@@ -570,12 +566,11 @@ CComplex CChannelEstimation::FreqCorrFct(int iCurPos, CReal rRatPDSLen,
 	return Sinc(rArgSinc) * CComplex(Cos(rArgExp), Sin(rArgExp));
 }
 
-void CChannelEstimation::UpdateWienerFiltCoef(CReal rNewSNR, CReal rRatPDSLen,
-											  CReal rRatPDSOffs)
+void CChannelEstimation::UpdateWienerFiltCoef(CReal rNewSNR, CReal rRatPDSLen, CReal rRatPDSOffs)
 {
-	int	j, i;
-	int	iDiff;
-	int	iCurPil;
+	int	j = 0, i = 0; //init DM
+	int	iDiff = 0; //init DM
+	int	iCurPil = 0; //init DM
 
 	/* Calculate all possible wiener filters */
 	for (j = 0; j < iNoWienerFilt; j++)
@@ -685,8 +680,7 @@ _REAL CChannelEstimation::GetDelay() const
 		(SOUNDCRD_SAMPLE_RATE * iNumIntpFreqPil * iScatPilFreqInt) * 1000;
 }
 
-void CChannelEstimation::GetTransferFunction(CVector<_REAL>& vecrData,
-											 CVector<_REAL>& vecrGrpDly)
+void CChannelEstimation::GetTransferFunction(CVector<_REAL>& vecrData, CVector<_REAL>& vecrGrpDly)
 {
 	/* Init output vectors */
 	vecrData.Init(iNumCarrier, (_REAL) 0.0);

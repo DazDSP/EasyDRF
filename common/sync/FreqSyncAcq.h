@@ -85,41 +85,41 @@ public:
 	_BOOLEAN GetAcquisition() {return bAquisition;}
 
 protected:
-	CVector<int>				veciTableFreqPilots{}; //init DM
-	CShiftRegister<fftw_real>	vecrFFTHistory{}; //init DM
+	CVector<int>				veciTableFreqPilots;
+	CShiftRegister<fftw_real>	vecrFFTHistory;
 
-	CFftPlans					FftPlan{}; //init DM
-	CRealVector					vecrFFTInput{}; //init DM
-	CRealVector					vecrHann{}; //init DM
-	CComplexVector				veccFFTOutput{}; //init DM
+	CFftPlans					FftPlan;
+	CRealVector					vecrFFTInput;
+	CRealVector					vecrHann;
+	CComplexVector				veccFFTOutput;
 
-	int							iTotalBufferSize{}; //init DM
+	int							iTotalBufferSize;
 
-	int							iFFTSize{}; //init DM
+	int							iFFTSize;
 
-	_BOOLEAN					bAquisition{}; //init DM
+	_BOOLEAN					bAquisition;
 
-	int							iAquisitionCounter{}; //init DM
+	int							iAquisitionCounter;
 
-	_BOOLEAN					bFreqFound{}; //init DM
+	_BOOLEAN					bFreqFound;
 
-	_REAL						rCenterFreq{}; //init DM
-	_REAL						rWinSize{}; //init DM
-	int							iStartDCSearch{}; //init DM
-	int							iEndDCSearch{}; //init DM
-	_REAL						rPeakBoundFiltToSig{}; //init DM
+	_REAL						rCenterFreq;
+	_REAL						rWinSize;
+	int							iStartDCSearch;
+	int							iEndDCSearch;
+	_REAL						rPeakBoundFiltToSig;
 
-	CRealVector					vecrPSDPilCor{}; //init DM
-	CRealVector					vecrPSD{}; //init DM
-	int							iHalfBuffer{}; //init DM
-	int							iSearchWinSize{}; //init DM
-	CRealVector					vecrFiltResLR{}; //init DM
-	CRealVector					vecrFiltResRL{}; //init DM
-	CRealVector					vecrFiltRes{}; //init DM
-	CVector<int>				veciPeakIndex{}; //init DM
-	int							iAverageCounter{}; //init DM
+	CRealVector					vecrPSDPilCor;
+	CRealVector					vecrPSD;
+	int							iHalfBuffer;
+	int							iSearchWinSize;
+	CRealVector					vecrFiltResLR;
+	CRealVector					vecrFiltResRL;
+	CRealVector					vecrFiltRes;
+	CVector<int>				veciPeakIndex;
+	int							iAverageCounter;
 
-	int							iAverTimeOutCnt{}; //init DM
+	int							iAverTimeOutCnt;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

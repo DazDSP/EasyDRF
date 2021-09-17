@@ -35,7 +35,7 @@
 \******************************************************************************/
 void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 {
-	int i;
+	int i = 0; //init DM
 
 	/* Filtering of output signal (FIR filter) ------------------------------ */
 	/* Transfer input data in Matlib library vector */
@@ -165,7 +165,7 @@ _REAL averdc = 0.0;
 \******************************************************************************/
 void CReceiveData::ProcessDataInternal(CParameter& Parameter)
 {
-	int i;
+	int i = 0; //init DM
 	double dcsum = 0.0;
 
 	if (bUseSoundcard == TRUE) //added DM
@@ -305,7 +305,7 @@ void CHanningWindow::Init(void)
 
 void CReceiveData::GetInputSpec(CVector<_REAL>& vecrData)
 {
-	int				i;
+	int				i = 0; //init DM
 	CComplexVector	veccSpectrum;
 	CRealVector		vecrFFTInput;
 	_REAL			rNormSqMag;

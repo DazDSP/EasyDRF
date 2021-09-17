@@ -26,7 +26,7 @@
 \******************************************************************************/
 
 #if !defined(RSDEF_)
-#define RSDEF_ 1
+#define RSDEF_ TRUE
 extern int LeadIn; //Moved from ..? DM
 extern int DMmodehash;
 extern string EZHeaderID; //header ID string
@@ -75,4 +75,28 @@ extern char DMdecodestat[15];
 
 extern int DMmodehash;
 
+extern int runonce;
+
+//New temp buffer test DM
+//CTempBuffer Tempo;
+/*
+class CTempBuffer
+{
+public:
+	//	void TempBuffer() { Reset(); }
+	//	CTempBuffer(const CTempBuffer& NewObj) : RSbytes(NewObj.RSbytes), tID(NewObj.tID) {}
+	//	inline CTempBuffer& operator=(const CTempBuffer& NewObj)
+	//	{
+	//		RSbytes = NewObj.RSbytes;
+	//		return *this;
+	//	}
+
+	//	void Reset() { RSbytes.Init(1100000);	}
+		//void size() { RSbytes.size(); }
+		//void Init() { RSbytes.resize(1100000); }
+
+	static CVector<_BYTE>	RSbytes; // .Init(1100000);
+	static int		tID; //transport ID for each buffer object?
+};
+*/
 #endif

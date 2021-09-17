@@ -60,11 +60,11 @@ protected:
 	CMOTSlideShowEncoder	MOTSlideShowEncoder;
 	CVector<_BINARY>		vecbiCurDataUnit;
 
-	int						iPacketLen{}; //init DM
-	int						iTotalPacketSize{}; //init DM
-	int						iCurDataPointer{}; //init DM
-	int						iPacketID{}; //init DM
-	int						iContinInd{}; //init DM
+	int						iPacketLen;
+	int						iTotalPacketSize;
+	int						iCurDataPointer;
+	int						iPacketID;
+	int						iContinInd;
 };
 
 
@@ -89,9 +89,9 @@ protected:
 	class CDataUnit
 	{
 	public:
-		CVector<_BINARY>	vecbiData{}; //init DM
-		_BOOLEAN			bOK{}; //init DM
-		_BOOLEAN			bReady{}; //init DM
+		CVector<_BINARY>	vecbiData;
+		_BOOLEAN			bOK;
+		_BOOLEAN			bReady;
 
 		void Reset()
 		{
@@ -102,19 +102,19 @@ protected:
 
 	};
 
-	int						iTotalPacketSize{}; //init DM
-	int						iNumDataPackets{}; //init DM
-	int						iMaxPacketDataSize{}; //init DM
-	int						iServPacketID{}; //init DM
-	CVector<int>			veciCRCOk{}; //init DM <--- This may be useful as an erasure list? DM
+	int						iTotalPacketSize;
+	int						iNumDataPackets;
+	int						iMaxPacketDataSize;
+	int						iServPacketID;
+	CVector<int>			veciCRCOk; //<--- This may be useful as an erasure list? DM
 
-	_BOOLEAN				DoNotProcessData{}; //init DM
+	_BOOLEAN				DoNotProcessData;
 
-	int						iContInd[MAX_NUM_PACK_PER_STREAM]{}; //init DM
-	CDataUnit				DataUnit[MAX_NUM_PACK_PER_STREAM]{}; //init DM
-	CMOTSlideShowDecoder	MOTSlideShow[MAX_NUM_PACK_PER_STREAM]{}; //init DM
+	int						iContInd[MAX_NUM_PACK_PER_STREAM];
+	CDataUnit				DataUnit[MAX_NUM_PACK_PER_STREAM];
+	CMOTSlideShowDecoder	MOTSlideShow[MAX_NUM_PACK_PER_STREAM];
 
-	EAppType				eAppType{}; //init DM
+	EAppType				eAppType;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

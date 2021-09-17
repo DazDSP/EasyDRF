@@ -185,22 +185,22 @@ protected:
 	CSingleBuffer<_BINARY>	MSCDeMUXBufData;
 	CCyclicBuffer<_SAMPLE>	AudSoDecBuf;
 
-	EAcqStat				eAcquiState{}; //init DM
-	int						iAcquRestartCnt{}; //init DM
-	int						iAcquDetecCnt{}; //init DM
-	int						iGoodSignCnt{}; //init DM
-	int						iDelayedTrackModeCnt{}; //init DM
-	ERecState				eReceiverState{}; //init DM
-	ERecMode				eReceiverMode{}; //init DM
-	ERecMode				eNewReceiverMode{}; //init DM
+	EAcqStat				eAcquiState;
+	int						iAcquRestartCnt;
+	int						iAcquDetecCnt;
+	int						iGoodSignCnt;
+	int						iDelayedTrackModeCnt;
+	ERecState				eReceiverState;
+	ERecMode				eReceiverMode;
+	ERecMode				eNewReceiverMode;
 
 	CSound					SoundInterface;
 
-	_BOOLEAN				bWasFreqAcqu{}; //init DM
-	_BOOLEAN				bDoInitRun{}; //init DM
-	_BOOLEAN				bDoFastReset{}; //init DM
+	_BOOLEAN				bWasFreqAcqu;
+	_BOOLEAN				bDoInitRun;
+	_BOOLEAN				bDoFastReset;
 
-	_REAL					rInitResampleOffset{}; //init DM
+	_REAL					rInitResampleOffset;
 };
 
 
