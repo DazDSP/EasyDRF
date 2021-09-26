@@ -47,6 +47,7 @@
 #include <shellapi.h>
 #include "common/callsign2.h"
 #include "RS-defs.h" //added DM
+#include "Logging.h" //added DM
 
 #define ZLIB_WINAPI
 #define ZLIB_DLL
@@ -82,6 +83,8 @@ int RxRSlevel = 0;	//added by DM to detect RS encoding on incoming file segments
 int DecFileSize = 0; //Decoder current file size DM
 int HdrFileSize = 0; //Decoder current file size DM
 int totsize = 0; //total segment count global DM
+int actsize = 0; //Decoder active segment count global DM
+int actpos = 0; //Decoder active position global DM
 int SerialFileSize = 0;
 
 int DecCheckReg = 0b00001111111111111111111111111111; //Decoder check register for serial segment total transmission
@@ -141,6 +144,16 @@ int DMRSindex = 0; //write index for above array
 int DMRSpsize = 0; //previous segment size
 int DMmodehash = 0; //a hash of the transmit parameters, to make mode changes generate unique objects by adding it to the transport ID - DM
 int runonce = 0; //added DM
+float DMSNRaverage = 0;
+float DMSNRmax = 0;
+int DMobjectnum = 0;
+int DMrxokarray[50]{ 0 };
+float DMSNRavarray[50]{ 0 };
+float DMSNRmaxarray[50]{ 0 };
+int DMgoodsegsarray[50]{ 0 };
+int DMtotalsegsarray[50]{ 0 };
+int DMpossegssarray[50]{ 0 };
+int dcomperr = 0; //decompressor error
 
 //moved from further down DM
 long file_size[64]; //edited DM was 32
@@ -233,9 +246,14 @@ void sendinfo(HWND hwnd) {
 //	wsprintf(tempstr, "RS%d RSerr:%d fS:%d sS:%d File:%s", RxRSlevel, lasterror, totsize, DecTotalSegs, DMfilename); //added RS level info - in testing - DM
 //	lasterror2 = sprintf_s(tempstr, "Fsegt:%d Ssegt:%d Ss:%d [%s] RSf:%d tid:%d-%d Hdr:%d", totsize, DecTotalSegs, DecSegSize, DMfilename, RSfilesize, DecTransportID, erasureswitch, HdrFileSize);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%s] Hdr:%d Bytes:%d tID:%d-%d Segs:%d Err:%d %s", DMfilename, HdrFileSize, RSfilesize, DecTransportID, erasureswitch, DecTotalSegs , lasterror, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%s] Hdr:%d Bytes:%d E:%d CE:%d %s", DMfilename, HdrFileSize, RSfilesize, lasterror, dcomperr, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Hdr:%05d Bytes:%05d ID:%05d-%01d %s", DMfilename, HdrFileSize, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, runonce);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 }
 
@@ -1505,8 +1523,12 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			}
 			else
 			{
-				//CMOTObject NewPic; //Generate "NewPic" from the cpp class - figure out exactly how this works! DM = MOVED =========================================
 				lasterror = 0;
+
+				//compute average and peak SNR for logging DM
+				float error = (float)((float)DRMReceiver.GetChanEst()->GetSNREstdB() - DMSNRaverage);
+				DMSNRaverage = (float)DMSNRaverage + error * 0.01+(0.01*(max(error,0.0)*0.5)); //slew towards average
+				DMSNRmax = (float)max(DMSNRmax*0.9999, (float)DRMReceiver.GetChanEst()->GetSNREstdB());
 
 				//This is data mode (file receive) DM
 				if (RxRSlevel == 0) {
@@ -1516,6 +1538,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					sprintf(tempstr, "RS%d Data", RxRSlevel); //
 				SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
 
+				//CMOTObject NewPic; //Generate "NewPic" from the cpp class - figure out exactly how this works! DM = MOVED =========================================
 				//DRMReceiver.GetDataDecoder()->GetSlideShowPartPicture(NewPic); //TEST - update filename from old header
 
 				//totsize = DecTotalSegs; //From serial backup DM
@@ -1524,8 +1547,8 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				totsize = max(totsize, CompTotalSegs);//Computed from old header DM
 				totsize = max(totsize, DecTotalSegs); //From new serial backup DM
 
-				const unsigned int actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM
-				const unsigned int actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
+				actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM
+				actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
 
 				sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
 				SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
@@ -1533,7 +1556,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 #if RSDECODE
 				RSfilesize = DecFileSize; //This is exactly what was sent, after RS coding into multiples of 255
 				if (RSfilesize == 0) {
-					RSfilesize = HdrFileSize; //grab it from the old header
+					RSfilesize = HdrFileSize; //grab it from the old header if available
 				}
 				//=========================================================================================================================================================
 				//RS Decoding - By Daz Man 2021
@@ -1553,57 +1576,25 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 						if ((RSlastTransportID != DecTransportID) && (RSretryDelay == 0)) {
 							RSretryDelay = max((RSfilesize / 20000), 5); //5; //wait before another attempt - make this number proportional to file size to some degree DM
-							
-							
 
-							//int aa = DecTransportID;
-							//constexpr
-							uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
-							_BYTE* buffer1 = new _BYTE[BUFSIZE * 2]; //Now 1M to fit RS encoding
-							_BYTE* buffer2 = new _BYTE[BUFSIZE * 2]; //
-							_BYTE* buffer3 = new _BYTE[BUFSIZE * 2]; //erasures processing buffer
-							//CVector<_BYTE> buffer2[BUFSIZE * 2];
+							uLongf BUFSIZE = 524288 * 2; //> 1M HEAP STORAGE
+							_BYTE* buffer1 = new _BYTE[BUFSIZE];
+							_BYTE* buffer2 = new _BYTE[BUFSIZE];
+							_BYTE* buffer3 = new _BYTE[BUFSIZE]; //erasures processing buffer
 
-							//the exact file size is now sent serially on each segment, so use it!
+							//the exact RS data size is now sent serially on each segment, so use it!
 							//RSfilesize has both old and new methods...
-							//if (DecFileSize > 0) {
 							if (RSfilesize > 0) {
 								//Read raw data into buffer2
 								i = 0;
-								//CTempBuffer Tempo;
-			//					CMOTObjectRaw MOTObjectRaw;
-			//					unsigned int s = MOTObjectRaw.BodyRx.vvbiSegment.size()/8; //.vecbiData.size() / 8; //Rx.vvbiSegment.size() / 8; //get the data size in bytes
-			//					Tempo.RSbytes.ResetBitAccess(); //start from zero
-			//					int a = (_BYTE)NewPic.Body.vecbiData.Separate(8); //MOTObjectRaw.BodyRx.vvbiSegment[sn].Separate(8); //TEST
 								for (i = 0; i < RSfilesize; i++) {
-									//sn = i / ss;
-//									buffer2[i] = (_BYTE)MOTObjectRaw.BodyRx.vvbiSegment[sn].Separate(8); //copy the raw object data
-									//buffer2[i] = (_BYTE)RSbytes[i];
-									//buffer2[i] = (_BYTE)RSbytes.at(i);
-//									buffer2[i] = buffer0[i];
-
 									buffer2[i] = (_BYTE)GlobalDMRxRSData[i];
-									//buffer2[i] = Tempo.RSbytes[i];
-									//buffer2[i] = MOTObjectRaw.GetData(i); //MOTObjectRaw.RSdata.at(i); // .Separate(8);
-										//.DMvecBYTEData[i]; //MOTObjectRaw.BodyRx.DMvecBYTEData[i];
-								//buffer2[i] = NewPic.vecbRawData[i]; //save data to buffer2
-								//buffer2[i] = NewPic.vecbRawData.Separate(8); //MOTObjectRaw.BodyRx.DMvecBYTEData[i];
 								}
-								/*
-								s += 255; //write one more block of zeroes
-								if (s > 1099000) {
-									s = 1099000; //bounds limit
-								}
-								for (i < s; i++;) {
-									buffer2[i] = 0; //zero fill
-								}
-								*/
-
 							}
 							else {
 								lasterror |= 8;
 							}
-						
+
 #define BUFFERDEBUG FALSE
 #if BUFFERDEBUG
 							//====================================================================================
@@ -1662,7 +1653,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							//Scan the buffer up to the data size, and make a list of all the zero positions
 							//Maybe best to do this in the RS decoder... DONE
 
-							
+
 							//RS decode here
 							//lasterror = 0;
 							if (RxRSlevel == 1) {
@@ -1689,7 +1680,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									RSfilesize = (RSfilesize / 255) * 128; //compute new file size for decoded output
 								}
 							}
-							
+
 							//data needs to be in buffer2 
 
 							/*
@@ -1720,7 +1711,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									//get the total header length
 									//normally buffer2
 									j = (buffer2[16] | buffer2[17] << 8); //16 = low byte, 17 = high byte Header Size
-									filesizetest = (buffer2[18] | buffer2[19] << 8 | buffer2[20] << 16); //This is the size of the file + header, as sent (plain or gzipped)
+									filesizetest = (buffer2[18] | buffer2[19] << 8 | buffer2[20] << 16); //This is the size of the file, as sent (plain or gzipped) HEADER NOT COUNTED
 									//Save the filename
 									char filenametest[260]{ 0 }; //temp
 									int k = 0;
@@ -1738,28 +1729,29 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									//To save the file we better have a filename....
 									if (size(filenametest) > 0) {
 
-										char RSfilenameS[260] = "";
-										wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
 										//If file is bigger than 512k, bypass decompression and save it directly DM
+										//gzip decoder ======================================================================================
 										//.gz is used for standard mode to be compatible - RS modes were to use .gzz to prevent unzipping .gz files.. NOT IMPLEMENTED YET - DM
-										if ((stricmp(&RSfilenameS[strlen(RSfilenameS) - 3], ".gz") == 0) && (filesizetest <= BUFSIZE)) {
+										if ((stricmp(&filenametest[strlen(filenametest) - 3], ".gz") == 0) && (filesizetest <= BUFSIZE)) {
 											//Data is gzipped, unzip into buffer1 and save
 											//data is compressed, so decompress it
 											i = 0;
 
 											uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
 											int result; //not used at this time
+											//j is the start of the data, after the header
 											result = uncompress(buffer1, &filesize, buffer2 + j, filesizetest); //decompress data using zlib
 											//cut extension off filename
-											char trimmed[260]; //was 130 initially
-											strcpy(trimmed, RSfilenameS);
-											unsigned int tlen = strlen(trimmed);
-											trimmed[tlen - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
+											filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
+
+											LogData(filenametest); //log the SNR stats DM
+
+											char RSfilenameS[260] = "";
+											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
 
 											//saved file is opened here for writing DM
 											FILE* set = nullptr;
-											if ((set = fopen(trimmed, "wb")) == nullptr) {
+											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
 												// handle error here DM
 												lasterror |= 16;
 											}
@@ -1774,8 +1766,51 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 											}
 
 										}
+										//LZMA decoder ======================================================================================
+										else if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
+											//Data is gzipped, unzip into buffer1 and save
+											//data is compressed, so decompress it
+											i = 0;
+											SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
+#define propslength 5
+											SizeT filesizein = RSfilesize; // filesizetest;
+											SizeT outsize = BUFSIZE * 2;
+											//j is the start of the data, after the new header
+											//filesize is also saved in 3 bytes after props - not used here, as we have the new header
+											dcomperr = LzmaUncompress(buffer1, &outsize, buffer2 + j + propslength + 3, &filesizein, buffer2 + j, propslength);
+
+											//cut .lz extension off filename
+											filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
+
+											LogData(filenametest); //log the SNR stats DM
+
+											char RSfilenameS[260] = "";
+											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
+
+											//saved file is opened here for writing DM
+											FILE* set = nullptr;
+											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
+												// handle error here DM
+												lasterror |= 16;
+											}
+											else {
+												i = 0; //start at zero
+												//this is normally buffer1
+												while (i < filesizetest) { //edit DM
+													putc(buffer1[i], set);
+													i++;
+												}
+												fclose(set); //file is closed here - but only if it was opened
+											}
+
+										}
 										else {
 											//If data is noncompressed, save buffer2 to disk
+											LogData(filenametest); //log the SNR stats DM
+
+											char RSfilenameS[260] = "";
+											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
+
 											//saved file is opened here for writing DM
 											FILE* set = nullptr;
 											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
@@ -1785,7 +1820,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 											else {
 												i = j; //start at the end of the header
 												//this is normally buffer2
-												while (i < filesizetest) { //edit DM
+												while (i < (filesizetest+j)) { //edit DM - filesize is EXACT filesize (header is not counted - so add it in)
 													putc(buffer2[i], set);
 													i++;
 												}
@@ -1853,7 +1888,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						//RxRSlevel is sent using 3 of the previously unused bits in the segment header
 						//This code section does not use the extra RS coding, so RxRSlevel must == 0
 						// 
-						//This executes when a complete file is received DM
+						//This executes only when a complete file is received DM
 						char filename[260]{ 0 }; //was 130 DM - (Windows max path length is 255 characters) (Ham-DRM only uses 80 characters though...)
 						int picsize = 0; //edited DM - reverted
 						int filnamsize = 0;
@@ -1965,7 +2000,8 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							lastrxcodscheme = DRMReceiver.GetParameters()->eMSCCodingScheme;
 							lastrxprotlev = DRMReceiver.GetParameters()->MSCPrLe.iPartB;
 
-							wsprintf(filename, "Rx Files\\%s", NewPic.strName.c_str());
+							//wsprintf(filename, "Rx Files\\%s", NewPic.strName.c_str());
+							strcpy(filename, NewPic.strName.c_str());
 							//===========================================================================================
 							//Daz Man
 							//zlib decompression
@@ -1974,7 +2010,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							//else, write file directly to disk
 							//finally close file and delete buffers from heap
 							//===========================================================================================
-							//int j = 0;
+
 							const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
 							//If file is bigger than 512k, bypass decompression and save it directly DM
 							//.gz is used for standard mode to be compatible
@@ -1990,12 +2026,68 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 								uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
 								int result; //not used at this time
 								result = uncompress(buffer2, &filesize, buffer1, picsize); //decompress data using zlib
-								//result = uncompress(buffer2, &filesize, NewPic.vecbRawData, picsize); //see if there is a way to directly read the buffer TODO
+
 								//cut extension off filename
 								filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
 
+								LogData(filename); //log the SNR stats DM
+
+								char savename[260] = "";
+								wsprintf(savename, "Rx Files\\%s", filename);
+
 								//saved file is opened here for writing DM
-								if ((set = fopen(filename, "wb")) == nullptr) {
+								if ((set = fopen(savename, "wb")) == nullptr) {
+									// handle error here DM
+								}
+								else {
+									i = 0;
+									while (unsigned(i) < filesize) { //edit DM
+										putc(buffer2[i], set);
+										i++;
+									}
+									fclose(set); //file is closed here - but only if it was opened
+									strcpy(DMdecodestat, "SAVED"); //Decode status
+								}
+								delete[] buffer1; //remove the buffer arrays from the heap
+								delete[] buffer2;
+							}
+							else if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
+								//data is compressed, so decompress it
+								_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
+								_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer
+								i = 0;
+								while (i < picsize) {
+									buffer1[i] = NewPic.vecbRawData[i]; //save data to buffer1
+									i++;
+								}
+								SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
+								int result = 0; //not used at this time
+#define propslength 5
+								SizeT filesizein = picsize;
+								SizeT outsize = BUFSIZE;
+								//original filesize is saved in 4 bytes after props
+								dcomperr = LzmaUncompress(buffer2, &outsize, buffer1 + propslength+3, &filesizein, buffer1, propslength);
+
+								//grab original filesize that was saved after props
+								int i = 0;
+								filesize = (BYTE)(buffer1 + propslength)[i]; //byte 1
+								i++; //next
+								filesize |= (BYTE)(buffer1 + propslength)[i] << 8; //byte 2
+								i++; //next
+								filesize |= (BYTE)(buffer1 + propslength)[i] << 16; //byte 3
+
+								//outsize no longer used
+
+								//cut extension off filename
+								filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
+
+								LogData(filename); //log the SNR stats DM
+
+								char savename[260] = "";
+								wsprintf(savename, "Rx Files\\%s", filename);
+
+								//saved file is opened here for writing DM
+								if ((set = fopen(savename, "wb")) == nullptr) {
 									// handle error here DM
 								}
 								else {
@@ -2013,8 +2105,13 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							else {
 								//data is not compressed, save normally - no need for extra buffers
 								//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.gz file is sent, so save it normally)
+								LogData(filename); //log the SNR stats DM
+
+								char savename[260] = "";
+								wsprintf(savename, "Rx Files\\%s", filename);
+
 								//saved file is opened here for writing DM
-								if ((set = fopen(filename, "wb")) == nullptr) {
+								if ((set = fopen(savename, "wb")) == nullptr) {
 									//handle error here DM
 								}
 								else {

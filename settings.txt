@@ -5,7 +5,7 @@ Call Call
 0 RX_Sound_OUT_Device
 0 RX_Sound_IN_Device
 0 Send_Text_Message
-7 Display_Type
+8 Display_Type
 0 RX_Audfilt
 0 FAC_mute
 64 QAM

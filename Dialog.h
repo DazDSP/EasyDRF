@@ -29,6 +29,7 @@
 #define DIALOG_H
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "LzmaLib.h"
 
 /* Implementation of global functions *****************************************/
 void PostWinMessage(unsigned int MessID, int iMessageParam);

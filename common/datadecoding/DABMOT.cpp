@@ -824,7 +824,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					}
 					*/ 
 
-					//should the file size be reset here also?
+					//should the file size be reset here also? NO
 					//HdrFileSize = 0; //
 					CompTotalSegs = 0; //
 				}
@@ -977,6 +977,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						MOTObjectRaw.BodyRx.bOK = TRUE;
 
 						MOTObjectRaw.BodyRx.Add(vecbiNewData, iSegmentSize, iSegmentNum); //This is where the incoming segment bits get added DM
+						//MOTObjectRaw.BodyRx.AddRS(vecbiNewData, iSegmentSize, iSegmentNum); //TEST CODE
 						MOTObjectRaw.iActSegment = iSegmentNum;
 
 #define NEWCODE TRUE
@@ -989,6 +990,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 								if (iSegmentSize > DMRSpsize) {
 									DMRSpsize = iSegmentSize;
 								};
+
 								MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].ResetBitAccess(); //Start reading from zero
 								unsigned int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
 								DMRSpsize = iSegmentSize; //update
@@ -1003,6 +1005,10 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 										a = j + i;
 										if (a > limit) { a = limit - 1; } //bounds limit
 										GlobalDMRxRSData[a] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+										//buffer2[a] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+										//MOTObjectRaw.RSbytes.at(a) = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
+										//MOTObjectRaw.PutRSData(a, MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8));
+
 									}
 								}
 							}
@@ -1270,7 +1276,7 @@ _BOOLEAN	CMOTDABDec::GetActMOTObject(CMOTObject& NewMOTObject)
 			}
 
 		}
-		//DecodeObject(MOTObjectRaw); //added DM
+
 		NewMOTObject = MOTObject;
 
 		/* Release resources */
@@ -1278,6 +1284,7 @@ _BOOLEAN	CMOTDABDec::GetActMOTObject(CMOTObject& NewMOTObject)
 
 		return TRUE;
 	}
+
 	return FALSE;
 }
 
@@ -1479,6 +1486,44 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 		if (vvbiSegment[i].Size() >= 1) iDataSegNum++;
 
 }
+
+//DM - read RS data into it's own buffer
+/*
+void CMOTObjectRaw::CDataUnitRx::AddRS(CVector<_BINARY>& vecbiNewData, const int iSegmentSize, const int iSegNum)
+{
+	int i=0;
+	// Add new data (byte-wise copying)
+	const int iNewDataSize = iSegmentSize;
+	const int iOldEnlSize = RSbytes.Size();
+	const int iNewEnlSize = iSegNum + 1;
+
+	vecbiNewData.ResetBitAccess(); //Start reading from zero
+
+	if (iNewEnlSize > iOldEnlSize)
+		RSbytes.Enlarge(iNewEnlSize - iOldEnlSize);
+
+	RSbytes.Init(iNewDataSize);
+
+	//Read useful bits. We have to use the "Separate()" function since we have to start adding at the current bit position of "RSbytes"
+	for (i = 0; i < iNewDataSize; i++)
+		RSbytes.at(i) = (_BYTE)vecbiNewData.Separate(8);
+
+}
+*/
+
+//int* buffer
+/*
+void CMOTObjectRaw::CDataUnitRx::GetRSdata(CMOTObject& NewPic)
+{
+	int i = 0;
+	//copy RS data from RSbytes to buffer
+	for (i = 0; i < RSbytes.size(); i++) {
+		NewPic[i] = RSbytes.at(i); //copy all
+	}
+
+	return;
+}
+*/
 
 void CMOTObjectRaw::CDataUnitRx::Reset()
 {

@@ -184,7 +184,7 @@ protected:
 	CSingleBuffer<_BINARY>	MSCDeMUXBufAud;
 	CSingleBuffer<_BINARY>	MSCDeMUXBufData;
 	CCyclicBuffer<_SAMPLE>	AudSoDecBuf;
-
+	
 	EAcqStat				eAcquiState;
 	int						iAcquRestartCnt;
 	int						iAcquDetecCnt;

@@ -71,6 +71,8 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -80,7 +82,7 @@
       <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
     <ResourceCompile>
-      <Culture>0x0807</Culture>
+      <Culture>0x0c09</Culture>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Bscmake>
@@ -95,7 +97,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib;LzmaLib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -112,6 +114,8 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -121,7 +125,7 @@
       <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
     <ResourceCompile>
-      <Culture>0x0807</Culture>
+      <Culture>0x0c09</Culture>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Bscmake>
@@ -135,7 +139,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib;LzmaLib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -190,10 +194,12 @@
     <ClCompile Include="common\TextMessage.cpp" />
     <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="getfilenam.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sound\Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="7zTypes.h" />
     <ClInclude Include="common\AudioFile.h" />
     <ClInclude Include="common\audiofir.h" />
     <ClInclude Include="common\bsr.h" />
@@ -264,6 +270,7 @@
     <ClInclude Include="common\Vector.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="getfilenam.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sound\Sound.h" />

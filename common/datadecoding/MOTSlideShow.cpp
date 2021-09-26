@@ -37,6 +37,8 @@
 #include "../../getfilenam.h"
 #include "../../RS-defs.h" //added DM for RS code
 #include "../RS/RS-coder.h"
+#include "../../7zTypes.h"
+#include "../../LzmaLib.h"
 
 
 /* Implementation *************************************************************/
@@ -112,7 +114,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 
 		//Daz Man: Before we make the header, we need to figure out what the filename extension is going to be
 		LPSTR dx1 = const_cast<char*>(strFileNamenoDir.c_str()); //the filename that is being sent
-		const string& dx2 = ".gz"; //the 2nd filename extension that denotes zlib compression is used
+		const string& dx2 = ".lz"; //the 2nd filename extension that denotes LZMA compression is used
 //		if (LeadIn > 3) {
 //			const string& dx2 = ".gzz"; //can't modify a constant - DM
 //		}
@@ -139,11 +141,11 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			EZHeaderID[i++] = (2); //version number
 			EZHeaderID[i++] = (HeaderSize & 0xFF); //byte 1 of header size
 			EZHeaderID[i++] = (HeaderSize & 0xFF00) >> 8; //byte 2 of header size
-			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF); //byte 1 of file size
-			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF00) >> 8; //byte 2 of file size
-			EZHeaderID[i++] = ((filesize + HeaderSize) & 0xFF0000) >> 16; //byte 3 of file size
+			EZHeaderID[i++] = ((filesize) & 0xFF); //byte 1 of file size
+			EZHeaderID[i++] = ((filesize) & 0xFF00) >> 8; //byte 2 of file size
+			EZHeaderID[i++] = ((filesize) & 0xFF0000) >> 16; //byte 3 of file size
 
-			//Now write it into buffer2T
+			//Now write new header into buffer2T
 			i = 0;
 			while (i < HeaderSize) {
 				buffer2T[i] = EZHeaderID[i]; //this is normally buffer2T
@@ -162,20 +164,47 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		if (gzipit) {
 			//read into buffer1T if it's compressible
 			result = fread(buffer1T, 1, filesize, pFiBody); //read the file to send into buffer1T if it is text
-			uLongf ds = BUFSIZE; //tell zlib the buffer size we are using
+			//uLongf ds = BUFSIZE; //tell zlib the buffer size we are using
 			//start at buffer2T + Headersize to avoid overwriting the header (if no header is used, Headersize is zero)
-			compress2(buffer2T + HeaderSize, &ds, buffer1T, filesize, 9); //zlib compress text data and compressible files (use the headerless filesize)
-			filesize = ds; //update filesize with the new compressed file data size
+			//compress2(buffer2T + HeaderSize, &ds, buffer1T, filesize, 9); //zlib compress text data and compressible files (use the headerless filesize)
+			//BYTE* buffer2Th = buffer2T + HeaderSize;
+			unsigned int ds = BUFSIZE*2;
+
+#define LZMA_PROPS_SIZE 5;
+				unsigned propsSize = LZMA_PROPS_SIZE;
+				//set these accordingly:
+				int level = 9; //Maximum compression
+				unsigned int dictSize = 1 << 25; //24
+				int lc = 3;
+				int lp = 0;
+				int pb = 2;
+				int fb = 255; // 32; //block size
+				int numThreads = 1;
+				//save original filesize after props, as LZMA isn't accurate on data size
+				int i = 0;
+				(buffer2T + HeaderSize + propsSize)[i] = filesize & 0xFF; //byte 1
+				i++; //next
+				(buffer2T + HeaderSize + propsSize)[i] = (filesize & 0x00FF00) >> 8; //byte 2
+				i++; //next
+				(buffer2T + HeaderSize + propsSize)[i] = (filesize & 0x00FF0000) >> 16; //byte 3
+
+				//                     dest to write to      dlen  src read  src size outprops, size, 
+				int res = LzmaCompress(buffer2T+HeaderSize+propsSize+3, &ds, buffer1T, filesize, buffer2T+HeaderSize, &propsSize, level, dictSize, lc, lp, pb, fb, numThreads);
+				//if RS is not used, there is no new header, and HeaderSize is 0
+				
+				//compressed file data size is in ds, and add props data size also
+				filesize = ds + propsSize+3; //update filesize with the new compressed file data size AND the LZMA props AND the new 3-byte filesize data
 		}
 		else {
 			//read into buffer2T directly for all else
 			//start at buffer2T + Headersize to avoid overwriting the header (if no header is used, Headersize is zero)
-			result = fread(buffer2T + HeaderSize, 1, filesize, pFiBody); //this is normally buffer2T
+			result = fread(buffer2T+HeaderSize, 1, filesize, pFiBody); //this is normally buffer2T
 		}
 
 		//if (result != filesize) { fputs("Reading error", stderr); exit(3); } //does it need error checking? NO - this could leak memory by not deleting the buffer arrays
 
 		fclose(pFiBody); //close file
+		filesize = filesize + HeaderSize; //add header if it's non-zero
 //=============================================================================================================================
 		//RS encoding can go here, with header added first  DM
 		//Only execute this if LeadIn is > 3
@@ -185,12 +214,11 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			//Put RS coding routine here - Daz Man 2021
 			//Compressed or uncompressed data (+header) is in buffer2T
 			//RS encode the data from buffer2T and put it in buffer1T
-			//buffer1T is bigger for this reason
 			//Then read out buffer1T to the sending routine next
 			//or read out buffer2T if RS is not used
 
 			//RS encode here
-			filesize = filesize + HeaderSize; //add size of new header in
+			//filesize = filesize + HeaderSize; //add size of new header in - already done now...
 			int lasterror = 0;
 			if (LeadIn == 4) {
 				//RS1

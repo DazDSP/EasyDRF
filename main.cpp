@@ -60,7 +60,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInst, _In_ LPST
     {
         char buf [100];
         wsprintf (buf, "Error x%x", GetLastError ());
-        MessageBox (0, buf, "CreateDialog", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox (nullptr, buf, "CreateDialog", MB_ICONEXCLAMATION | MB_OK);
         return 1;
     }
 

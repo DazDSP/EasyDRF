@@ -1,3 +1,9 @@
+EasyDRF Changes - by Daz Man September 27th, 2021
+* File compressor changed to LZMA
+* Stats logging added for SWRG
+* Updates to filename and filesize handling code
+
+
 EasyDRF Changes - by Daz Man September 17th, 2021
 
 * Decoder RS data buffer bug fixed
