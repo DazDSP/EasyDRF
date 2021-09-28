@@ -66,7 +66,7 @@ extern int erasureflags;
 extern int DecPrevSeg;
 extern int DecHighSeg;
 
-extern char GlobalDMRxRSData[1100000];
+extern unsigned char GlobalDMRxRSData[1100000];
 extern int DMRSindex;
 extern int DMRSpsize;
 
