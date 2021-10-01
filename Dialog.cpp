@@ -47,14 +47,6 @@
 #include <shellapi.h>
 #include "common/callsign2.h"
 #include "RS-defs.h" //added DM
-#include "Logging.h" //added DM
-
-#define ZLIB_WINAPI
-#define ZLIB_DLL
-#define ZLIB_INTERNAL
-#include "zlib.h"
-#include "common/RS/RS-coder.h" //added DM
-#include <thread>
 
 CDRMReceiver	DRMReceiver;
 CDRMTransmitter	DRMTransmitter;
@@ -79,7 +71,6 @@ string EZHeaderID = "EasyDRFHeader/|"; //header ID string
 int EncSegSize = 0; //Encoder current segment size DM
 int EncFileSize = 0; //Encoder current file size DM
 
-int RSbusy = 0;
 //int RSretryDelay = 0; //no longer needed...
 int RxRSlevel = 0;	//added by DM to detect RS encoding on incoming file segments, even if file header fails - Used in DABMOT.cpp
 int DecFileSize = 0; //Decoder current file size DM
@@ -103,7 +94,12 @@ int RSlastTransportID = 0; //Last RS decoder transport ID
 int DecTransportID = 0; //Current decoder transport ID
 int BarTransportID = 0;
 
+int RSbusy = 0;
 int RSError = 0; //To display RS decoding errors
+int dcomperr = 0; //decompressor error
+int lasterror = 0; //save RS error count
+_BINARY* RSbuffer = nullptr; //to save pointer
+
 bool CRCOK = 0;
 //int LastGoodCRC = 0;
 
@@ -124,9 +120,6 @@ char DMfilename[260]; //added DM 130 is now 260 - (Windows max path length is 25
 char DMfilename2[260]; //added DM 130 is now 260 - (Windows max path length is 255 characters)
 char DMdecodestat[15]; //RS decode status
 
-int lasterror = 0; //save RS error count
-//int DecPrevSeg = 0; //Decoder previous segment (for detecting the end of the leader and combining the new segment data)
-//int DecHighSeg = 0; //Decoder highest segment in leader (for combining the new segment data)
 
 char erasures[3][8192 / 8]{}; //array for segment erasure data (saves the first/last good CRC segment numbers)
 int erasuressegsize[3] = {0,0,0}; //save the segment size that was used for each array
@@ -141,7 +134,6 @@ char rxfilepath[260] = { "Rx Files\\" }; //Added DM
 char rxcorruptpath[260] = { "Corrupt\\" }; //Added DM
 char bsrpath[260] = { "" }; //Added DM
 
-unsigned char GlobalDMRxRSData[1100000]; //>1M RS data buffer for receive NEW
 int DMRSindex = 0; //write index for above array
 int DMRSpsize = 0; //previous segment size
 int DMmodehash = 0; //a hash of the transmit parameters, to make mode changes generate unique objects by adding it to the transport ID - DM
@@ -155,7 +147,7 @@ float DMSNRmaxarray[50]{ 0 };
 int DMgoodsegsarray[50]{ 0 };
 int DMtotalsegsarray[50]{ 0 };
 int DMpossegssarray[50]{ 0 };
-int dcomperr = 0; //decompressor error
+int DMspeechmodecount = 0;  //not used yet...
 
 //moved from further down DM
 long file_size[64]; //edited DM was 32
@@ -1540,11 +1532,6 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					sprintf(tempstr, "RS%d Data", RxRSlevel); //
 				SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
 
-				//CMOTObject NewPic; //Generate "NewPic" from the cpp class - figure out exactly how this works! DM = MOVED =========================================
-				//DRMReceiver.GetDataDecoder()->GetSlideShowPartPicture(NewPic); //TEST - update filename from old header
-
-				//totsize = DecTotalSegs; //From serial backup DM
-				//totsize = CompTotalSegs; //Computed from header DM
 				totsize = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
 				totsize = max(totsize, CompTotalSegs);//Computed from old header DM
 				totsize = max(totsize, DecTotalSegs); //From new serial backup DM
@@ -1559,346 +1546,6 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				if (RSfilesize == 0) {
 					RSfilesize = HdrFileSize; //grab it from the old header if available
 				}
-
-#define NEW_RS_THREAD 1
-
-#if NEW_RS_THREAD == 1
-				//launch a new thread for the RS decode
-				//read the global RS segment buffer there
-				//make the buffers in the new thread
-				//save the file
-				//then destroy the new buffers and terminate that thread
-				//Working Sep 29, 2021
-
-				//if (RSretryDelay > 0) { RSretryDelay -= 1; }
-
-				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0))) {
-					//Decide whether to attempt decode at a level dependent on the RS level in use
-					float DMdecision = 1;
-					if (RxRSlevel == 1) { DMdecision = 0.89; }
-					else if (RxRSlevel == 2) { DMdecision = 0.76; }
-					else if (RxRSlevel == 3) { DMdecision = 0.64; }
-					else if (RxRSlevel == 4) { DMdecision = 0.51; }
-					if ((actsize >= (DecTotalSegs * DMdecision))) {
-						//if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic)) { //for debugging, wait for the whole file DM
-
-						if ((RSlastTransportID != DecTransportID) && (RSbusy == 0)) {
-							//if ((RSlastTransportID != DecTransportID) && (RSretryDelay == 0)) {
-							//RSretryDelay = max((RSfilesize / 20000), 5); //wait before another attempt - not needed now - RS decoder is in a new thread, and only executes if it's not already running
-
-							std::thread RSdecoder(RSdecode); //launch the RS decoder in a new thread
-							RSdecoder.detach(); //detach and terminate after running
-						}
-					}
-				}
-			
-
-#endif //NEW_RS_THREAD
-
-#if NEW_RS_THREAD == 0
-
-#define RSDECODE TRUE
-#if RSDECODE
-				//Split the following RS code into a new thread... DM 
-				//=========================================================================================================================================================
-				//RS Decoding - By Daz Man 2021
-				//If there have been enough data packets received, decode the file even if we missed the header DM
-				//How do we make sure this only runs once per file? Use the transport ID, also check if it worked or made an error
-				if (RSretryDelay > 0) { RSretryDelay -= 1; }
-
-				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0))) {
-					//Decide whether to attempt decode at a level dependent on the RS level in use
-					float DMdecision = 1;
-					if (RxRSlevel == 1) { DMdecision = 0.89; }
-					else if (RxRSlevel == 2) { DMdecision = 0.76; }
-					else if (RxRSlevel == 3) { DMdecision = 0.64; }
-					else if (RxRSlevel == 4) { DMdecision = 0.51; }
-					if ((actsize >= (DecTotalSegs * DMdecision))) {
-						//if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic)) { //for debugging, wait for the whole file DM
-
-						if ((RSlastTransportID != DecTransportID) && (RSretryDelay == 0)) {
-							RSretryDelay = max((RSfilesize / 20000), 5); //5; //wait before another attempt - make this number proportional to file size to some degree DM
-
-							uLongf BUFSIZE = 524288 * 2; //> 1M HEAP STORAGE
-							_BYTE* buffer1 = new _BYTE[BUFSIZE];
-							_BYTE* buffer2 = new _BYTE[BUFSIZE];
-							_BYTE* buffer3 = new _BYTE[BUFSIZE]; //erasures processing buffer
-
-							//the exact RS data size is now sent serially on each segment, so use it!
-							//RSfilesize has both old and new methods...
-							//Better to read this directly into the deinterleaver in a new thread!	
-							if (RSfilesize > 0) {
-								//Read raw data into buffer2
-								i = 0;
-								for (i = 0; i < RSfilesize; i++) {
-									buffer2[i] = (_BYTE)GlobalDMRxRSData[i];
-								}
-							}
-							else {
-								lasterror |= 8;
-							}
-
-#define BUFFERDEBUG FALSE
-#if BUFFERDEBUG
-							//====================================================================================
-							//Buffer debugging....
-							//Dump the entire Global buffer to a disk file to verify it's integrity DM
-							FILE* set = nullptr;
-							if ((set = fopen("Rx Files\\debug.txt", "wb")) == nullptr) {
-								// handle error here DM
-								lasterror |= 2048;
-							}
-							else {
-								i = 0; //start at zero
-								//this is normally buffer1
-								while (i < DecFileSize) { //edit DM
-									putc(GlobalDMRxRSData[i], set);
-									i++;
-								}
-								fclose(set); //file is closed here - but only if it was opened
-							}
-							//====================================================================================
-#endif
-
-							//Ideally, save the data into the buffer and start the RS decode attempts in a new thread?
-							//Use flags to communicate with this thread?
-							//Decoding is pretty fast now, so may not be needed.... But it would avoid stalling the UI
-
-							//Data deinterleaver
-							const bool rev = 1; //Reverse mode to deinterleave
-							distribute(buffer2, buffer1, RSfilesize, rev); //output is put into buffer1
-
-							//Erasure processing added here...
-							//Unpack the packed erasure bit array and deinterleave it so it matches the deinterleaved data locations
-							//Probably could write it into buffer3, and deinterleave it into buffer2
-							//buffer2 should overwrite at a slower rate than the erasure data is needed...
-							//Is this fast enough for RS1 mode to decode before it starts overwriting?
-
-							//read erasure data and decode
-							i = 0;
-							int s = 0;
-							while (i < RSfilesize) {
-								//check the tID matches and change erasureswitch value if needed... TODO
-								//erasures are in SEGMENTS
-								//buffer is in BYTES
-								//there are N BYTES per SEGMENT
-								//where N is the segment size
-								//therefore:
-								//s = i / segment size
-								s = i / erasuressegsize[erasureswitch];
-								buffer3[i] = (erasures[erasureswitch][s >> 3] >> (s & 7)) & 1; //get the correct packed bit from each byte
-								i++;
-							}
-							//Deinterleave the erasures so they match up to the deinterleaved data positions
-							distribute(buffer3, buffer2, RSfilesize, rev); //erasures output is put into buffer2 - it can be read before it's overwritten by the RS decoder (even in RS1 mode?)
-
-							//Erasures now need to be changed into list form....
-							//Scan the buffer up to the data size, and make a list of all the zero positions
-							//Maybe best to do this in the RS decoder... DONE
-
-
-							//RS decode here
-							//lasterror = 0;
-							if (RxRSlevel == 1) {
-								lasterror = rs1decodeE(buffer1, buffer2, buffer2, RSfilesize);
-								if (lasterror == 0) {
-									RSfilesize = (RSfilesize / 255) * 224; //compute new file size for decoded output
-								}
-							}
-							if (RxRSlevel == 2) {
-								lasterror = rs2decodeE(buffer1, buffer2, buffer2, RSfilesize);
-								if (lasterror == 0) {
-									RSfilesize = (RSfilesize / 255) * 192; //compute new file size for decoded output
-								}
-							}
-							if (RxRSlevel == 3) {
-								lasterror = rs3decodeE(buffer1, buffer2, buffer2, RSfilesize);
-								if (lasterror == 0) {
-									RSfilesize = (RSfilesize / 255) * 160; //compute new file size for decoded output
-								}
-							}
-							if (RxRSlevel == 4) {
-								lasterror = rs4decodeE(buffer1, buffer2, buffer2, RSfilesize);
-								if (lasterror == 0) {
-									RSfilesize = (RSfilesize / 255) * 128; //compute new file size for decoded output
-								}
-							}
-
-							//data needs to be in buffer2 
-
-							/*
-							//copy buffer1 into buffer2 DEBUGGING ONLY ============================================================================
-									for (int i = 0; i < RSfilesize; i++) {
-										buffer2[i] = buffer1[i];
-									}
-							*/
-
-							int filesizetest = 0;
-							int j = 0;
-							//Error count - if RS is working correctly, lasterror should be 0
-							if (lasterror == 0) {
-								//if the RS decode worked....
-								RSlastTransportID = DecTransportID; //save last Transport ID so we don't decode it again
-								//we have good data now, so decode the filename, filesize and headersize from the special header
-								//We should match the ID string to be sure we have a valid header...
-								int c = 0;
-								for (j = 0; j < 15; j++) {
-									//all 15 header characters must match
-									//this is normally buffer2
-									c = (buffer2[j] != EZHeaderID[j]) + c; //logically OR all tests
-								}
-								//if the header ID matched...
-								if (c == 0) {
-
-									//Read the header
-									//get the total header length
-									//normally buffer2
-									j = (buffer2[16] | buffer2[17] << 8); //16 = low byte, 17 = high byte Header Size
-									filesizetest = (buffer2[18] | buffer2[19] << 8 | buffer2[20] << 16); //This is the size of the file, as sent (plain or gzipped) HEADER NOT COUNTED
-									//Save the filename
-									char filenametest[260]{ 0 }; //temp
-									int k = 0;
-									int i = 21; //Filename starts at position 21
-									while (i < j) {
-										filenametest[k++] = buffer2[i++];
-									}
-									filenametest[k] = 0; //terminate filename string with a 0
-
-									//copy the new header filename to the old one
-									if (size(filenametest) > 0) {
-										strcpy(DMfilename, filenametest); //copy
-									}
-
-									//To save the file we better have a filename....
-									if (size(filenametest) > 0) {
-
-										//If file is bigger than 512k, bypass decompression and save it directly DM
-										//gzip decoder ======================================================================================
-										//.gz is used for standard mode to be compatible - RS modes were to use .gzz to prevent unzipping .gz files.. NOT IMPLEMENTED YET - DM
-										if ((stricmp(&filenametest[strlen(filenametest) - 3], ".gz") == 0) && (filesizetest <= BUFSIZE)) {
-											//Data is gzipped, unzip into buffer1 and save
-											//data is compressed, so decompress it
-											i = 0;
-
-											uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
-											int result; //not used at this time
-											//j is the start of the data, after the header
-											result = uncompress(buffer1, &filesize, buffer2 + j, filesizetest); //decompress data using zlib
-											//cut extension off filename
-											filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
-
-											LogData(filenametest); //log the SNR stats DM
-
-											char RSfilenameS[260] = "";
-											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-											//saved file is opened here for writing DM
-											FILE* set = nullptr;
-											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-												// handle error here DM
-												lasterror |= 16;
-											}
-											else {
-												i = 0; //start at zero
-												//this is normally buffer1
-												while (i < filesize) { //edit DM
-													putc(buffer1[i], set);
-													i++;
-												}
-												fclose(set); //file is closed here - but only if it was opened
-											}
-
-										}
-										//LZMA decoder ======================================================================================
-										else if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
-											//Data is gzipped, unzip into buffer1 and save
-											//data is compressed, so decompress it
-											i = 0;
-											SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
-#define propslength 5
-											SizeT filesizein = RSfilesize; // filesizetest;
-											SizeT outsize = BUFSIZE * 2;
-											//j is the start of the data, after the new header
-											//filesize is also saved in 3 bytes after props - not used here, as we have the new header
-											dcomperr = LzmaUncompress(buffer1, &outsize, buffer2 + j + propslength + 3, &filesizein, buffer2 + j, propslength);
-
-											//cut .lz extension off filename
-											filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
-
-											LogData(filenametest); //log the SNR stats DM
-
-											char RSfilenameS[260] = "";
-											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-											//saved file is opened here for writing DM
-											FILE* set = nullptr;
-											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-												// handle error here DM
-												lasterror |= 16;
-											}
-											else {
-												i = 0; //start at zero
-												//this is normally buffer1
-												while (i < filesizetest) { //edit DM
-													putc(buffer1[i], set);
-													i++;
-												}
-												fclose(set); //file is closed here - but only if it was opened
-											}
-
-										}
-										else {
-											//If data is noncompressed, save buffer2 to disk
-											LogData(filenametest); //log the SNR stats DM
-
-											char RSfilenameS[260] = "";
-											wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-											//saved file is opened here for writing DM
-											FILE* set = nullptr;
-											if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-												// handle error here DM
-												lasterror |= 16;
-											}
-											else {
-												i = j; //start at the end of the header
-												//this is normally buffer2
-												while (i < (filesizetest+j)) { //edit DM - filesize is EXACT filesize (header is not counted - so add it in)
-													putc(buffer2[i], set);
-													i++;
-												}
-												fclose(set); //file is closed here - but only if it was opened
-											}
-										}
-									}
-									else {
-										lasterror |= 32; //filename is zero size
-									}
-								}
-								else {
-									lasterror |= 64 | c; //new header fail
-								}
-							}
-							else {
-								lasterror |= 128; //lasterror != 0 (RS errors)
-							}
-
-							if (lasterror == 0) {
-								strcpy(DMdecodestat, "SAVED"); //RS decode status
-							}
-							else {
-								strcpy(DMdecodestat, "wait..."); //RS decode status
-							}
-							//remove the buffer arrays from the heap DM
-							delete[] buffer1;
-							delete[] buffer2;
-							delete[] buffer3;
-						}
-					}
-				}
-#endif //RSDECODE
-#endif //NEW_RS_THREAD
-
 				//=========================================================================================================================================================
 				//This is for non-RS received files that have ALL segments decoded OK - DM
 				//do not execute this on RS coded files DM
@@ -2320,7 +1967,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		wsprintf(tempstr,"%c/%c/%d/%d/2.%d",robmode,interl,qam,prot,specocc);	
 		SendMessage (GetDlgItem (hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);	
 
-//		DMmodehash = robmode ^ specocc ^ qam ^ interl; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
+		DMmodehash = robmode + specocc*4 + qam*16 + max((LeadIn-3),0)*32; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
 
 	}
 
@@ -3546,292 +3193,3 @@ void __cdecl ResetRX(void)
 }
 
 */
-
-void RSdecode(void) {
-	//******************************************************************************
-	RSbusy = 1;
-	//Split the following RS code into a new thread... DM 
-	//=========================================================================================================================================================
-	//RS Decoding - By Daz Man 2021
-	//If there have been enough data packets received, decode the file even if we missed the header DM
-	//How do we make sure this only runs once per file? Use the transport ID, also check if it worked or made an error
-
-	uLongf BUFSIZE = 524288 * 2; //> 1M HEAP STORAGE
-	_BYTE* buffer1 = new _BYTE[BUFSIZE];
-	_BYTE* buffer2 = new _BYTE[BUFSIZE];
-	_BYTE* buffer3 = new _BYTE[BUFSIZE]; //erasures processing buffer
-
-	//the exact RS data size is now sent serially on each segment, so use it!
-	//RSfilesize has both old and new methods...
-	//Better to read this directly into the deinterleaver in a new thread!	
-	/*
-	if (RSfilesize > 0) {
-		//Read raw data into buffer2
-		int i = 0;
-		for (i = 0; i < RSfilesize; i++) {
-			buffer2[i] = (_BYTE)GlobalDMRxRSData[i];
-		}
-	}
-	else {
-		lasterror |= 8;
-	}
-	*/
-#define BUFFERDEBUG FALSE
-#if BUFFERDEBUG
-	//====================================================================================
-	//Buffer debugging....
-	//Dump the entire Global buffer to a disk file to verify it's integrity DM
-	FILE* set = nullptr;
-	if ((set = fopen("Rx Files\\debug.txt", "wb")) == nullptr) {
-		// handle error here DM
-		lasterror |= 2048;
-	}
-	else {
-		i = 0; //start at zero
-		//this is normally buffer1
-		while (i < DecFileSize) { //edit DM
-			putc(GlobalDMRxRSData[i], set);
-			i++;
-		}
-		fclose(set); //file is closed here - but only if it was opened
-	}
-	//====================================================================================
-#endif
-
-	//Ideally, save the data into the buffer and start the RS decode attempts in a new thread?
-	//Decoding is pretty fast now, so may not be needed.... But it would avoid stalling the UI - DONE! Sep 29th, 2021
-
-	//Data deinterleaver
-	const bool rev = 1; //Reverse mode to deinterleave
-	distribute(GlobalDMRxRSData, buffer1, RSfilesize, rev); //output is put into buffer1 - read directly from the global RS buffer now
-	//distribute(buffer2, buffer1, RSfilesize, rev); //output is put into buffer1
-
-	//Erasure processing added here...
-	//Unpack the packed erasure bit array and deinterleave it so it matches the deinterleaved data locations
-	//Probably could write it into buffer3, and deinterleave it into buffer2
-	//buffer2 should overwrite at a slower rate than the erasure data is needed...
-	//Is this fast enough for RS1 mode to decode before it starts overwriting?
-
-	//read erasure data and decode
-	int i = 0;
-	int s = 0;
-	while (i < RSfilesize) {
-		//check the tID matches and change erasureswitch value if needed... TODO
-		//erasures are in SEGMENTS
-		//buffer is in BYTES
-		//there are N BYTES per SEGMENT
-		//where N is the segment size
-		//therefore:
-		//s = i / segment size
-		s = i / erasuressegsize[erasureswitch];
-		buffer3[i] = (erasures[erasureswitch][s >> 3] >> (s & 7)) & 1; //get the correct packed bit from each byte
-		i++;
-	}
-	//Deinterleave the erasures so they match up to the deinterleaved data positions
-	distribute(buffer3, buffer2, RSfilesize, rev); //erasures output is put into buffer2 - it can be read before it's overwritten by the RS decoder (even in RS1 mode?)
-
-	//Erasures now need to be changed into list form....
-	//Scan the buffer up to the data size, and make a list of all the zero positions
-	//Maybe best to do this in the RS decoder... DONE
-
-	//RS decode here
-	//lasterror = 0;
-	if (RxRSlevel == 1) {
-		lasterror = rs1decodeE(buffer1, buffer2, buffer2, RSfilesize);
-		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 224; //compute new file size for decoded output
-		}
-	}
-	if (RxRSlevel == 2) {
-		lasterror = rs2decodeE(buffer1, buffer2, buffer2, RSfilesize);
-		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 192; //compute new file size for decoded output
-		}
-	}
-	if (RxRSlevel == 3) {
-		lasterror = rs3decodeE(buffer1, buffer2, buffer2, RSfilesize);
-		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 160; //compute new file size for decoded output
-		}
-	}
-	if (RxRSlevel == 4) {
-		lasterror = rs4decodeE(buffer1, buffer2, buffer2, RSfilesize);
-		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 128; //compute new file size for decoded output
-		}
-	}
-
-	//data needs to be in buffer2 
-
-	/*
-	//copy buffer1 into buffer2 DEBUGGING ONLY ============================================================================
-			for (int i = 0; i < RSfilesize; i++) {
-				buffer2[i] = buffer1[i];
-			}
-	*/
-
-	int filesizetest = 0;
-	int j = 0;
-	//Error count - if RS is working correctly, lasterror should be 0
-	if (lasterror == 0) {
-		//if the RS decode worked....
-		RSlastTransportID = DecTransportID; //save last Transport ID so we don't decode it again
-		//we have good data now, so decode the filename, filesize and headersize from the special header
-		//We should match the ID string to be sure we have a valid header...
-		int c = 0;
-		for (j = 0; j < 15; j++) {
-			//all 15 header characters must match
-			//this is normally buffer2
-			c = (buffer2[j] != EZHeaderID[j]) + c; //logically OR all tests
-		}
-		//if the header ID matched...
-		if (c == 0) {
-
-			//Read the header
-			//get the total header length
-			//normally buffer2
-			j = (buffer2[16] | buffer2[17] << 8); //16 = low byte, 17 = high byte Header Size
-			filesizetest = (buffer2[18] | buffer2[19] << 8 | buffer2[20] << 16); //This is the size of the file, as sent (plain or gzipped) HEADER NOT COUNTED
-			//Save the filename
-			char filenametest[260]{ 0 }; //temp
-			int k = 0;
-			int i = 21; //Filename starts at position 21
-			while (i < j) {
-				filenametest[k++] = buffer2[i++];
-			}
-			filenametest[k] = 0; //terminate filename string with a 0
-
-			//copy the new header filename to the old one
-			if (size(filenametest) > 0) {
-				strcpy(DMfilename, filenametest); //copy
-			}
-
-			//To save the file we better have a filename....
-			if (size(filenametest) > 0) {
-
-				//If file is bigger than 512k, bypass decompression and save it directly DM
-				//gzip decoder ======================================================================================
-				//.gz is used for standard mode to be compatible - RS modes were to use .gzz to prevent unzipping .gz files.. NOT IMPLEMENTED YET - DM
-				if ((stricmp(&filenametest[strlen(filenametest) - 3], ".gz") == 0) && (filesizetest <= BUFSIZE)) {
-					//Data is gzipped, unzip into buffer1 and save
-					//data is compressed, so decompress it
-					i = 0;
-
-					uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
-					int result; //not used at this time
-					//j is the start of the data, after the header
-					result = uncompress(buffer1, &filesize, buffer2 + j, filesizetest); //decompress data using zlib
-					//cut extension off filename
-					filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
-
-					LogData(filenametest); //log the SNR stats DM
-
-					char RSfilenameS[260] = "";
-					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-					//saved file is opened here for writing DM
-					FILE* set = nullptr;
-					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-						// handle error here DM
-						lasterror |= 16;
-					}
-					else {
-						i = 0; //start at zero
-						//this is normally buffer1
-						while (i < filesize) { //edit DM
-							putc(buffer1[i], set);
-							i++;
-						}
-						fclose(set); //file is closed here - but only if it was opened
-					}
-
-				}
-				//LZMA decoder ======================================================================================
-				else if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
-					//Data is gzipped, unzip into buffer1 and save
-					//data is compressed, so decompress it
-					i = 0;
-					SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
-#define propslength 5
-					SizeT filesizein = RSfilesize; // filesizetest;
-					SizeT outsize = BUFSIZE * 2;
-					//j is the start of the data, after the new header
-					//filesize is also saved in 3 bytes after props - not used here, as we have the new header
-					dcomperr = LzmaUncompress(buffer1, &outsize, buffer2 + j + propslength + 3, &filesizein, buffer2 + j, propslength);
-
-					//cut .lz extension off filename
-					filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
-
-					LogData(filenametest); //log the SNR stats DM
-
-					char RSfilenameS[260] = "";
-					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-					//saved file is opened here for writing DM
-					FILE* set = nullptr;
-					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-						// handle error here DM
-						lasterror |= 16;
-					}
-					else {
-						i = 0; //start at zero
-						//this is normally buffer1
-						while (i < filesizetest) { //edit DM
-							putc(buffer1[i], set);
-							i++;
-						}
-						fclose(set); //file is closed here - but only if it was opened
-					}
-
-				}
-				else {
-					//If data is noncompressed, save buffer2 to disk
-					LogData(filenametest); //log the SNR stats DM
-
-					char RSfilenameS[260] = "";
-					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
-
-					//saved file is opened here for writing DM
-					FILE* set = nullptr;
-					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
-						// handle error here DM
-						lasterror |= 16;
-					}
-					else {
-						i = j; //start at the end of the header
-						//this is normally buffer2
-						while (i < (filesizetest + j)) { //edit DM - filesize is EXACT filesize (header is not counted - so add it in)
-							putc(buffer2[i], set);
-							i++;
-						}
-						fclose(set); //file is closed here - but only if it was opened
-					}
-				}
-			}
-			else {
-				lasterror |= 32; //filename is zero size
-			}
-		}
-		else {
-			lasterror |= 64 | c; //new header fail
-		}
-	}
-	else {
-		lasterror |= 128; //lasterror != 0 (RS errors)
-	}
-
-	if (lasterror == 0) {
-		strcpy(DMdecodestat, "SAVED"); //RS decode status
-	}
-	else {
-		strcpy(DMdecodestat, "wait..."); //RS decode status
-	}
-	//remove the buffer arrays from the heap DM
-	delete[] buffer1;
-	delete[] buffer2;
-	delete[] buffer3;
-
-	RSbusy = 0;
-	return;
-}
-//******************************************************************************

@@ -15,7 +15,7 @@
  *
  * 10 September 2021 Daz Man
  *  - Protocol changes for better robustness
- *  - Additional buffer to access data if header fails
+ *  - Additional buffer to access data if header fails - updated to use heap memory Oct 1, 2021
  * 
   ******************************************************************************
  *
@@ -39,7 +39,6 @@
 #include "DABMOT.h"
 #include "picpool.h"
 #include "../bsr.h"
-#include "../../RS-defs.h"
 
 /* Implementation *************************************************************/
 /******************************************************************************\
@@ -518,8 +517,11 @@ iTotLenMOTObj += 16;
 		   one data object (file and header information) from a stream of such
 		   objects, It may be used to indicate the object to which the
 		   information carried in the data group belongs or relates */
+		//A good idea might be to hash the transport ID with the mode being sent to ensure no conflicts if the encoding is changed? DM ===========================================
+		//How will this affect BSRs?
+		int TID = iTranspID + DMmodehash;
 		if (bTransIDFieldUsed == TRUE)
-			vecbiData.Enqueue((uint32_t) iTranspID, 16);
+			vecbiData.Enqueue((uint32_t) TID, 16);
 	
 	}
 
@@ -977,7 +979,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						MOTObjectRaw.BodyRx.bOK = TRUE;
 
 						MOTObjectRaw.BodyRx.Add(vecbiNewData, iSegmentSize, iSegmentNum); //This is where the incoming segment bits get added DM
-						//MOTObjectRaw.BodyRx.AddRS(vecbiNewData, iSegmentSize, iSegmentNum); //TEST CODE
 						MOTObjectRaw.iActSegment = iSegmentNum;
 
 #define NEWCODE TRUE
@@ -986,33 +987,31 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						//This code copies the bit data in byte form to the new RS buffer, even if segment 0 (header) is missing
 						//WORKING 2:45am 10th Sep 2021
 						//only execute if the CRC is good
-							if (bCRCOk) {
-								if (iSegmentSize > DMRSpsize) {
-									DMRSpsize = iSegmentSize;
-								};
+						if (bCRCOk) {
+							if (iSegmentSize > DMRSpsize) {
+								DMRSpsize = iSegmentSize;
+							};
 
-								MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].ResetBitAccess(); //Start reading from zero
-								unsigned int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
-								DMRSpsize = iSegmentSize; //update
-								unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
-								unsigned int a = 0;
-								unsigned char dat = 0;
-								const unsigned limit = size(GlobalDMRxRSData); //get the buffer size
-								if (k > 0) {
-									for (unsigned int i = 0; i < k; i++)
-									{
-										//a bounds check on the computed index might be wise... DM
-										a = j + i;
-										if (a > limit) { a = limit - 1; } //bounds limit
-										GlobalDMRxRSData[a] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
-										//buffer2[a] = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
-										//MOTObjectRaw.RSbytes.at(a) = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time
-										//MOTObjectRaw.PutRSData(a, MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8));
-
-									}
+							MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].ResetBitAccess(); //Start reading from zero
+							unsigned int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
+							DMRSpsize = iSegmentSize; //update
+							unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
+							unsigned int a = 0;
+							int oldsize = MOTObjectRaw.BodyRx.RSbytes.size(); //get current size of new buffer
+							int newsize = (j + k) * 2; //*2 to ensure there is never a read error in the distribute function
+							//if RSbytes buffer is too small, resize it
+							if (oldsize < newsize) {
+								MOTObjectRaw.BodyRx.RSbytes.resize(newsize); //make it larger if needed
+							}
+							if (k > 0) {
+								for (unsigned int i = 0; i < k; i++)
+								{
+									a = j + i;
+									//use a NEW vector buffer in heap memory instead of using up 1M+ of stack memory:
+									MOTObjectRaw.BodyRx.RSbytes.at(a) = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].Separate(8); //grab a byte each time, and write into the RSbytes buffer
 								}
 							}
-						//}
+						}
 						//END NEW CODE DM =================================
 #endif //NEWCODE
 					}
@@ -1045,6 +1044,36 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 				}
 			}
 
+			//NEW CODE for RS decoding
+			//======================================================================================================================================================
+			//Launch RS decoding from here, instead of in Dialog.cpp - Working Oct 01, 2021
+			//Check if we have enough data to attempt RS decode:
+			//launch a new thread for the RS decode - Working Sep 29, 2021
+			//read the global RS segment buffer there
+			//make the buffers in the new thread
+			//save the file
+			//then destroy the new buffers and terminate that thread
+
+				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0))) {
+					//Decide whether to attempt decode at a level dependent on the RS level in use
+					float DMdecision = 1;
+					if (RxRSlevel == 1) { DMdecision = 0.89; }
+					else if (RxRSlevel == 2) { DMdecision = 0.76; }
+					else if (RxRSlevel == 3) { DMdecision = 0.64; }
+					else if (RxRSlevel == 4) { DMdecision = 0.51; }
+					if ((actsize >= (DecTotalSegs * DMdecision))) {
+						//if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic)) { //for debugging, wait for the whole file DM
+
+						if ((RSlastTransportID != DecTransportID) && (RSbusy == 0)) {
+							RSbuffer = MOTObjectRaw.BodyRx.RSbytes.data(); //grab the RSbytes buffer address and save it where we can access it easily
+							
+							std::thread RSdecoder(RSdecode); //launch the RS decoder in a new thread
+							RSdecoder.detach(); //detach and terminate after running
+						}
+					}
+				}
+
+			//======================================================================================================================================================
 			/* Use MOT object ----------------------------------------------- */
 			/* Test if MOT object is ready */
 			if ((MOTObjectRaw.Header.bReady == TRUE) && (MOTObjectRaw.BodyRx.bReady == TRUE))
@@ -1487,44 +1516,6 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 
 }
 
-//DM - read RS data into it's own buffer
-/*
-void CMOTObjectRaw::CDataUnitRx::AddRS(CVector<_BINARY>& vecbiNewData, const int iSegmentSize, const int iSegNum)
-{
-	int i=0;
-	// Add new data (byte-wise copying)
-	const int iNewDataSize = iSegmentSize;
-	const int iOldEnlSize = RSbytes.Size();
-	const int iNewEnlSize = iSegNum + 1;
-
-	vecbiNewData.ResetBitAccess(); //Start reading from zero
-
-	if (iNewEnlSize > iOldEnlSize)
-		RSbytes.Enlarge(iNewEnlSize - iOldEnlSize);
-
-	RSbytes.Init(iNewDataSize);
-
-	//Read useful bits. We have to use the "Separate()" function since we have to start adding at the current bit position of "RSbytes"
-	for (i = 0; i < iNewDataSize; i++)
-		RSbytes.at(i) = (_BYTE)vecbiNewData.Separate(8);
-
-}
-*/
-
-//int* buffer
-/*
-void CMOTObjectRaw::CDataUnitRx::GetRSdata(CMOTObject& NewPic)
-{
-	int i = 0;
-	//copy RS data from RSbytes to buffer
-	for (i = 0; i < RSbytes.size(); i++) {
-		NewPic[i] = RSbytes.at(i); //copy all
-	}
-
-	return;
-}
-*/
-
 void CMOTObjectRaw::CDataUnitRx::Reset()
 {
 	vvbiSegment.Init(0); 
@@ -1534,3 +1525,273 @@ void CMOTObjectRaw::CDataUnitRx::Reset()
 	iTotSegments = -1;
 }
 
+void RSdecode() {
+	//******************************************************************************
+	RSbusy = 1; //only run one instance of this
+	//This code runs in a new thread, then terminates... DM  Sep 29th, 2021
+	//=========================================================================================================================================================
+	//RS Decoding - By Daz Man 2021
+	//If there have been enough data packets received, decode the file even if we missed the header DM
+	//How do we make sure this only runs once per file? Use the transport ID, also check if it worked or made an error
+
+	uLongf BUFSIZE = 524288 * 2; // >1M HEAP STORAGE
+	_BYTE* buffer1 = new _BYTE[BUFSIZE];
+	_BYTE* buffer2 = new _BYTE[BUFSIZE];
+	_BYTE* buffer3 = new _BYTE[BUFSIZE]; //erasures processing buffer
+
+#define BUFFERDEBUG FALSE
+#if BUFFERDEBUG
+	//====================================================================================
+	//Buffer debugging....
+	//Dump the entire Global buffer to a disk file to verify it's integrity DM
+	FILE* set = nullptr;
+	if ((set = fopen("Rx Files\\debug.txt", "wb")) == nullptr) {
+		// handle error here DM
+		lasterror |= 2048;
+	}
+	else {
+		i = 0; //start at zero
+		//this is normally buffer1
+		while (i < DecFileSize) { //edit DM
+			putc(RSbuffer[i], set);
+			i++;
+		}
+		fclose(set); //file is closed here - but only if it was opened
+	}
+	//====================================================================================
+#endif
+	//RSbuffer address is grabbed during decoding, just before this routine is launched
+
+	//Data deinterleaver
+	const bool rev = 1; //Reverse mode to deinterleave
+	distribute(RSbuffer, buffer1, RSfilesize, rev); //output is put into buffer1 - read directly from the global RS buffer now
+
+	//Erasure processing added here...
+	//Unpack the packed erasure bit array and deinterleave it so it matches the deinterleaved data locations
+	//Probably could write it into buffer3, and deinterleave it into buffer2
+	//buffer2 should overwrite at a slower rate than the erasure data is needed...
+	//Is this fast enough for RS1 mode to decode before it starts overwriting?
+
+	//read erasure data and decode
+	int i = 0;
+	int s = 0;
+	while (i < RSfilesize) {
+		//check the tID matches and change erasureswitch value if needed... TODO
+		//erasures are in SEGMENTS
+		//buffer is in BYTES
+		//there are N BYTES per SEGMENT
+		//where N is the segment size
+		//therefore:
+		//s = i / segment size
+		s = i / erasuressegsize[erasureswitch];
+		buffer3[i] = (erasures[erasureswitch][s >> 3] >> (s & 7)) & 1; //get the correct packed bit from each byte
+		i++;
+	}
+	//Deinterleave the erasures so they match up to the deinterleaved data positions
+	distribute(buffer3, buffer2, RSfilesize, rev); //erasures output is put into buffer2 - it can be read before it's overwritten by the RS decoder (even in RS1 mode?)
+
+	//Erasures now need to be changed into list form....
+	//Scan the buffer up to the data size, and make a list of all the zero positions
+	//Maybe best to do this in the RS decoder... DONE
+
+	//RS decode here
+	//lasterror = 0;
+	if (RxRSlevel == 1) {
+		lasterror = rs1decodeE(buffer1, buffer2, buffer2, RSfilesize);
+		if (lasterror == 0) {
+			RSfilesize = (RSfilesize / 255) * 224; //compute new file size for decoded output
+		}
+	}
+	if (RxRSlevel == 2) {
+		lasterror = rs2decodeE(buffer1, buffer2, buffer2, RSfilesize);
+		if (lasterror == 0) {
+			RSfilesize = (RSfilesize / 255) * 192; //compute new file size for decoded output
+		}
+	}
+	if (RxRSlevel == 3) {
+		lasterror = rs3decodeE(buffer1, buffer2, buffer2, RSfilesize);
+		if (lasterror == 0) {
+			RSfilesize = (RSfilesize / 255) * 160; //compute new file size for decoded output
+		}
+	}
+	if (RxRSlevel == 4) {
+		lasterror = rs4decodeE(buffer1, buffer2, buffer2, RSfilesize);
+		if (lasterror == 0) {
+			RSfilesize = (RSfilesize / 255) * 128; //compute new file size for decoded output
+		}
+	}
+
+	//data needs to be in buffer2 
+
+	/*
+	//copy buffer1 into buffer2 DEBUGGING ONLY ============================================================================
+			for (int i = 0; i < RSfilesize; i++) {
+				buffer2[i] = buffer1[i];
+			}
+	*/
+
+	int filesizetest = 0;
+	int j = 0;
+	//Error count - if RS is working correctly, lasterror should be 0
+	if (lasterror == 0) {
+		//if the RS decode worked....
+		RSlastTransportID = DecTransportID; //save last Transport ID so we don't decode it again
+		//we have good data now, so decode the filename, filesize and headersize from the special header
+		//We should match the ID string to be sure we have a valid header...
+		int c = 0;
+		for (j = 0; j < 15; j++) {
+			//all 15 header characters must match
+			//this is normally buffer2
+			c = (buffer2[j] != EZHeaderID[j]) + c; //logically OR all tests
+		}
+		//if the header ID matched...
+		if (c == 0) {
+
+			//Read the header
+			//get the total header length
+			//normally buffer2
+			j = (buffer2[16] | buffer2[17] << 8); //16 = low byte, 17 = high byte Header Size
+			filesizetest = (buffer2[18] | buffer2[19] << 8 | buffer2[20] << 16); //This is the size of the file, as sent (plain or gzipped) HEADER NOT COUNTED
+			//Save the filename
+			char filenametest[260]{ 0 }; //temp
+			int k = 0;
+			int i = 21; //Filename starts at position 21
+			while (i < j) {
+				filenametest[k++] = buffer2[i++];
+			}
+			filenametest[k] = 0; //terminate filename string with a 0
+
+			//copy the new header filename to the old one
+			if (size(filenametest) > 0) {
+				strcpy(DMfilename, filenametest); //copy
+			}
+
+			//To save the file we better have a filename....
+			if (size(filenametest) > 0) {
+
+				//If file is bigger than 512k, bypass decompression and save it directly DM
+				//gzip decoder ======================================================================================
+				//.gz is used for standard mode to be compatible - RS modes were to use .gzz to prevent unzipping .gz files.. NOT IMPLEMENTED YET - DM
+				if ((stricmp(&filenametest[strlen(filenametest) - 3], ".gz") == 0) && (filesizetest <= BUFSIZE)) {
+					//Data is gzipped, unzip into buffer1 and save
+					//data is compressed, so decompress it
+					i = 0;
+
+					uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
+					int result; //not used at this time
+					//j is the start of the data, after the header
+					result = uncompress(buffer1, &filesize, buffer2 + j, filesizetest); //decompress data using zlib
+					//cut extension off filename
+					filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
+
+					LogData(filenametest); //log the SNR stats DM
+
+					char RSfilenameS[260] = "";
+					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
+
+					//saved file is opened here for writing DM
+					FILE* set = nullptr;
+					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
+						// handle error here DM
+						lasterror |= 16;
+					}
+					else {
+						i = 0; //start at zero
+						//this is normally buffer1
+						while (i < filesize) { //edit DM
+							putc(buffer1[i], set);
+							i++;
+						}
+						fclose(set); //file is closed here - but only if it was opened
+					}
+
+				}
+				//LZMA decoder ======================================================================================
+				else if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
+					//Data is LZMA compressed, uncompress into buffer1 and save
+					//data is compressed, so decompress it
+					i = 0;
+					SizeT filesize = BUFSIZE; //to tell LZMA how big the buffer is
+#define propslength 5
+					SizeT filesizein = RSfilesize; // filesizetest;
+					SizeT outsize = BUFSIZE;
+					//j is the start of the data, after the new header
+					//filesize is also saved in 3 bytes after props - not used here, as we have the new header
+					dcomperr = LzmaUncompress(buffer1, &outsize, buffer2 + j + propslength + 3, &filesizein, buffer2 + j, propslength);
+
+					//cut .lz extension off filename
+					filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
+
+					LogData(filenametest); //log the SNR stats DM
+
+					char RSfilenameS[260] = "";
+					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
+
+					//saved file is opened here for writing DM
+					FILE* set = nullptr;
+					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
+						// handle error here DM
+						lasterror |= 16;
+					}
+					else {
+						i = 0; //start at zero
+						//this is normally buffer1
+						while (i < filesizetest) { //edit DM
+							putc(buffer1[i], set);
+							i++;
+						}
+						fclose(set); //file is closed here - but only if it was opened
+					}
+
+				}
+				else {
+					//If data is noncompressed, save buffer2 to disk
+					LogData(filenametest); //log the SNR stats DM
+
+					char RSfilenameS[260] = "";
+					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
+
+					//saved file is opened here for writing DM
+					FILE* set = nullptr;
+					if ((set = fopen(RSfilenameS, "wb")) == nullptr) {
+						// handle error here DM
+						lasterror |= 16;
+					}
+					else {
+						i = j; //start at the end of the header
+						//this is normally buffer2
+						while (i < (filesizetest + j)) { //edit DM - filesize is EXACT filesize (header is not counted - so add it in)
+							putc(buffer2[i], set);
+							i++;
+						}
+						fclose(set); //file is closed here - but only if it was opened
+					}
+				}
+			}
+			else {
+				lasterror |= 32; //filename is zero size
+			}
+		}
+		else {
+			lasterror |= 64 | c; //new header fail
+		}
+	}
+	else {
+		lasterror |= 128; //lasterror != 0 (RS errors)
+	}
+
+	if (lasterror == 0) {
+		strcpy(DMdecodestat, "SAVED"); //RS decode status
+	}
+	else {
+		strcpy(DMdecodestat, "wait..."); //RS decode status
+	}
+	//remove the buffer arrays from the heap DM
+	delete[] buffer1;
+	delete[] buffer2;
+	delete[] buffer3;
+
+	RSbusy = 0;
+	return;
+}
+//******************************************************************************

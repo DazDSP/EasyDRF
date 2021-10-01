@@ -115,14 +115,11 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		//Daz Man: Before we make the header, we need to figure out what the filename extension is going to be
 		LPSTR dx1 = const_cast<char*>(strFileNamenoDir.c_str()); //the filename that is being sent
 		const string& dx2 = ".lz"; //the 2nd filename extension that denotes LZMA compression is used
-//		if (LeadIn > 3) {
-//			const string& dx2 = ".gzz"; //can't modify a constant - DM
-//		}
 		string strFileNamenoDirX; //the variable that holds the modified filename
-		_BOOLEAN gzipit = !checkext(dx1); //check list of file types
-//		gzipit = FALSE; //TEST ===================================================================================================================
+		_BOOLEAN compressit = !checkext(dx1); //check list of file types
+//		compressit = FALSE; //TEST ===================================================================================================================
 
-		if (gzipit) {
+		if (compressit) {
 			strFileNamenoDirX = strFileNamenoDir.c_str() + dx2; //attach extra file extension to denote compression is used
 		}
 		else {
@@ -161,7 +158,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		//change the existing routines below to read from the buffer output
 		//
 		//test the filename extension
-		if (gzipit) {
+		if (compressit) {
 			//read into buffer1T if it's compressible
 			result = fread(buffer1T, 1, filesize, pFiBody); //read the file to send into buffer1T if it is text
 			//uLongf ds = BUFSIZE; //tell zlib the buffer size we are using

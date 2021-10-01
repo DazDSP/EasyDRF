@@ -5,6 +5,7 @@
  * Author(s):
  *	Volker Fischer
  *  Francesco Lanza
+ *  Daz Man (2021)
  *
  * Description:
  *	See DABMOT.cpp
@@ -33,6 +34,7 @@
 #include "../GlobalDefinitions.h"
 #include "../Vector.h"
 #include "../CRC.h"
+#include "../../RS-defs.h"
 
 /* Classes ********************************************************************/
 class CMOTObjectRaw
@@ -61,6 +63,7 @@ public:
 		_BOOLEAN			bOK, bReady;
 		int					iDataSegNum;
 		int					iTotSegments;
+		CVector<BYTE> RSbytes; //added DM - working 1st Oct, 2021
 	};
 
 	int			iTransportID;
@@ -179,4 +182,5 @@ protected:
 
 void GetName(CMOTObjectRaw& MOTObjectRaw);
 
+void RSdecode(); //added DM
 #endif // !defined(DABMOT_H__3B0UBVE98732KJVEW363E7A0D31912__INCLUDED_)

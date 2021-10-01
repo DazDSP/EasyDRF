@@ -27,6 +27,7 @@
 
 #if !defined(RSDEF_)
 #define RSDEF_ TRUE
+#define WIN32_LEAN_AND_MEAN
 extern int LeadIn; //Moved from ..? DM
 extern string EZHeaderID; //header ID string
 extern int EncFileSize; //Encoder current file size
@@ -66,7 +67,6 @@ extern int erasureflags;
 extern int DecPrevSeg;
 extern int DecHighSeg;
 
-extern unsigned char GlobalDMRxRSData[1100000];
 extern int DMRSindex;
 extern int DMRSpsize;
 
@@ -76,4 +76,21 @@ extern char DMdecodestat[15];
 
 extern int DMmodehash;
 
+extern int DMspeechmodecount;
+
+extern int dcomperr; //decompressor error
+extern int RSbusy;
+extern int lasterror; //save RS error count
+
+#define ZLIB_WINAPI
+#define ZLIB_DLL
+#define ZLIB_INTERNAL
+#include "zconf.h"
+#include "zlib.h"
+#include "Logging.h"
+#include "LzmaLib.h"
+#include "common/RS/RS-coder.h"
+#include <thread>
+
+extern _BINARY* RSbuffer;
 #endif
