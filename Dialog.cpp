@@ -1331,7 +1331,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		//======================================================================================================================================================
 		//SEGMENT BARGRAPH by Daz Man 2021
 		//======================================================================================================================================================
-		RECT rect;
+		RECT rect{};
 		int width = 218;
 		if (GetWindowRect(hwnd, &rect))
 		{
@@ -1444,6 +1444,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 			//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
 			if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
+
 				SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
 				MoveToEx(hdc, ((x * n) / 1000)+5, BARY, nullptr);
 				LineTo(hdc, BARR, BARY); //erase the rest of the window
@@ -1460,6 +1461,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			BarLastSeg = x;
 
 			ReleaseDC(hwnd, hdc);
+
 		}
 
 		//are there any blocks that need cleaning?

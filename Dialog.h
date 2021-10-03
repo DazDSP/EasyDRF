@@ -88,5 +88,4 @@ void   __cdecl writebsrselsegments(int inst = 1);
 // 1 to 4 allowed for instance parameter
 // auto sends 2 instance if (noseg < 50), 3 if (noseg < 10), 4 if (noseg < 3)
 
-void RSdecode();
 #endif
