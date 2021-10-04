@@ -394,6 +394,7 @@ FodyWeavers.xsd
 
 # Executables
 #*.exe #might include the exe...
+EasyDRF-latest.exe
 *.out
 *.app
 
