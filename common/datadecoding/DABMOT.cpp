@@ -999,7 +999,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 							unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
 							unsigned int a = 0;
 							int oldsize = MOTObjectRaw.BodyRx.RSbytes.size(); //get current size of new buffer
-							int newsize = max((j + k) * 2,1100000); //set this large to ensure there is never a read error in the distribute function
+							int newsize = max((j + k) * 2,1050000); //set this large to ensure there is never a read error in the distribute function
 							//if RSbytes buffer is too small, resize it
 							if (oldsize < newsize) {
 								MOTObjectRaw.BodyRx.RSbytes.resize(newsize); //make it larger if needed
