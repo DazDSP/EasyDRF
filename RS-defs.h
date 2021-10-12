@@ -92,5 +92,4 @@ extern int lasterror; //save RS error count
 #include "common/RS/RS-coder.h"
 #include <thread>
 
-extern _BINARY* RSbuffer;
 #endif

@@ -134,7 +134,7 @@ BOOL checkfilenam(LPSTR filename, int filnamsize)
 			(_stricmp(&filename[filnamsize-3],"scr") != 0));
 }
 
-//check the file extension, and if it's a listed type flag it as such for gzip compression DM
+//check the file extension, and if it's a listed type flag it as such for compression DM
 //const string&
 BOOL checkext(LPSTR filename) {
 	int size = strlen(filename);

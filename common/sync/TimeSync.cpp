@@ -580,11 +580,11 @@ fflush(pFile);
 
 void CTimeSync::InitInternal(CParameter& ReceiverParam)
 {
-	int		i, j;
-	int		iMaxSymbolBlockSize;
-	int		iObservedFreqBin;
-	CReal	rArgTemp;
-	int		iCorrBuffSize;
+	int		i = 0, j = 0; //init DM
+	int		iMaxSymbolBlockSize = 0; //init DM
+	int		iObservedFreqBin = 0; //init DM
+	CReal	rArgTemp = 0; //init DM
+	int		iCorrBuffSize = 0; //init DM
 
 	/* Get parameters from info class */
 	iGuardSize = ReceiverParam.iGuardSize;

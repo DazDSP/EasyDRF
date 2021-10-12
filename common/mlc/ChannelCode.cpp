@@ -38,15 +38,15 @@ CVector<int> CChannelCode::GenPuncPatTable(CParameter::ECodScheme eNewCodingSche
 										   int iPunctPatPartA, int iPunctPatPartB,
 										   int iLevel)
 {
-	int				i;
-	int				iNumOutBits;
-	int				iNumOutBitsWithMemory;
-	int				iTailbitPattern;
-	int				iTailbitParamL0;
-	int				iTailbitParamL1;
-	int				iPartAPatLen;
-	int				iPartBPatLen;
-	int				iPunctCounter;
+	int				i = 0; //init DM
+	int				iNumOutBits = 0; //init DM
+	int				iNumOutBitsWithMemory = 0; //init DM
+	int				iTailbitPattern = 0; //init DM
+	int				iTailbitParamL0 = 0; //init DM
+	int				iTailbitParamL1 = 0; //init DM
+	int				iPartAPatLen = 0; //init DM
+	int				iPartBPatLen = 0; //init DM
+	int				iPunctCounter = 0; //init DM
 	CVector<int>	veciPuncPatPartA;
 	CVector<int>	veciPuncPatPartB;
 	CVector<int>	veciTailBitPat;

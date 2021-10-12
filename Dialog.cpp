@@ -98,10 +98,8 @@ int RSbusy = 0;
 int RSError = 0; //To display RS decoding errors
 int dcomperr = 0; //decompressor error
 int lasterror = 0; //save RS error count
-_BINARY* RSbuffer = nullptr; //to save pointer
 
 bool CRCOK = 0;
-//int LastGoodCRC = 0;
 
 #define BARL 0 //bargraph left
 #define BARY 240 //bargraph Y
@@ -1798,7 +1796,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							}
 							else {
 								//data is not compressed, save normally - no need for extra buffers
-								//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.gz file is sent, so save it normally)
+								//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.lz file is sent (?), so save it normally)
 								LogData(filename); //log the SNR stats DM
 
 								char savename[260] = "";
@@ -1844,6 +1842,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						}
 					}
 				}
+
 				sendinfo(hwnd); //send stats to window
 			}
 		

@@ -118,61 +118,61 @@ public:
 
 protected:
 	enum EDFTWinType {DFT_WIN_RECT, DFT_WIN_HAMM};
-	EDFTWinType			eDFTWindowingMethod{}; //init DM
+	EDFTWinType			eDFTWindowingMethod;
 
-	int					iNumSymPerFrame{}; //init DM
+	int					iNumSymPerFrame;
 
-	CChanEstTime*		pTimeInt{}; //init DM
+	CChanEstTime*		pTimeInt;
 
-	CTimeLinear			TimeLinear{}; //init DM
-	CTimeWiener			TimeWiener{}; //init DM
+	CTimeLinear			TimeLinear;
+	CTimeWiener			TimeWiener;
 
-	CTimeSyncTrack		TimeSyncTrack{}; //init DM
+	CTimeSyncTrack		TimeSyncTrack;
 
-	ETypeIntFreq		TypeIntFreq{}; //init DM
-	ETypeIntTime		TypeIntTime{}; //init DM
-	ETypeSNREst			TypeSNREst{}; //init DM
+	ETypeIntFreq		TypeIntFreq;
+	ETypeIntTime		TypeIntTime;
+	ETypeSNREst			TypeSNREst;
 
-	int					iNumCarrier{}; //init DM
+	int					iNumCarrier;
 
-	CMatrix<_COMPLEX>	matcHistory{}; //init DM
+	CMatrix<_COMPLEX>	matcHistory;
 
-	int					iLenHistBuff{}; //init DM
+	int					iLenHistBuff;
 
-	int					iScatPilFreqInt{}; //init DM /* Frequency interpolation */
-	int					iScatPilTimeInt{}; //init DM /* Time interpolation */
+	int					iScatPilFreqInt; /* Frequency interpolation */
+	int					iScatPilTimeInt; /* Time interpolation */
 
-	CComplexVector		veccChanEst{}; //init DM
+	CComplexVector		veccChanEst;
 
-	int					iFFTSizeN{}; //init DM
+	int					iFFTSizeN;
 
-	CReal				rGuardSizeFFT{}; //init DM
+	CReal				rGuardSizeFFT;
 
-	CRealVector			vecrDFTWindow{}; //init DM
-	CRealVector			vecrDFTwindowInv{}; //init DM
+	CRealVector			vecrDFTWindow;
+	CRealVector			vecrDFTwindowInv;
 
-	int					iLongLenFreq{}; //init DM
-	CComplexVector		veccPilots{}; //init DM
-	CComplexVector		veccIntPil{}; //init DM
-	CFftPlans			FftPlanShort{}; //init DM
-	CFftPlans			FftPlanLong{}; //init DM
+	int					iLongLenFreq;
+	CComplexVector		veccPilots;
+	CComplexVector		veccIntPil;
+	CFftPlans			FftPlanShort;
+	CFftPlans			FftPlanLong;
 
-	int					iNumIntpFreqPil{}; //init DM
+	int					iNumIntpFreqPil;
 
-	CReal				rLamSNREstFast{}; //init DM
-	CReal				rLamSNREstSlow{}; //init DM
+	CReal				rLamSNREstFast;
+	CReal				rLamSNREstSlow;
 
-	_REAL				rNoiseEst{}; //init DM
-	_REAL				rSignalEst{}; //init DM
-	_REAL				rSNREstimate{}; //init DM
-	_REAL				rSNRCorrectFact{}; //init DM
-	int					iUpCntWienFilt{}; //init DM
+	_REAL				rNoiseEst;
+	_REAL				rSignalEst;
+	_REAL				rSNREstimate;
+	_REAL				rSNRCorrectFact;
+	int					iUpCntWienFilt;
 
-	_REAL				rLenPDSEst{}; //init DM /* Needed for GetDelay() */
-	_REAL				rMaxLenPDSInFra{}; //init DM
-	_REAL				rMinOffsPDSInFra{}; //init DM
+	_REAL				rLenPDSEst; /* Needed for GetDelay() */
+	_REAL				rMaxLenPDSInFra;
+	_REAL				rMinOffsPDSInFra;
 
-	int					iStartZeroPadding{}; //init DM
+	int					iStartZeroPadding;
 
 	CReal				TentativeFACDec(const CComplex cCurRec) const;
 
@@ -184,19 +184,19 @@ protected:
 									 CReal rRatPDSLen, CReal rRatPDSOffs,
 									 int iLength);
 	CComplex FreqCorrFct(int iCurPos, CReal rRatPDSLen, CReal rRatPDSOffs);
-	CMatrix<_COMPLEX>	matcFiltFreq{}; //init DM
-	int					iLengthWiener{}; //init DM
-	CVector<int>		veciPilOffTab{}; //init DM
+	CMatrix<_COMPLEX>	matcFiltFreq;
+	int					iLengthWiener;
+	CVector<int>		veciPilOffTab;
 
-	int					iDCPos{}; //init DM
-	int					iPilOffset{}; //init DM
-	int					iNoWienerFilt{}; //init DM
-	CComplexMatrix		matcWienerFilter{}; //init DM
+	int					iDCPos;
+	int					iPilOffset;
+	int					iNoWienerFilt;
+	CComplexMatrix		matcWienerFilter;
 
-	int					iInitCnt{}; //init DM
-	int					iSNREstInitCnt{}; //init DM
-	int					iNumCellsSNRInit{}; //init DM
-	_BOOLEAN			bWasSNRInit{}; //init DM
+	int					iInitCnt;
+	int					iSNREstInitCnt;
+	int					iNumCellsSNRInit;
+	_BOOLEAN			bWasSNRInit;
 
 	
 	virtual void InitInternal(CParameter& ReceiverParam);

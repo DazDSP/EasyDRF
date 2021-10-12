@@ -1058,17 +1058,19 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0))) {
 					//Decide whether to attempt decode at a level dependent on the RS level in use
 					float DMdecision = 1;
-					if (RxRSlevel == 1) { DMdecision = 0.89; }
-					else if (RxRSlevel == 2) { DMdecision = 0.76; }
-					else if (RxRSlevel == 3) { DMdecision = 0.64; }
-					else if (RxRSlevel == 4) { DMdecision = 0.51; }
+					if (RxRSlevel == 1) { DMdecision = 0.88; } //0.89
+					else if (RxRSlevel == 2) { DMdecision = 0.75; } //0.76
+					else if (RxRSlevel == 3) { DMdecision = 0.63; } //0.64
+					else if (RxRSlevel == 4) { DMdecision = 0.5; } //0.51
 					if ((actsize >= (DecTotalSegs * DMdecision))) {
 						//if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic)) { //for debugging, wait for the whole file DM
 
 						if ((RSlastTransportID != DecTransportID) && (RSbusy == 0)) {
+							RSbusy = 1; //only run one instance of this
+							unsigned char* RSbuffer = nullptr;
 							RSbuffer = MOTObjectRaw.BodyRx.RSbytes.data(); //grab the RSbytes buffer address and save it where we can access it easily
 							
-							std::thread RSdecoder(RSdecode); //launch the RS decoder in a new thread
+							std::thread RSdecoder(RSdecode,RSbuffer); //launch the RS decoder in a new thread
 							RSdecoder.detach(); //detach and terminate after running
 						}
 					}
@@ -1526,9 +1528,8 @@ void CMOTObjectRaw::CDataUnitRx::Reset()
 	iTotSegments = -1;
 }
 
-void RSdecode() {
+void RSdecode(unsigned char* RSbuffer) {
 	//******************************************************************************
-	RSbusy = 1; //only run one instance of this
 	//This code runs in a new thread, then terminates... DM  Sep 29th, 2021
 	//=========================================================================================================================================================
 	//RS Decoding - By Daz Man 2021
