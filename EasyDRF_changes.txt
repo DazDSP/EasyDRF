@@ -1,3 +1,29 @@
+EasyDRF Changes - by Daz Man October 17th, 2021
+* Renamed "LeadIn" var to the more accurate "ECCmode" name
+* Disabled modehash in non-RS modes to allow BSR to work
+
+
+EasyDRF Changes - by Daz Man October 12th, 2021
+* RS buffer pointer global variable changed to a local variable
+* Reduced RS decode decision points by 1% to improve decoding chances
+
+
+EasyDRF Changes - by Daz Man October 5th, 2021
+* Corrected RS buffer size to one universal value
+
+
+EasyDRF Changes - by Daz Man October 4th, 2021
+* Set RS buffer size to a large size (>1M) on program initialization
+
+
+EasyDRF Changes - by Daz Man October 1th, 2021
+* RS buffer moved from stack into heap memory (finally!)
+
+
+EasyDRF Changes - by Daz Man September 29th, 2021
+* RS decoder now runs in a new thread to prevent stalling the GUI or modem code
+
+
 EasyDRF Changes - by Daz Man September 27th, 2021
 * File compressor changed to LZMA
 * Stats logging added for SWRG

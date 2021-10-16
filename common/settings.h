@@ -22,7 +22,7 @@ extern BOOL rxaudfilt;
 extern BOOL rtsonfac;
 extern BOOL dtronfac;
 extern BOOL fastreset;
-extern int LeadIn;
+extern int ECCmode;
 
 void comtx(char port);
 void dotx(void);

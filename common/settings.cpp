@@ -205,7 +205,7 @@ void savevar(void)
 		fprintf(set,"%d BW\n",specoccuppa);
 		fprintf(set,"%d Interleave\n",interleave);
 		fprintf(set, "%d FastReset\n", fastres);
-		fprintf(set, "%d Instances/RS\n", LeadIn); //added DM
+		fprintf(set, "%d Instances/RS\n", ECCmode); //added DM
 		fclose(set);
 	}
 }
@@ -232,7 +232,7 @@ void getvar(void)
 		fscanf(set,"%d %s",&specoccuppa,&rubbish);
 		fscanf(set,"%d %s",&interleave,&rubbish);
 		fscanf(set, "%d %s", &fastres, &rubbish);
-		fscanf(set, "%d %s", &LeadIn, &rubbish); //added DM
+		fscanf(set, "%d %s", &ECCmode, &rubbish); //added DM
 		fclose(set);
 		if (audfiltrx == 1) rxaudfilt = TRUE;
 		else rxaudfilt = FALSE;

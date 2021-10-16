@@ -28,7 +28,7 @@
 #if !defined(RSDEF_)
 #define RSDEF_ TRUE
 #define WIN32_LEAN_AND_MEAN
-extern int LeadIn; //Moved from ..? DM
+extern int ECCmode; //Used to be called LeadIn DM
 extern string EZHeaderID; //header ID string
 extern int EncFileSize; //Encoder current file size
 extern int EncSegSize; //Encoder current segment size

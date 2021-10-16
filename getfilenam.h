@@ -37,8 +37,8 @@
 
 extern CDRMTransmitter	DRMTransmitter;
 extern CDRMReceiver	DRMReceiver;
-//extern char LeadIn; //Edited DM
-extern int LeadIn;
+//extern char ECCmode; //Edited DM
+extern int ECCmode;
 extern int specocc; //3->2.3  5->2.5
 extern int TXpicpospt;
 extern char pictfile[32][260]; //edited DM was 8, 300 //1200 is now 260

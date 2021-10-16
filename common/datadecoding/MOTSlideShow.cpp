@@ -128,7 +128,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		
 		//Only add the new header if using the new RS mode
 		int HeaderSize = 0;
-		if (LeadIn > 3) {
+		if (ECCmode > 3) {
 			//Daz Man:
 			//Write a header for all files, containing the filename, the filesize and the header size to guarantee this data is available if the file decodes ok.
 			//write header into buffer2T before file copy or gzip write, then read it out directly or RS code it into buffer1T
@@ -204,9 +204,9 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		filesize = filesize + HeaderSize; //add header if it's non-zero
 //=============================================================================================================================
 		//RS encoding can go here, with header added first  DM
-		//Only execute this if LeadIn is > 3
+		//Only execute this if ECCmode is > 3
 
-		if (LeadIn > 3) {
+		if (ECCmode > 3) {
 
 			//Put RS coding routine here - Daz Man 2021
 			//Compressed or uncompressed data (+header) is in buffer2T
@@ -217,22 +217,22 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			//RS encode here
 			//filesize = filesize + HeaderSize; //add size of new header in - already done now...
 			int lasterror = 0;
-			if (LeadIn == 4) {
+			if (ECCmode == 4) {
 				//RS1
 				lasterror = rs1encode(buffer2T, buffer1T, filesize); //
 				filesize = ceil((float)filesize / 224) * 255; //allow for bigger data size
 			}
-			else if (LeadIn == 5) {
+			else if (ECCmode == 5) {
 				//RS2
 				lasterror = rs2encode(buffer2T, buffer1T, filesize); //
 				filesize = ceil((float)filesize / 192) * 255; //allow for bigger data size
 			}
-			else if (LeadIn == 6) {
+			else if (ECCmode == 6) {
 				//RS3
 				lasterror = rs3encode(buffer2T, buffer1T, filesize); //
 				filesize = ceil((float)filesize / 160) * 255; //allow for bigger data size
 			}
-			else if (LeadIn == 7) {
+			else if (ECCmode == 7) {
 				//RS4
 				lasterror = rs4encode(buffer2T, buffer1T, filesize); //
 				filesize = ceil((float)filesize / 128) * 255; //allow for bigger data size
@@ -277,10 +277,10 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 					vecMOTSegments[iOldNumObj][k] = k;
 	
 				dd = 0;
-				//LeadIn only
+				//During Lead-In only
 				//If no RS coding is used, read from buffer2T
 				//If RS coding is used, read from buffer1T but write the new header first
-				if (LeadIn > 3) {
+				if (ECCmode > 3) {
 					while (dd < filesize)  //Read from buffer up to data size This is a read for the leadin - not all of it is used
 					{
 						/* Add one byte = SIZEOF__BYTE bits */
@@ -325,7 +325,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		vecMOTPicture[iOldNumObj].bIsLeader = FALSE;
 
 		dd = 0;
-		if (LeadIn > 3) {
+		if (ECCmode > 3) {
 			//FOR RS CODING
 			while (dd < filesize)  //Read from buffer up to data size
 			{

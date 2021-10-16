@@ -64,8 +64,7 @@ CAudioSourceEncoder* AudioSourceEncoder;
 #define MAX_PATHLEN 255 //in case the routines can't handle a 255 char path like Windows can, we can reduce this (it's limited to 80 chars elsewhere...) DM
 
 //Vars for new combined file header for new RS coding method DM
-int LeadIn = 1; //changed to int DM - 1-3 = Instances OLD, 4,5,6,7 = RS1,RS2,RS3,RS4 NEW
-//extern int LeadIn;
+int ECCmode = 1; //changed to int DM - 1-3 = Instances OLD, 4,5,6,7 = RS1,RS2,RS3,RS4 NEW
 string EZHeaderID = "EasyDRFHeader/|"; //header ID string
 
 int EncSegSize = 0; //Encoder current segment size DM
@@ -169,7 +168,7 @@ BOOL dtronfac = FALSE;
 BOOL dolog = FALSE;
 int sensivity = 60;
 
-//char LeadIn = 1; //moved up the file, and changed to int DM
+//char ECCmode = 1; //moved up the file, and changed to int DM
 
 int TXpicpospt = 0;
 FILE * logfile;
@@ -1922,11 +1921,11 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		}
 		else
 		{
-			if (LeadIn < 4) {
+			if (ECCmode < 4) {
 				sprintf(tempstr, "Data"); //
 			}
 			else
-				sprintf(tempstr, "RS%d Data", LeadIn-3); //
+				sprintf(tempstr, "RS%d Data", ECCmode-3); //
 			SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
 
 			numbits = DRMTransmitter.GetAudSrcEnc()->GetPicCnt();
@@ -1968,7 +1967,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		wsprintf(tempstr,"%c/%c/%d/%d/2.%d",robmode,interl,qam,prot,specocc);	
 		SendMessage (GetDlgItem (hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);	
 
-		DMmodehash = robmode + specocc*4 + qam*16 + max((LeadIn-3),0)*32; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
+		DMmodehash = robmode + specocc*4 + qam*16 + max((ECCmode-3),0)*32; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
 
 	}
 
@@ -2596,7 +2595,7 @@ BOOL CALLBACK TXPictureDlgProc
     {
     case WM_INITDIALOG:
 		putfiles(hwnd);
-		if (LeadIn == 2) {
+		if (ECCmode == 2) {
 			//2 instances
 			SendMessage(GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)1, 0);
@@ -2606,7 +2605,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
-		else if (LeadIn == 3) {
+		else if (ECCmode == 3) {
 			//3 instances
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2616,7 +2615,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
-		else if (LeadIn == 4) {
+		else if (ECCmode == 4) {
 			//For RS1
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2626,7 +2625,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
-		else if (LeadIn == 5) {
+		else if (ECCmode == 5) {
 			//For RS2
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2636,7 +2635,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
-		else if (LeadIn == 6) {
+		else if (ECCmode == 6) {
 			//For RS3
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2646,7 +2645,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS3), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 		}
-		else if (LeadIn == 7) {
+		else if (ECCmode == 7) {
 			//For RS4
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2816,7 +2815,7 @@ BOOL CALLBACK TXPictureDlgProc
 			}
 			return TRUE;
 		case IDC_SENDONCE:
-			LeadIn = 1;
+			ECCmode = 1;
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2826,7 +2825,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_SENDTWICE:
-			LeadIn = 2;
+			ECCmode = 2;
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2836,7 +2835,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_SENDTHREE:
-			LeadIn = 3;
+			ECCmode = 3;
 			SendMessage (GetDlgItem (hwnd, IDC_SENDONCE ), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage (GetDlgItem (hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)1, 0);
@@ -2846,7 +2845,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_RS1:
-			LeadIn = 4;
+			ECCmode = 4;
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2856,7 +2855,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_RS2:
-			LeadIn = 5;
+			ECCmode = 5;
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2866,7 +2865,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_RS3:
-			LeadIn = 6;
+			ECCmode = 6;
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);
@@ -2876,7 +2875,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SendMessage(GetDlgItem(hwnd, IDC_RS4), BM_SETCHECK, (WPARAM)0, 0);
 			return TRUE;
 		case IDC_RS4:
-			LeadIn = 7;
+			ECCmode = 7;
 			SendMessage(GetDlgItem(hwnd, IDC_SENDONCE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTWICE), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, IDC_SENDTHREE), BM_SETCHECK, (WPARAM)0, 0);

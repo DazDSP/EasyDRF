@@ -442,7 +442,7 @@ iTotLenMOTObj += 16;
 	   No repetition used in this implementation right now -> 0, TODO */
 
 	   //Modified to send Total Segment Count in serial data form in RS modes DM =============================================================================================
-	if (LeadIn > 3) {
+	if (ECCmode > 3) {
 	//Daz Man: Using repetition index bit 0 to send total segment count in serial form over 16 segments
 	//Bit to be sent corresponds to the segment number AND 15 (Bit 0 is sent on segment 0, through bit 15 on segment 15, then it starts over)
 	//A decoder bit check register has the corresponding bit cleared each time it arrives. This checks that all bits have been received before the value is used.
@@ -493,7 +493,7 @@ iTotLenMOTObj += 16;
 		/* Rfa (Reserved for future addition): this 3-bit field shall be
 		   reserved for future additions */ //This is now used for sending the RS encoding level being used on the current file, in case the original file header is lost DM
 //		vecbiData.Enqueue((uint32_t) 0, 3); //Original code was just set to zero DM
-		i = LeadIn -3;			//calculate RS level used DM - RS Range is 1-5, allowing for extra levels or new types of error correction in the future DM
+		i = ECCmode -3;			//calculate RS level used DM - RS Range is 1-5, allowing for extra levels or new types of error correction in the future DM
 		if (i < 0) { i = 0; }	//limit to 0 DM
 		vecbiData.Enqueue((uint32_t) i, 3); //modified to send RS level with each segment DM
 
@@ -519,7 +519,10 @@ iTotLenMOTObj += 16;
 		   information carried in the data group belongs or relates */
 		//A good idea might be to hash the transport ID with the mode being sent to ensure no conflicts if the encoding is changed? DM ===========================================
 		//How will this affect BSRs?
-		int TID = iTranspID + DMmodehash;
+		int TID = iTranspID;
+		if (ECCmode > 3) {
+			TID += DMmodehash; //added DM - Only use the modehash in RS modes
+		}
 		if (bTransIDFieldUsed == TRUE)
 			vecbiData.Enqueue((uint32_t) TID, 16);
 	
@@ -1531,7 +1534,7 @@ void CMOTObjectRaw::CDataUnitRx::Reset()
 void RSdecode(unsigned char* RSbuffer) {
 	//******************************************************************************
 	//This code runs in a new thread, then terminates... DM  Sep 29th, 2021
-	//=========================================================================================================================================================
+	//******************************************************************************
 	//RS Decoding - By Daz Man 2021
 	//If there have been enough data packets received, decode the file even if we missed the header DM
 	//How do we make sure this only runs once per file? Use the transport ID, also check if it worked or made an error
@@ -1543,7 +1546,7 @@ void RSdecode(unsigned char* RSbuffer) {
 
 #define BUFFERDEBUG FALSE
 #if BUFFERDEBUG
-	//====================================================================================
+	//******************************************************************************
 	//Buffer debugging....
 	//Dump the entire Global buffer to a disk file to verify it's integrity DM
 	FILE* set = nullptr;
