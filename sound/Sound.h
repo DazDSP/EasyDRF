@@ -42,7 +42,7 @@
 #define BYTES_PER_SAMPLE		2		/* Number of bytes per sample */
 
 /* Set this number as high as we have to prebuffer symbols for one MSC block. In case of robustness mode D we have 24 symbols */
-#define NUM_SOUND_BUFFERS_IN	40 //20		/* Number of sound card buffers */ //Edited DM edited again up to 40
+#define NUM_SOUND_BUFFERS_IN	20		/* Number of sound card buffers */ //Edited DM edited again back to 20 (original)
 
 #define NUM_SOUND_BUFFERS_OUT	4 		/* Number of sound card buffers */
 

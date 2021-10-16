@@ -1,6 +1,7 @@
 EasyDRF Changes - by Daz Man October 17th, 2021
 * Renamed "LeadIn" var to the more accurate "ECCmode" name
 * Disabled modehash in non-RS modes to allow BSR to work
+* Sound IN buffers reduced back to original value
 
 
 EasyDRF Changes - by Daz Man October 12th, 2021
