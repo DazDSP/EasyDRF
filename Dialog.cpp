@@ -675,7 +675,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			if (RX_Running) DRMReceiver.Rec();
 			SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
-			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX Pic");
+			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
 			SetDlgItemText(hwnd, IDC_EDIT,   " ");
 			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
@@ -729,7 +729,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			DRMReceiver.Rec();
 			SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
-			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX Pic");
+			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
 			SetDlgItemText(hwnd, IDC_EDIT,   " ");
 			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
