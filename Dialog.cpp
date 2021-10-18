@@ -1580,7 +1580,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						//This code section does not use the extra RS coding, so RxRSlevel must == 0
 						// 
 						//This executes only when a complete file is received DM
-						char filename[260]{ 0 }; //was 130 DM - (Windows max path length is 255 characters) (Ham-DRM only uses 80 characters though...)
+						char filename[260]{ 0 }; //was 130 DM - (Windows max path length is 255 characters) (HamDRM only uses 80 characters though...)
 						int picsize = 0; //edited DM - reverted
 						int filnamsize = 0;
 						FILE* set = nullptr; //changed to nullptr on compiler advice

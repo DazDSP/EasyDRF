@@ -80,19 +80,22 @@ CAPTION "EasyDRF Info"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,113,223,36,14
-    CTEXT           "EasyDRF is based on WinDRM by HB9TLK",IDC_STATIC,7,7,247,9
-    CTEXT           "WinDRM was based on the DREAM software by",IDC_STATIC,7,28,247,9
-    CTEXT           "Volker Fisher and Alexander Kurpiers",IDC_STATIC,7,40,247,9
-    CTEXT           "Darmstadt University of Technology",IDC_STATIC,7,50,247,9
-    CTEXT           "Carrier number reduction, Codec implementation, GUI Design and Concept by",IDC_STATIC,7,127,247,10
-    CTEXT           "Francesco Lanza,  HB9TLK",IDC_STATIC,7,138,247,9
-    CTEXT           "The Software is provided under the GNU General Public License (GPL) ",IDC_STATIC,7,158,247,9
-    CTEXT           "The speech codecs used are :",IDC_STATIC,7,79,247,9
-    CTEXT           "LPC-10 from HawkVoice ( www.hawksoft.com )",IDC_STATIC,7,92,247,9
-    CTEXT           "SPEEX  ( www.speex.org )",IDC_STATIC,7,105,247,9
-    CTEXT           "( www.tu-darmstadt.de/fb/et/uet/fguet/mitarbeiter/vf/DRM/DRM.html )",IDC_STATIC,7,63,247,9
-    CTEXT           "Copyright (C) 2004, 2005",IDC_STATIC,7,180,247,9
-    CTEXT           "Modified by Daz Man, 2021",IDC_STATIC,7,201,247,9
+    CTEXT           "EasyDRF is based on WinDRM by HB9TLK",IDC_STATIC,6,19,247,9
+    CTEXT           "WinDRM was based on the DREAM software by",IDC_STATIC,6,34,247,9
+    CTEXT           "Volker Fisher and Alexander Kurpiers",IDC_STATIC,6,44,247,9
+    CTEXT           "Darmstadt University of Technology",IDC_STATIC,6,55,247,9
+    CTEXT           "Carrier number reduction, Codec implementation, GUI Design and Concept by",IDC_STATIC,6,127,247,10
+    CTEXT           "Francesco Lanza,  HB9TLK",IDC_STATIC,7,137,247,9
+    CTEXT           "The Software is provided under the GNU General Public License (GPL) ",IDC_STATIC,6,154,247,9
+    CTEXT           "The speech codecs used are :",IDC_STATIC,6,83,247,9
+    CTEXT           "LPC-10 from HawkVoice ( www.hawksoft.com )",IDC_STATIC,6,95,247,9
+    CTEXT           "SPEEX  ( www.speex.org )",IDC_STATIC,7,107,247,9
+    CTEXT           "( www.tu-darmstadt.de/fb/et/uet/fguet/mitarbeiter/vf/DRM/DRM.html )",IDC_STATIC,6,67,247,9
+    CTEXT           "Copyright (C) 2004, 2005",IDC_STATIC,7,166,247,9
+    CTEXT           "Updated code by Daz Man 2021",IDC_STATIC,7,206,247,9
+    CTEXT           "EasyDRF is a HamDRM Windows application",IDC_STATIC,6,5,247,9
+    CTEXT           "Reed-Solomon coding uses the Schifra library, under GPL",IDC_STATIC,5,181,247,9
+    CTEXT           "LZMAlib and zlib used under GPL",IDC_STATIC,5,192,247,9
 END
 
 DLG_PICTURE_TX DIALOGEX 0, 0, 220, 365

@@ -88,7 +88,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 {
 	/* Only ContentSubType "JFIF" (JPEG) and ContentSubType "PNG" are allowed
 	   for SlideShow application (not tested here!) */
-	/* For Ham-DRM this doesn't matter - any file works! DM */
+	/* For HamDRM this doesn't matter - any file works! DM */
 	/* Try to open file binary */
 
 	int iOldNumObj;
