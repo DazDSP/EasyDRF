@@ -63,6 +63,14 @@ CAudioSourceEncoder* AudioSourceEncoder;
 
 #define MAX_PATHLEN 255 //in case the routines can't handle a 255 char path like Windows can, we can reduce this (it's limited to 80 chars elsewhere...) DM
 
+//Status LED colours DM
+DWORD ioLEDcol = RED; //Red is default
+DWORD freqLEDcol = RED; //Red is default
+DWORD timeLEDcol = RED; //Red is default
+DWORD frameLEDcol = RED; //Red is default
+DWORD facLEDcol = RED; //Red is default
+DWORD mscLEDcol = RED; //Red is default
+
 //Vars for new combined file header for new RS coding method DM
 int ECCmode = 1; //changed to int DM - 1-3 = Instances OLD, 4,5,6,7 = RS1,RS2,RS3,RS4 NEW
 string EZHeaderID = "EasyDRFHeader/|"; //header ID string
@@ -104,7 +112,7 @@ bool CRCOK = 0;
 #define BARY 240 //bargraph Y
 #define BART 237 //bargraph top
 #define BARB 243 //bargraph bottom
-#define BARR 500 //bargraph bottom
+#define BARR 500 //bargraph right
 
 int BarLastID = 0; //check if bargraph needs updating
 int BarLastSeg = 0; //check if bargraph needs updating
@@ -248,6 +256,7 @@ void sendinfo(HWND hwnd) {
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 }
 
+/* Original Radiobutton State code is below - DM:
 void PostWinMessage(unsigned int MessID, int iMessageParam)
 {
 	HWND hdlg = nullptr; //edited DM on compiler advice
@@ -283,11 +292,11 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 			if (dtronfac) if (iMessageParam == 0) dodtr();	else enddtr();
 		}
 		else if (MessID == MS_MSC_CRC)
-			hdlg = GetDlgItem (messhwnd, IDC_LED_MSC);
+			hdlg = GetDlgItem (messhwnd, IDC_LED_MSC); //MSC LED
 		else if (MessID == MS_FRAME_SYNC)
-			hdlg = GetDlgItem (messhwnd, IDC_LED_FRAME);
+			hdlg = GetDlgItem (messhwnd, IDC_LED_FRAME); //FRAME LED
 		else if (MessID == MS_TIME_SYNC)
-			hdlg = GetDlgItem (messhwnd, IDC_LED_TIME);
+			hdlg = GetDlgItem(messhwnd, IDC_LED_TIME); //TIME LED
 		else return;
 		messtate[MessID] = iMessageParam;
 		
@@ -298,7 +307,98 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 		
 	}
 }
+*/
 
+//NEW Colour "LEDs" for state information DM Oct 20, 2021
+void PostWinMessage(unsigned int MessID, int iMessageParam)
+{
+	//use MessID as the identifier
+	//use the parameter to set the colour for the particular LED
+	//then update the LEDs last
+
+	if (MessID == MS_RESET_ALL)
+	{
+		int i;
+		for (i = 1; i < 9; i++) messtate[i] = -1; //clear messtate array DM
+		//set all indicators to RED
+		ioLEDcol = RED; //Red is default
+		freqLEDcol = RED; //Red is default
+		timeLEDcol = RED; //Red is default
+		frameLEDcol = RED; //Red is default
+		facLEDcol = RED; //Red is default
+		mscLEDcol = RED; //Red is default
+
+		updateLEDs(); //read the values above, and draw them
+
+		if (rtsonfac) endrts();
+		return;
+	}
+	if (messtate[MessID] != iMessageParam)
+	{
+		//convert the colour first, then send it to the correct LED - DM
+		int lc = 0;
+		if (iMessageParam == 2) lc = RED; //Convert colour
+		if (iMessageParam == 1) lc = YELLOW; //Convert colour
+		if (iMessageParam == 0) lc = GREEN; //Convert colour
+
+		if (MessID == MS_IOINTERFACE)
+			ioLEDcol = lc;
+		else if (MessID == MS_FREQ_FOUND)
+			freqLEDcol = lc;
+		else if (MessID == MS_FAC_CRC)
+		{
+			facLEDcol = lc;
+			if (rtsonfac) if (iMessageParam == 0) dorts();	else endrts(); //serial interface stuff
+			if (dtronfac) if (iMessageParam == 0) dodtr();	else enddtr(); //serial interface stuff
+		}
+		else if (MessID == MS_MSC_CRC)
+			mscLEDcol = lc;
+		else if (MessID == MS_FRAME_SYNC)
+			frameLEDcol = lc;
+		else if (MessID == MS_TIME_SYNC)
+			timeLEDcol = lc;
+		else return;
+		updateLEDs();
+		messtate[MessID] = iMessageParam;
+	}
+}
+
+void updateLEDs(void) {
+	HWND hwnd = messhwnd; //main window
+	HDC hdc = GetDC(hwnd);
+
+	int x = 15; //x position of LEDs
+	int y = 0;
+	int top = 27;
+	int hgt = 18;
+	int i = 0;
+
+	SetBkColor(hdc, ioLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+	i++;
+	SetBkColor(hdc, freqLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+	i++;
+	SetBkColor(hdc, timeLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+	i++;
+	SetBkColor(hdc, frameLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+	i++;
+	SetBkColor(hdc, facLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+	i++;
+	SetBkColor(hdc, mscLEDcol);
+	y = top + (i * hgt);
+	TextOut(hdc, x, y, "   ", 2);
+
+	ReleaseDC(hwnd, hdc);
+}
 /*--------------------------------------------------------------------
         PAINT WAVE DATA
         Repaint the dialog box's GraphClass display control
@@ -310,6 +410,7 @@ static void PaintWaveData ( HWND hDlg , BOOL erase )
 
     InvalidateRect( hwndShowWave, nullptr, erase );
     UpdateWindow( hwndShowWave );
+	updateLEDs();
     return;
 }
 
@@ -392,11 +493,6 @@ int actdevoutt;
 
 BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-	if (runonce == 0) {
-		runonce += 1; //TEST
-
-	}
 
 	HMENU   hMenu = nullptr; //edited DM on compiler advice
 	int i = 0;

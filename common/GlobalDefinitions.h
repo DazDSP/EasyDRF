@@ -138,6 +138,10 @@ typedef unsigned int					_MESSAGE_IDENT;
 
 #define GUI_CONTROL_UPDATE_TIME			500	/* Milliseconds */
 
+/* Definitions for LED status indicators DM ----------------------------------*/
+#define RED								0x0000FF
+#define YELLOW							0x00FFFF
+#define GREEN							0x00FF00
 
 /* Global enumerations ------------------------------------------------------ */
 enum ESpecOcc {SO_0, SO_1}; /* SO: Spectrum Occupancy */

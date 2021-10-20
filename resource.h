@@ -75,12 +75,7 @@
 #define IDB_STARTPIC                    1004
 #define IDC_MODE_A                      1005
 #define IDC_MODE_B                      1006
-#define IDC_LED_IO                      1007
 #define IDC_CODEC                       1008
-#define IDC_LED_TIME                    1009
-#define IDC_LED_FRAME                   1010
-#define IDC_LED_FAC                     1011
-#define IDC_LED_MSC                     1012
 #define IDC_EDIT                        1013
 #define IDC_EDIT2                       1014
 #define IDC_TIME_SCALE                  1015
@@ -125,7 +120,6 @@
 #define IDC_BSRINST                     1053
 #define IDC_SENDNOBSR                   1054
 #define IDC_SENDNAMEBSR                 1055
-#define IDC_LED_FREQ                    1056
 #define IDC_SETTINGS_FASTRESET          1057
 #define IDC_SENDBSR_FROMCALL            1058
 #define IDC_SENDCALLBSR                 1059
@@ -133,10 +127,10 @@
 #define IDOK3                           1061
 #define IDC_EDIT6                       1062
 #define IDC_RXFILES                     1064
-#define IDC_RS1			                1065
-#define IDC_RS2			                1066
-#define IDC_RS3			                1067
-#define IDC_RS4			                1068
+#define IDC_RS1                         1065
+#define IDC_RS2                         1066
+#define IDC_RS3                         1067
+#define IDC_RS4                         1068
 #define ID_SETTINGS_MSCPROTECTION_NORMAL 40001
 #define ID_SETTINGS_MSCPROTECTION_LOW   40002
 #define ID_SETTINGS_DRMSETTINGS         40003
