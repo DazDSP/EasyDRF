@@ -126,6 +126,7 @@
 #define ID_ABSRINST                     1060
 #define IDOK3                           1061
 #define IDC_EDIT6                       1062
+#define IDC_EDIT7                       1063
 #define IDC_RXFILES                     1064
 #define IDC_RS1                         1065
 #define IDC_RS2                         1066

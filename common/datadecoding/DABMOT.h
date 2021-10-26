@@ -159,9 +159,17 @@ public:
 	_BOOLEAN	GetActMOTObject(CMOTObject& NewMOTObject);
 	_BOOLEAN	GetActBSR(int * iNumSeg, string * bsr_name, char * path, int * iHash);
 	void		GetMOTObject(CMOTObject& NewMOTObject) {NewMOTObject = MOTObject; /* Simply copy object */}
-	int GetObjectTotSize() { return MOTObjectRaw.BodyRx.vvbiSegment.Size(); } //this isn't computing the total segments after the first file, even when all the info has been received... DM
-	//int GetObjectTotSize() { return (int)ceil((_REAL)iBodySize / iSegmentSize); //Does it need to be something like this..?
-	
+	int GetObjectTotSize() {
+		//this isn't computing the total segments after the first file, even when all the info has been received... DM
+		int a = MOTObjectRaw.BodyRx.vvbiSegment.Size(); //try the original method first DM
+		int b = 0;
+		//Prevent divide by zero
+		if (DecSegSize > 0) {
+		b = (int)ceil((_REAL)HdrFileSize / DecSegSize); //use the updated method as a backup DM
+		}
+		if (b > a) { a = b; } //if b is larger, use it instead (in RS modes this is overridden by the serial size data if available) DM
+		return a;
+	} 
 	int GetObjectActSize() 
 	{ 
 		if (MOTObjectRaw.BodyRx.iDataSegNum >= 0) 

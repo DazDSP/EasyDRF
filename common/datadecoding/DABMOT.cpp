@@ -40,6 +40,8 @@
 #include "picpool.h"
 #include "../bsr.h"
 
+string strName2 = { 0 }; //this is where the received filename is saved for the GetName routine DM
+
 /* Implementation *************************************************************/
 /******************************************************************************\
 * Encoder                                                                      *
@@ -518,7 +520,7 @@ iTotLenMOTObj += 16;
 		   objects, It may be used to indicate the object to which the
 		   information carried in the data group belongs or relates */
 		//A good idea might be to hash the transport ID with the mode being sent to ensure no conflicts if the encoding is changed? DM ===========================================
-		//How will this affect BSRs?
+		//How will this affect BSRs? It breaks them! Use only in RS modes
 		int TID = iTranspID;
 		if (ECCmode > 3) {
 			TID += DMmodehash; //added DM - Only use the modehash in RS modes
@@ -742,8 +744,8 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 	/* Repetition index (not yet used) */
 	//Daz Man - this is now used to send the total segment count in serial form, four bits per data segment
 	//vecbiNewData.Separate(4); //Original code DM
-//	vecbiNewData.Separate(3); //one less bit DM
-//	unsigned int b = vecbiNewData.Separate(1); //Separate data bit here, and process it lower down the page where the segment number has been decoded DM
+	//vecbiNewData.Separate(3); //one less bit DM
+	//unsigned int b = vecbiNewData.Separate(1); //Separate data bit here, and process it lower down the page where the segment number has been decoded DM
 	//Use all 4 bits now:
 	unsigned int b = vecbiNewData.Separate(4); //Separate data bits here, and process it lower down the page where the segment number has been decoded DM - 4 bits now!
 
@@ -815,7 +817,17 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					DecTotalSegs = 0; //reset
 					SerialFileSize = 0; //reset 
 					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits now!
-					DecSegSize = 0; //reset
+					DecSegSize = 0; //reset - this is updated lower down the page with the new value
+					RScount = 0; //reset RS decode attempt counter
+					filestat = 0; //reset File decode status
+					//these are to prevent incorrect filenames being displayed if the old header is missed
+					strcpy(DMfilename, "unknown"); //reset filename TEST
+					strName2 = "unknown"; //reset filename TEST
+					MOTObject.strName = "unknown"; //reset filename TEST
+					
+					DMRSpsize = 0; //reset psize TEST
+					HdrFileSize = 0; //reset filesize TEST
+					RSpsegs = 0; //clear on new file
 
 					erasureflags = erasureflags || (1 << erasureswitch); //mark block as used for background erasing
 
@@ -848,9 +860,10 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		j = vecbiNewData.Separate(iLenEndUserAddress); //edited DM
 	}
 
-//===========================================================================================================================================================
-//Daz Man - Decode the NEW serial data stream with the Total Segment Count, now that both RxRSlevel and iSegmentNum data has arrived * Only using RS mode
-//** NOTE: This is a backup method of transferring the RS level used, and the (file) size data, that still works even if the header is missed. Added by DM
+	//===========================================================================================================================================================
+	//Daz Man - Decode the NEW serial data stream with the Total Segment Count, now that both RxRSlevel and iSegmentNum data has arrived * Only using RS mode
+	//** NOTE: This is a backup method of transferring the RS level used, and the (file) size data, that still works even if the header is missed. Added by DM
+	//This should probably be modified to only work in RS modes...
 	if ((biSegmentFlag == TRUE) && ((biCRCFlag == FALSE) || ((biCRCFlag == TRUE) && (bCRCOk == TRUE))))
 	{
 
@@ -888,15 +901,14 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		/* Segment size */
 		iSegmentSize = (int)vecbiNewData.Separate(13);
 
-
-		if ((iSegmentSize > 0) && (iSegmentNum > 0) && (biLastFlag == 0) && (DecSegSize == 0)) {
+		//DecSegSize will be reset to 0 each time the tID changes, but does iSegmentNum need to be > 0???
+		//if ((iSegmentSize > 0) && (iSegmentNum > 0) && (biLastFlag == 0) && (DecSegSize == 0)) {
+   		if ((iSegmentSize > 0) && (biLastFlag == 0) && (DecSegSize == 0)) {
 			//this only updates when the transmit ID changes (new file) DM
 			//that prevents the last (smaller) segment giving a false reading DM
 			DecSegSize = iSegmentSize; //global copy DM =============================================================================
 			//also, save the segment size that was used for each erasure buffer DM
 			erasuressegsize[erasureswitch] = iSegmentSize; //save to the correct array - this should be made to only update once... (although the LAST segment is SMALLER - but in RS mode, data is rounded up to 255 byte blocks)
-			//DMfilename[0] = 0; //clear filename?
-			strcpy(DMdecodestat, "WAIT"); //RS decoder stats message
 		}
 
 		//Header is 88 bytes to here
@@ -916,8 +928,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					/* Header */
 
 					/* The first segment was received, reset header */
-
-					DMRSpsize = 0; //added DM ==============================================
 
 					if (MOTObjectRaw.iTransportID != iTransportID)
 					{
@@ -999,7 +1009,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 							MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].ResetBitAccess(); //Start reading from zero
 							unsigned int j = (iSegmentNum * DMRSpsize); //compute - the base index is the previous segment size * segment number (to avoid an error on the last segment, which is smaller)
 							DMRSpsize = iSegmentSize; //update
-							unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bits for this segment /8
+							unsigned int k = MOTObjectRaw.BodyRx.vvbiSegment[iSegmentNum].size() / 8; //find total bytes for this segment
 							unsigned int a = 0;
 							int oldsize = MOTObjectRaw.BodyRx.RSbytes.size(); //get current size of new buffer
 							int newsize = max((j + k) * 2,1050000); //set this large to ensure there is never a read error in the distribute function
@@ -1057,8 +1067,8 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			//make the buffers in the new thread
 			//save the file
 			//then destroy the new buffers and terminate that thread
-
-				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0))) {
+			//RSpsegs added to prevent continuous RS retries during replays
+				if (((RxRSlevel > 0) && (DecTotalSegs > 0) && (RSfilesize > 0) && (actsize > RSpsegs))) {
 					//Decide whether to attempt decode at a level dependent on the RS level in use
 					float DMdecision = 1;
 					if (RxRSlevel == 1) { DMdecision = 0.88; } //0.89
@@ -1070,6 +1080,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 
 						if ((RSlastTransportID != DecTransportID) && (RSbusy == 0)) {
 							RSbusy = 1; //only run one instance of this
+							RSpsegs = actsize; //update
 							unsigned char* RSbuffer = nullptr;
 							RSbuffer = MOTObjectRaw.BodyRx.RSbytes.data(); //grab the RSbytes buffer address and save it where we can access it easily
 							
@@ -1130,7 +1141,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 }
 
 //string strName; //this is where the received filename is saved for the GetName routine DM
-string strName2 = {0}; //this is where the received filename is saved for the GetName routine DM
+//string strName2 = {0}; //this is where the received filename is saved for the GetName routine DM
 
 void GetName(CMOTObjectRaw& MOTObjectRaw)
 {
@@ -1786,10 +1797,12 @@ void RSdecode(unsigned char* RSbuffer) {
 	}
 
 	if (lasterror == 0) {
-		strcpy(DMdecodestat, "SAVED"); //RS decode status
+		filestat = 2; //File decode status = success
+		RSpsegs = 0; //reset on success
 	}
 	else {
-		strcpy(DMdecodestat, "wait..."); //RS decode status
+		filestat = 1; //File decode status
+		RScount += 1; //count the RS decode failures
 	}
 	//remove the buffer arrays from the heap DM
 	delete[] buffer1;

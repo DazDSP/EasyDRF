@@ -81,6 +81,9 @@ extern int DMspeechmodecount;
 extern int dcomperr; //decompressor error
 extern int RSbusy;
 extern int lasterror; //save RS error count
+extern int RScount; //save RS attempts count
+extern int RSpsegs; //save RS segs on last attempt
+extern char filestat; //file save status - 0=WAIT, 1=wait/try nnn, 2=SAVED
 
 #define ZLIB_WINAPI
 #define ZLIB_DLL

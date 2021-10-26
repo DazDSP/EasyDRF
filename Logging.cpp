@@ -119,7 +119,6 @@ void LogData(char* fn) {
 					// handle error here DM
 				}
 				else {
-					unsigned int k = 0;
 					int err = 0;
 					if (DMobjectnum == 1) {
 						DMobjectnum = DMobjectnum; //debug breakpoint

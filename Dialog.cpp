@@ -86,6 +86,9 @@ int totsize = 0; //total segment count global DM
 int actsize = 0; //Decoder active segment count global DM
 int actpos = 0; //Decoder active position global DM
 int SerialFileSize = 0;
+int RScount; //save RS attempts count
+int RSpsegs; //save RS segs on last attempt
+char filestat; //file save status - 0=WAIT, 1=wait, 2=SAVED
 
 int DecCheckReg = 0b00001111111111111111111111111111; //Decoder check register for serial segment total transmission
 int RSfilesize = 0; //The size of the RS encoded data (normally this is an even number of 255 byte blocks)
@@ -123,7 +126,7 @@ int Bartotsizeold = 0;
 //string DMfilename = {}; //added DM 130 is now 260 - (Windows max path length is 255 characters)
 char DMfilename[260]; //added DM 130 is now 260 - (Windows max path length is 255 characters)
 char DMfilename2[260]; //added DM 130 is now 260 - (Windows max path length is 255 characters)
-char DMdecodestat[15]; //RS decode status
+char DMdecodestat[15]; //File decode status
 
 
 char erasures[3][8192 / 8]{}; //array for segment erasure data (saves the first/last good CRC segment numbers)
@@ -251,9 +254,29 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	
+//	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d", DMfilename, RSfilesize, DecTransportID, erasureswitch);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
+
+	//compute the file save status message based on the number in filestat
+	if (filestat == 0) {
+		//WAIT
+		strcpy(DMdecodestat, "WAIT"); //File decode status
+		lasterror2 = sprintf_s(tempstr, "%s", DMdecodestat);
+		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+	}
+	if (filestat == 1) {
+		//wait or try xxx
+		strcpy(DMdecodestat, "try..."); //File decode status
+		lasterror2 = sprintf_s(tempstr, "%s%03d", DMdecodestat, RScount);
+		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+	}
+	if (filestat == 2) {
+		//SAVED
+		strcpy(DMdecodestat, "SAVED"); //File decode status
+		lasterror2 = sprintf_s(tempstr, "%s", DMdecodestat);
+		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+	}
 }
 
 /* Original Radiobutton State code is below - DM:
@@ -501,7 +524,33 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	BOOL aa = FALSE; //added DM
 
 	switch (message)
-    {
+	{
+	//Change background colours for the filestats box DM
+	case WM_CTLCOLORSTATIC:
+	{
+		if (GetDlgCtrlID((HWND)lParam) == IDC_EDIT7)
+		{
+			HDC hdc = (HDC)wParam;
+			int bkcol = 0;
+			//if filestat == 0 leave it normal - or blue?
+			//if filestat == 1 use yellow background
+			//if filestat == 2 use green background
+			if (filestat == 0) {
+				bkcol = BLUE;
+			}
+			if (filestat == 1) {
+				bkcol = YELLOW;
+			}
+			if (filestat == 2) {
+				bkcol = GREEN;
+			}
+			// Do not return a brush created by CreateSolidBrush(...) because you'll get a memory leak
+			SetBkColor(hdc, bkcol); //main background
+			SetDCBrushColor(hdc, bkcol); //perimeter background
+			return (INT_PTR)GetStockObject(DC_BRUSH);
+		}
+	}
+	break;
     case WM_INITDIALOG:
 		{
 			HICON hIcon = LoadIcon (TheInstance, MAKEINTRESOURCE (IDI_ICON1));
@@ -1482,11 +1531,11 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			lbb.lbHatch = 0;
 			LOGBRUSH lbr;
 			lbr.lbStyle = BS_SOLID;
-			lbr.lbColor = RGB(255, 0, 0);
+			lbr.lbColor = RED; // RGB(255, 0, 0);
 			lbr.lbHatch = 0;
 			LOGBRUSH lbg;
 			lbg.lbStyle = BS_SOLID;
-			lbg.lbColor = RGB(60, 255, 0);
+			lbg.lbColor = GREEN; // RGB(60, 255, 0);
 			lbg.lbHatch = 0;
 			LOGBRUSH lbx;
 			lbx.lbStyle = BS_SOLID;
@@ -1833,7 +1882,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 										i++;
 									}
 									fclose(set); //file is closed here - but only if it was opened
-									strcpy(DMdecodestat, "SAVED"); //Decode status
+									filestat = 2; //File decode status
 								}
 								delete[] buffer1; //remove the buffer arrays from the heap
 								delete[] buffer2;
@@ -1884,7 +1933,7 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 										i++;
 									}
 									fclose(set); //file is closed here - but only if it was opened
-									strcpy(DMdecodestat, "SAVED"); //Decode status
+									filestat = 2; //File decode status
 								}
 								delete[] buffer1; //remove the buffer arrays from the heap
 								delete[] buffer2;
@@ -1907,8 +1956,8 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									for (i = 0; i < picsize; i++) {
 										putc(NewPic.vecbRawData[i], set);
 									}
-									fclose(set); //file is closed here							
-									strcpy(DMdecodestat, "SAVED"); //Decode status
+									fclose(set); //file is closed here
+									filestat = 2; //File decode status
 								}
 							}
 
