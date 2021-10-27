@@ -813,12 +813,17 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			if (bCRCOk == TRUE) {
 				//Reset the segtotal registers when the Transport ID changes DM =======================================================================
 				if ((iTransportID > 0) && (DecTransportID != iTransportID)) {
-					DecTransportID = iTransportID; //Save globally DM
 					DecTotalSegs = 0; //reset
 					SerialFileSize = 0; //reset 
 					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits now!
 					DecSegSize = 0; //reset - this is updated lower down the page with the new value
 					RScount = 0; //reset RS decode attempt counter
+					//If in RS mode and previous file decoded, remove file data from picpool --- NEW --- (needed, because in RS modes data can be saved when still incomplete)
+					if ((filestat == 2) && (RxRSlevel > 0)) {
+						PicPool.poolremove(DecTransportID);
+						PicPool.getfrompool(DecTransportID, MOTObjectRaw); //is this needed - yes - it clears the output buffer if the cache is empty
+					}
+					DecTransportID = iTransportID; //Save globally DM
 					filestat = 0; //reset File decode status
 					//these are to prevent incorrect filenames being displayed if the old header is missed
 					strcpy(DMfilename, "unknown"); //reset filename TEST
