@@ -532,7 +532,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HDC hdc = (HDC)wParam;
 			int bkcol = 0;
-			//if filestat == 0 leave it normal - or blue?
+			//if filestat == 0 use blue background
 			//if filestat == 1 use yellow background
 			//if filestat == 2 use green background
 			if (filestat == 0) {

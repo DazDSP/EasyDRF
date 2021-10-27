@@ -98,27 +98,29 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	/* Choose correct filter for chosen DRM bandwidth. Also, adjust offset
 	   frequency for different modes. E.g., 5 kHz mode is on the right side
 	   of the DC frequency */
-	float* pCurFilt = fTransmFilt2_8c; //added init DM
+	float* pCurFilt = fTransmFilt2_5c; //added init DM
 	CReal rNormCurFreqOffset{}; //added init DM
+
+#define OFFSET 1225.0 //adjusted for best filter symmetry DM
 
 	switch (TransmParam.GetSpectrumOccup())
 	{
 	case SO_0:
 //		pCurFilt = fTransmFilt4_5;
-		pCurFilt = fTransmFilt2_8c; //A correct bandwidth filter works better! DM
+		pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
 
 		/* Completely on the right side of DC */
 		//rNormCurFreqOffset = (rDefCarOffset + (CReal) 2250.0) / SOUNDCRD_SAMPLE_RATE; //edited DM
-		rNormCurFreqOffset = (rDefCarOffset + (CReal)1200.0) / SOUNDCRD_SAMPLE_RATE; //use this instead DM
+		rNormCurFreqOffset = (rDefCarOffset + (CReal)OFFSET) / SOUNDCRD_SAMPLE_RATE; //use this instead DM
 		break;
 
 	case SO_1:
 //		pCurFilt = fTransmFilt5;
-		pCurFilt = fTransmFilt2_8c; //correct bandwidth filter works better! DM
+		pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
 
 		/* Completely on the right side of DC */
 		//rNormCurFreqOffset = (rDefCarOffset + (CReal) 2500.0) / SOUNDCRD_SAMPLE_RATE; //edited DM
-		rNormCurFreqOffset = (rDefCarOffset + (CReal)1200.0) / SOUNDCRD_SAMPLE_RATE; //use this instead DM
+		rNormCurFreqOffset = (rDefCarOffset + (CReal)OFFSET) / SOUNDCRD_SAMPLE_RATE; //use this instead DM
 		break;
 	}
 
