@@ -165,7 +165,13 @@ public:
 		int b = 0;
 		//Prevent divide by zero
 		if (DecSegSize > 0) {
-		b = (int)ceil((_REAL)HdrFileSize / DecSegSize); //use the updated method as a backup DM
+			//if HdrFileSize > 0 always use it
+			if (HdrFileSize > 0) {
+				b = (int)ceil((_REAL)HdrFileSize / DecSegSize); //use this method as a backup DM
+			}
+			else {
+				b = (int)ceil((_REAL)RSfilesize / DecSegSize); //or use this method as a backup DM
+			}
 		}
 		if (b > a) { a = b; } //if b is larger, use it instead (in RS modes this is overridden by the serial size data if available) DM
 		return a;

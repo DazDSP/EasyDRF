@@ -42,6 +42,8 @@
 
 string strName2 = { 0 }; //this is where the received filename is saved for the GetName routine DM
 
+#define RS_SIZE_METHOD 1 //0 = old (7 segments RS datasize), 1 = new (4 segments RS datasize/255)
+
 /* Implementation *************************************************************/
 /******************************************************************************\
 * Encoder                                                                      *
@@ -455,7 +457,14 @@ iTotLenMOTObj += 16;
 		//send 4 bits at a time:
 		//unsigned int a = vecbiSource.Size() / SIZEOF__BYTE; //to send data size in bytes instead
 		//unsigned int b = (EncFileSize >> ((iSegNum & 0x07) << 2)) & 0x0F; //Shift EncFileSize left by lower 4 bits of iSegNum, and mask to LSB << sends file size
-	    unsigned int b = (EncFileSize >> ((iSegNum % 7) << 2)) & 0x0F; //Shift EncFileSize left by lower 4 bits of iSegNum, and mask to LSB << sends file size
+
+#if RS_SIZE_METHOD == 1
+		unsigned int b = ((EncFileSize / 255) >> ((iSegNum % 4) << 2)) & 0x0F; //Shift EncFileSize modulo 255 left by lower 4 bits of iSegNum modulo 4, and mask to LSB << sends file size
+#endif
+
+#if RS_SIZE_METHOD == 0
+		unsigned int b = (EncFileSize >> ((iSegNum % 7) << 2)) & 0x0F; //Shift EncFileSize left by lower 4 bits of iSegNum modulo 7, and mask to LSB << sends file size
+#endif
 		//unsigned int b = (iTotSegm >> ((iSegNum & 0x03) << 2)) & 0x0F; //Shift iTotSegm left by lower 4 bits of iSegNum, and mask to LSB << sends total segments
 		vecbiData.Enqueue((uint32_t)b, 4); //send the bits
 
@@ -815,7 +824,12 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 				if ((iTransportID > 0) && (DecTransportID != iTransportID)) {
 					DecTotalSegs = 0; //reset
 					SerialFileSize = 0; //reset 
-					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits now!
+#if RS_SIZE_METHOD == 1
+					DecCheckReg = 0b00000000000000001111111111111111; //reset 16 bits for new version
+#endif
+#if RS_SIZE_METHOD == 0
+					DecCheckReg = 0b00001111111111111111111111111111; //reset 28 bits
+#endif
 					DecSegSize = 0; //reset - this is updated lower down the page with the new value
 					RScount = 0; //reset RS decode attempt counter
 					//If in RS mode and previous file decoded, remove file data from picpool --- NEW --- (needed, because in RS modes data can be saved when still incomplete)
@@ -874,7 +888,12 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 
 		//4 bits at a time
 		//unsigned int c = (iSegmentNum & 0x07) << 2; //Mask off lower 3 bits (count 0-7) scale up by 4x
-		unsigned int c = (iSegmentNum % 7) << 2; //Modulo to get a wrapping pointer (count 0-6) scale up by 4x
+#if RS_SIZE_METHOD == 1
+		unsigned int c = (iSegmentNum % 4) << 2; //Modulo to get a wrapping pointer (count 0-3) scale up by 4x (number of bits each time)
+#endif
+#if RS_SIZE_METHOD == 0
+		unsigned int c = (iSegmentNum % 7) << 2; //Modulo to get a wrapping pointer (count 0-6) scale up by 4x (number of bits each time)
+#endif
 		if (DecCheckReg != 0) {
 			//only compute this if we don't have the answer yet
 			b = b << c; //shift the bit to its correct position...  0 = bit 0,1,2,3 sent, then 4,5,6,7 shift 4, then 8,9,10,11 shift 8, then 12,13,14,15 shift 12
@@ -883,10 +902,28 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			DecCheckReg = DecCheckReg & ~(0x0F << c); //shift 1111 to the corresponding bit positions and clear the bits in the decoder check reg
 		}
 		if ((DecCheckReg == 0) && (DecSegSize != 0)) {
+#if RS_SIZE_METHOD == 0
 			DecFileSize = SerialFileSize; //grab new complete data
 			//DecTotalSegs = SerialSegTotal; //grab new complete data
+#endif
+#if RS_SIZE_METHOD == 1
+			DecFileSize = SerialFileSize * 255; //grab new complete data and scale up
+			DecFileSize = min(DecFileSize, 1050000-1); //ensure the buffer doesn't overflow if there is a version mismatch
+#endif
 			DecTotalSegs = (int)ceil((_REAL)DecFileSize / DecSegSize); //compute total segments from file size
-
+			DecTotalSegs = min(DecTotalSegs, 32767); //ensure the size isn't ridiculous if there is a version mismatch
+			if (HdrFileSize > 0) {
+				DecTotalSegs = (int)ceil((_REAL)HdrFileSize / DecSegSize); //use the old header size if available
+			}
+		}
+		
+		//set RSfilesize here (moved from Dialog.cpp)
+		RSfilesize = DecFileSize; //This is exactly what was sent, after RS coding into multiples of 255
+		if (RSfilesize == 0) {
+			RSfilesize = HdrFileSize; //grab it from the old header if available
+		}
+		if ((HdrFileSize > 0) && (RSfilesize != HdrFileSize)) {
+			RSfilesize = HdrFileSize; //grab it from the old header if there's an error (version conflict)
 		}
 
 	}

@@ -34,6 +34,7 @@
 /* Implementation of global functions *****************************************/
 void PostWinMessage(unsigned int MessID, int iMessageParam);
 void updateLEDs(void);
+void DrawBar(HWND hwnd);
 
 // procedures called by Windows
 // Main dialog handler

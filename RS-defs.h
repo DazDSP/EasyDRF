@@ -30,16 +30,16 @@
 #define WIN32_LEAN_AND_MEAN
 extern int ECCmode; //Used to be called LeadIn DM
 extern string EZHeaderID; //header ID string
-extern int EncFileSize; //Encoder current file size
-extern int EncSegSize; //Encoder current segment size
-extern int DecFileSize; //Decoder current file size
+extern unsigned int EncFileSize; //Encoder current file size
+extern unsigned int EncSegSize; //Encoder current segment size
+extern unsigned int DecFileSize; //Decoder current file size
 extern int totsize; //Decoder total segment count global
 extern int actsize; //Decoder active segment count global
 extern int actpos; //Decoder active position global
 extern int DecSegSize; //Decoder current segment size
 extern int DecTotalSegs;
 extern int CompTotalSegs;
-extern int HdrFileSize;
+extern unsigned int HdrFileSize;
 extern bool CRCOK;
 
 extern int BarLastID;
@@ -47,12 +47,12 @@ extern int BarLastSeg;
 extern int BarLastTot;
 
 extern int DecCheckReg; //Serial decoder check register
-extern int SerialFileSize; //Serial register for file size transmission
+extern unsigned int SerialFileSize; //Serial register for file size transmission
 extern int BarTransportID; //Last bargraph transport ID
 extern int DecTransportID; //Current decoder transport ID
 extern int DecPacketID; //Current decoder Packet ID - TEST
 extern int RSlastTransportID; //Last decoded Transport ID
-extern int RxRSlevel;	//added by DM to detect RS encoding on incoming file segments, even if file header fails - Used in DABMOT.cpp
+extern unsigned int RxRSlevel;	//added by DM to detect RS encoding on incoming file segments, even if file header fails - Used in DABMOT.cpp
 extern int RSError;
 extern int RSfilesize;
 extern int DecVecbSize;
@@ -81,9 +81,9 @@ extern int DMspeechmodecount;
 extern int dcomperr; //decompressor error
 extern int RSbusy;
 extern int lasterror; //save RS error count
-extern int RScount; //save RS attempts count
-extern int RSpsegs; //save RS segs on last attempt
-extern char filestat; //file save status - 0=WAIT, 1=wait/try nnn, 2=SAVED
+extern unsigned int RScount; //save RS attempts count
+extern unsigned int RSpsegs; //save RS segs on last attempt
+extern unsigned char filestat; //file save status - 0=WAIT, 1=try..., 2=SAVED
 
 #define ZLIB_WINAPI
 #define ZLIB_DLL
