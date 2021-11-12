@@ -1633,6 +1633,8 @@ void RSdecode(unsigned char* RSbuffer) {
 	//read erasure data and decode
 	int i = 0;
 	int s = 0;
+	int RSfilesizeDec = 0; //The size of the decoded RS data
+
 	while (i < RSfilesize) {
 		//check the tID matches and change erasureswitch value if needed... TODO
 		//erasures are in SEGMENTS
@@ -1657,25 +1659,25 @@ void RSdecode(unsigned char* RSbuffer) {
 	if (RxRSlevel == 1) {
 		lasterror = rs1decodeE(buffer1, buffer2, buffer2, RSfilesize);
 		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 224; //compute new file size for decoded output
+			RSfilesizeDec = (RSfilesize / 255) * 224; //compute new file size for decoded output
 		}
 	}
 	if (RxRSlevel == 2) {
 		lasterror = rs2decodeE(buffer1, buffer2, buffer2, RSfilesize);
 		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 192; //compute new file size for decoded output
+			RSfilesizeDec = (RSfilesize / 255) * 192; //compute new file size for decoded output
 		}
 	}
 	if (RxRSlevel == 3) {
 		lasterror = rs3decodeE(buffer1, buffer2, buffer2, RSfilesize);
 		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 160; //compute new file size for decoded output
+			RSfilesizeDec = (RSfilesize / 255) * 160; //compute new file size for decoded output
 		}
 	}
 	if (RxRSlevel == 4) {
 		lasterror = rs4decodeE(buffer1, buffer2, buffer2, RSfilesize);
 		if (lasterror == 0) {
-			RSfilesize = (RSfilesize / 255) * 128; //compute new file size for decoded output
+			RSfilesizeDec = (RSfilesize / 255) * 128; //compute new file size for decoded output
 		}
 	}
 
@@ -1771,7 +1773,7 @@ void RSdecode(unsigned char* RSbuffer) {
 					i = 0;
 					SizeT filesize = BUFSIZE; //to tell LZMA how big the buffer is
 #define propslength 5
-					SizeT filesizein = RSfilesize; // filesizetest;
+					SizeT filesizein = RSfilesizeDec; // filesizetest;
 					SizeT outsize = BUFSIZE;
 					//j is the start of the data, after the new header
 					//filesize is also saved in 3 bytes after props - not used here, as we have the new header
