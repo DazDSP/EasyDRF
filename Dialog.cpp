@@ -98,7 +98,7 @@ int DecCheckReg = 0b00000000000000001111111111111111; //reset 16 bits for new ve
 int DecCheckReg = 0b00001111111111111111111111111111; //Decoder check register for serial segment total transmission
 #endif
 
-int RSfilesize = 0; //The size of the RS encoded data (normally this is an even number of 255 byte blocks)
+int RSfilesize = 0; //The size of the RS encoded data (this is the number of 255 byte blocks)
 
 int DecSegSize = 0; //Decoder Segment Size copy
 int DecTotalSegs = 0; //Decoder total segments - the actual int being used...
@@ -1860,16 +1860,18 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 							//wsprintf(filename, "Rx Files\\%s", NewPic.strName.c_str());
 							strcpy(filename, NewPic.strName.c_str());
+
 							//===========================================================================================
 							//Daz Man
-							//zlib decompression
+							//zlib-LZMA decompression
 							//test the file by checking for the extra filename extension to denote it's been compressed
 							//if it is present, write into buffer1 and expand the file using zlib and save into buffer2 for writing to file
 							//else, write file directly to disk
 							//finally close file and delete buffers from heap
 							//===========================================================================================
-
 							const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
+#if USEGZIP
+
 							//If file is bigger than 512k, bypass decompression and save it directly DM
 							//.gz is used for standard mode to be compatible
 							if ((stricmp(&filename[strlen(filename) - 3], ".gz") == 0) && (picsize <= BUFSIZE)) {
@@ -1910,6 +1912,11 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 								delete[] buffer2;
 							}
 							else if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
+#endif //USEGZIP
+#if !USEGZIP
+							if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
+
+#endif //!USEGZIP
 								//data is compressed, so decompress it
 								_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
 								_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer

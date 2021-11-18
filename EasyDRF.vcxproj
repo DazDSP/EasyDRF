@@ -47,6 +47,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>$(Projectname)</TargetName>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -55,11 +56,12 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>$(Projectname)</TargetName>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -97,13 +99,13 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib;LzmaLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -139,7 +141,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;winmm.lib;libfftw.lib;zlibstat.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;graphwin.lib;comdlg32.lib;Shell32.lib;LzmaLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

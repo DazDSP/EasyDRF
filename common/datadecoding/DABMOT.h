@@ -63,7 +63,7 @@ public:
 		_BOOLEAN			bOK, bReady;
 		int					iDataSegNum;
 		int					iTotSegments;
-		CVector<BYTE> RSbytes{1050000,0}; //added DM - working 1st Oct, 2021
+		CVector<_BYTE> RSbytes{1050000,0}; //added DM - working 1st Oct, 2021 - changed from BYTE to _BYTE Nov 18, 2021
 	};
 
 	int			iTransportID;

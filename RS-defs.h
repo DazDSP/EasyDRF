@@ -85,11 +85,15 @@ extern unsigned int RScount; //save RS attempts count
 extern unsigned int RSpsegs; //save RS segs on last attempt
 extern unsigned char filestat; //file save status - 0=WAIT, 1=try..., 2=SAVED
 
+#if USEGZIP
 #define ZLIB_WINAPI
 #define ZLIB_DLL
 #define ZLIB_INTERNAL
-#include "zconf.h"
 #include "zlib.h"
+#endif //USEGZIP
+
+#include "zconf.h" //needed for some types...
+
 #include "Logging.h"
 #include "LzmaLib.h"
 #include "common/RS/RS-coder.h"

@@ -1729,6 +1729,9 @@ void RSdecode(unsigned char* RSbuffer) {
 			//To save the file we better have a filename....
 			if (size(filenametest) > 0) {
 
+//#define USEGZIP //zlibstat.lib was removed from linker additional dependencies
+
+#if USEGZIP
 				//If file is bigger than 512k, bypass decompression and save it directly DM
 				//gzip decoder ======================================================================================
 				//.gz is used for standard mode to be compatible - RS modes were to use .gzz to prevent unzipping .gz files.. NOT IMPLEMENTED YET - DM
@@ -1768,6 +1771,10 @@ void RSdecode(unsigned char* RSbuffer) {
 				}
 				//LZMA decoder ======================================================================================
 				else if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
+#endif //USEGZIP
+#if !USEGZIP
+					if ((stricmp(&filenametest[strlen(filenametest) - 3], ".lz") == 0) && (filesizetest <= BUFSIZE)) {
+#endif //!USEGZIP
 					//Data is LZMA compressed, uncompress into buffer1 and save
 					//data is compressed, so decompress it
 					i = 0;

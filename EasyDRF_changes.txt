@@ -1,3 +1,15 @@
+EasyDRF Changes - by Daz Man November 19th, 2021
+* Compiled with maximum optimization for speed
+* CPU usage greatly reduced
+* Unused Windows DLL and static library references removed
+* False positives on various AV products reduced
+* Dialog language set to "English"
+
+
+EasyDRF Changes - by Daz Man November 12th, 2021
+* Improved consistency of RS data size display
+
+
 EasyDRF Changes - by Daz Man November 10th, 2021
 * RS data size protocol update
 * Bargraph code moved to new thread
@@ -66,25 +78,12 @@ EasyDRF Changes - by Daz Man September 14th, 2021
 
 EasyDRF Changes - by Daz Man September 13th, 2021
 
-* Fixed RS transmit mode codec display
-
-
-EasyDRF Changes - by Daz Man September 13th, 2021
-
-* Fixed buffer overflow on files > 512k after RS encoding
-
-
-EasyDRF Changes - by Daz Man September 13th, 2021
-
 * All RS modes 1-4 are now functional
 * Transmit instance (repeats) and RS mode setting is now loaded and saved from settings.txt
 * In RS mode, bargraph uses new protocol for sending file size for reliability
 * RS decode retry delay is now proportional to file size
-
-
-EasyDRF Changes - by Daz Man September 11th, 2021
-
-* Fixed bargraph scaling on large files
+* Fixed buffer overflow on files > 512k after RS encoding
+* Fixed RS transmit mode codec display
 
 
 EasyDRF Changes - by Daz Man September 11th, 2021
@@ -96,6 +95,7 @@ New Features
 * Green/Red good/bad segment CRC bargraph
 * RS4 protocol changes to avoid single points of failure (NOT EasyPal compatible)
 * RS4 file header to guarantee file decoding even with segment zero missing
+* Fixed bargraph scaling on large files
 
 EasyDRF Changes - by Daz Man April 3rd, 2021
 

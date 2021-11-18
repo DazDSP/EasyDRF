@@ -27,6 +27,16 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "EasyDRF.ico"
 
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -49,19 +59,19 @@ BEGIN
     LTEXT           "FAC",IDC_STATIC,20,62,23,10
     LTEXT           "MSC",IDC_STATIC,20,73,20,10
     CONTROL         "",IDS_WAVE_PANE,"GraphClass",0x0,50,3,187,108
-    EDITTEXT        IDC_EDIT,   23,117,52,12,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT3,  31,132,44,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT4, 104,117,29,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT6, 24,150,220,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT2, 159,132,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT5, 159,117,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT7, 243,150,42,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT,23,117,52,12,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT3,31,132,44,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT4,104,117,29,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT6,24,150,220,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT2,159,132,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT5,159,117,77,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDIT7,243,150,42,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
     EDITTEXT        IDC_DCFREQ,104,132,29,13,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
     PUSHBUTTON      "",IDB_STARTPIC,243,99,42,22,NOT WS_TABSTOP
     LTEXT           "Info",IDC_STATIC,142,119,14,10
     CONTROL         "Mode",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,139,135,19,10
     CONTROL         "SNR",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,84,119,18,10
-    CONTROL         "Call",IDC_STATIC,"Static", SS_LEFTNOWORDWRAP | WS_GROUP,5,119,14,10
+    CONTROL         "Call",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,5,119,14,10
     CONTROL         "Codec",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,5,135,23,10
     CONTROL         "Stats",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,5,152,18,10
     CONTROL         "DC",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,86,135,14,10
@@ -152,74 +162,6 @@ BEGIN
     EDITTEXT        ID_ABSRINST,66,58,22,14,ES_READONLY | ES_NUMBER | NOT WS_VISIBLE | NOT WS_BORDER | NOT WS_TABSTOP
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    DLG_MAIN, DIALOG
-    BEGIN
-        VERTGUIDE, 10
-        VERTGUIDE, 243
-        VERTGUIDE, 285
-        BOTTOMMARGIN, 162
-        HORZGUIDE, 129
-        HORZGUIDE, 132
-        HORZGUIDE, 145
-    END
-
-    DLG_ABOUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 254
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 237
-    END
-
-    DLG_PICTURE_TX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 213
-        VERTGUIDE, 15
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 355
-        HORZGUIDE, 277
-    END
-
-    DLG_SENDBSR, DIALOG
-    BEGIN
-    END
-
-    DLG_ANSWERBSR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 200
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 72
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral (Default) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
 DLG_CALLSIGN DIALOG 0, 0, 164, 58
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Enter Your Callsign"
@@ -281,6 +223,64 @@ BEGIN
     DEFPUSHBUTTON   "Save",IDSAVE,7,93,50,14,NOT WS_VISIBLE
 END
 
+DLG_HELP DIALOG 0, 0, 261, 209
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Main Problems"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,204,188,50,14
+    LTEXT           "EasyDRF runs on WinXP with 1 or 2 soundcards.",IDC_STATIC,17,18,158,10
+    LTEXT           "on Win2000 it needs TWO soundcards to run.",IDC_STATIC,17,28,153,8
+    LTEXT           "if you have only 1 soundcard and Win2000 you can choose to run only the TX or only the RX or only Picture mode.  Use the startup options",IDC_STATIC,17,41,217,26
+    LTEXT           "EasyDRF.exe -r   for Receive only     ",IDC_STATIC,17,71,210,8
+    LTEXT           "EasyDRF.exe -t   for Transmit only",IDC_STATIC,17,79,237,8
+    LTEXT           "EasyDRF.exe -p   for Picture mode only, RX and TX ",IDC_STATIC,17,87,171,8
+    GROUPBOX        "First",IDC_STATIC,8,7,246,101
+    GROUPBOX        "Second",IDC_STATIC,8,116,246,56
+    LTEXT           "The TUNE and ID buttons will always play the sound on the default soundcard. There is no way to change that.  And, those buttons work only with WinXP !",IDC_STATIC,17,126,222,29
+    GROUPBOX        "More Info to come...",IDC_STATIC,8,176,172,26
+    LTEXT           "",IDC_STATIC,17,188,145,8
+    LTEXT           "Tune plays tune.wav,    ID -> id.wav,    G -> g.wav,    B -> b.wav",IDC_STATIC,17,157,222,8
+END
+
+DLG_RXSETTINGS DIALOG 0, 0, 120, 204
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "RX Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,73,183,40,14
+    GROUPBOX        "Freq. Acq. Sens.",IDC_STATIC,7,7,106,52
+    GROUPBOX        "Search Window Size",IDC_STATIC,7,67,106,64
+    EDITTEXT        IDC_FREQACC,33,34,40,14,ES_CENTER | ES_NUMBER
+    EDITTEXT        IDC_SEARCHWINLOWER,53,81,40,14,ES_CENTER | ES_NUMBER
+    EDITTEXT        IDC_SEARCHWINUPPER,53,106,40,14,ES_CENTER | ES_NUMBER
+    LTEXT           "Low = 0  Hi = 100",IDC_STATIC,24,21,56,8
+    LTEXT           "Center Hz",IDC_STATIC,13,84,37,8
+    LTEXT           "Width Hz",IDC_STATIC,15,108,35,8
+    DEFPUSHBUTTON   "USE",IDAPP,7,183,40,14
+    GROUPBOX        "Audio Filter",IDC_STATIC,7,140,51,35
+    RADIOBUTTON     "RX Filter",ID_SETTINGS_AUDIOFILTER_RXFILTER,13,156,41,10
+    GROUPBOX        "Auto Reset",IDC_STATIC,63,140,50,35
+    RADIOBUTTON     "Fast",IDC_SETTINGS_FASTRESET,72,156,29,10
+END
+
+DLG_MIXERSETTING DIALOG 0, 0, 245, 210
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Mixer Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,188,189,50,14
+    EDITTEXT        IDC_SOUNDCARDNAME,29,20,187,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Soundcard",IDC_STATIC,7,7,231,38
+    GROUPBOX        "ON RX",IDC_STATIC,7,52,231,60
+    GROUPBOX        "ON TX",IDC_STATIC,7,121,231,61
+    LISTBOX         IDC_LISTRX,84,63,146,43,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LISTTX,84,132,146,41,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Switch input to",IDC_STATIC,21,66,50,8
+    LTEXT           "Switch input to",IDC_STATIC,21,135,50,8
+    DEFPUSHBUTTON   "Disable Mixer",ID_SETDEFMIXER,7,189,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -290,6 +290,47 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    DLG_MAIN, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 243
+        VERTGUIDE, 285
+        BOTTOMMARGIN, 162
+        HORZGUIDE, 129
+        HORZGUIDE, 132
+        HORZGUIDE, 145
+    END
+
+    DLG_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 254
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 237
+    END
+
+    DLG_PICTURE_TX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        VERTGUIDE, 15
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 355
+        HORZGUIDE, 277
+    END
+
+    DLG_SENDBSR, DIALOG
+    BEGIN
+    END
+
+    DLG_ANSWERBSR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 200
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+
     DLG_CALLSIGN, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -329,9 +370,45 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
     END
+
+    DLG_HELP, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        RIGHTMARGIN, 254
+        VERTGUIDE, 17
+        VERTGUIDE, 239
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 202
+    END
+
+    DLG_RXSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 113
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 197
+    END
+
+    DLG_MIXERSETTING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 238
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 203
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
+#endif    // English resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -445,117 +522,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // Neutral (Default) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Switzerland) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-DLG_HELP DIALOG 0, 0, 261, 209
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Main Problems"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,204,188,50,14
-    LTEXT           "EasyDRF runs on WinXP with 1 or 2 soundcards.",IDC_STATIC,17,18,158,10
-    LTEXT           "on Win2000 it needs TWO soundcards to run.",IDC_STATIC,17,28,153,8
-    LTEXT           "if you have only 1 soundcard and Win2000 you can choose to run only the TX or only the RX or only Picture mode.  Use the startup options",IDC_STATIC,17,41,217,26
-    LTEXT           "EasyDRF.exe -r   for Receive only     ",IDC_STATIC,17,71,210,8
-    LTEXT           "EasyDRF.exe -t   for Transmit only",IDC_STATIC,17,79,237,8
-    LTEXT           "EasyDRF.exe -p   for Picture mode only, RX and TX ",IDC_STATIC,17,87,171,8
-    GROUPBOX        "First",IDC_STATIC,8,7,246,101
-    GROUPBOX        "Second",IDC_STATIC,8,116,246,56
-    LTEXT           "The TUNE and ID buttons will always play the sound on the default soundcard. There is no way to change that.  And, those buttons work only with WinXP !",IDC_STATIC,17,126,222,29
-    GROUPBOX        "More Info to come...",IDC_STATIC,8,176,172,26
-    LTEXT           "",IDC_STATIC,17,188,145,8
-    LTEXT           "Tune plays tune.wav,    ID -> id.wav,    G -> g.wav,    B -> b.wav",IDC_STATIC,17,157,222,8
-END
-
-DLG_RXSETTINGS DIALOG 0, 0, 120, 204
-STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION
-CAPTION "RX Settings"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,73,183,40,14
-    GROUPBOX        "Freq. Acq. Sens.",IDC_STATIC,7,7,106,52
-    GROUPBOX        "Search Window Size",IDC_STATIC,7,67,106,64
-    EDITTEXT        IDC_FREQACC,33,34,40,14,ES_CENTER | ES_NUMBER
-    EDITTEXT        IDC_SEARCHWINLOWER,53,81,40,14,ES_CENTER | ES_NUMBER
-    EDITTEXT        IDC_SEARCHWINUPPER,53,106,40,14,ES_CENTER | ES_NUMBER
-    LTEXT           "Low = 0  Hi = 100",IDC_STATIC,24,21,56,8
-    LTEXT           "Center Hz",IDC_STATIC,13,84,37,8
-    LTEXT           "Width Hz",IDC_STATIC,15,108,35,8
-    DEFPUSHBUTTON   "USE",IDAPP,7,183,40,14
-    GROUPBOX        "Audio Filter",IDC_STATIC,7,140,51,35
-    RADIOBUTTON     "RX Filter",ID_SETTINGS_AUDIOFILTER_RXFILTER,13,156,41,10
-    GROUPBOX        "Auto Reset",IDC_STATIC,63,140,50,35
-    RADIOBUTTON     "Fast",IDC_SETTINGS_FASTRESET,72,156,29,10
-END
-
-DLG_MIXERSETTING DIALOG 0, 0, 245, 210
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "Mixer Settings"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,188,189,50,14
-    EDITTEXT        IDC_SOUNDCARDNAME,29,20,187,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
-    GROUPBOX        "Soundcard",IDC_STATIC,7,7,231,38
-    GROUPBOX        "ON RX",IDC_STATIC,7,52,231,60
-    GROUPBOX        "ON TX",IDC_STATIC,7,121,231,61
-    LISTBOX         IDC_LISTRX,84,63,146,43,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_LISTTX,84,132,146,41,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Switch input to",IDC_STATIC,21,66,50,8
-    LTEXT           "Switch input to",IDC_STATIC,21,135,50,8
-    DEFPUSHBUTTON   "Disable Mixer",ID_SETDEFMIXER,7,189,50,14
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    DLG_HELP, DIALOG
-    BEGIN
-        LEFTMARGIN, 8
-        RIGHTMARGIN, 254
-        VERTGUIDE, 17
-        VERTGUIDE, 239
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 202
-    END
-
-    DLG_RXSETTINGS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 113
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 197
-    END
-
-    DLG_MIXERSETTING, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 238
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 203
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // German (Switzerland) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
