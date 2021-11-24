@@ -41,7 +41,7 @@
 #define MAX_TIMING_CORRECTIONS			3
 #define MAX_ROBMODE_CORRECTIONS			2
 
-#define LAMBDA_LOW_PASS_START			((CReal) 0.99)
+#define LAMBDA_LOW_PASS_START			((CReal) 0.99) //((CReal) 0.9) might be better in cases of large time error //was ((CReal) 0.99)
 #define TIMING_BOUND_ABS				150
 
 /* Non-linear correction of the timing if variation is too big */

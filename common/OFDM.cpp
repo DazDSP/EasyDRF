@@ -37,7 +37,7 @@
 \******************************************************************************/
 void COFDMModulation::ProcessDataInternal(CParameter& TransmParam)
 {
-	int	i;
+	int	i = 0; //init DM
 
 	/* Copy input vector in matlib vector and place bins at the correct
 	   position */
@@ -117,10 +117,10 @@ double hilbdata[1500] = {0.0};
 
 void COFDMDemodulation::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int			i;
-	_REAL		rNormCurFreqOffset;
-	_REAL		rSkipGuardIntPhase;
-	_COMPLEX	cExpStep;
+	int			i = 0; //init DM
+	_REAL		rNormCurFreqOffset = 0; //init DM
+	_REAL		rSkipGuardIntPhase = 0; //init DM
+	_COMPLEX	cExpStep = 0; //init DM
 
 	/* Total frequency offset from acquisition and tracking (we calculate the
 	   normalized frequency offset) */

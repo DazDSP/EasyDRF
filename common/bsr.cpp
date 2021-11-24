@@ -92,11 +92,11 @@ int segsize;
 
 string readbsrfile(char * path)
 {
-	FILE * bsr;
-	int trid;
-	char filenam[300];
-	char rubbish[100];
-	int segno;
+	FILE * bsr = nullptr; //inits DM
+	int trid = 0;
+	char filenam[300]{};
+	char rubbish[100]{};
+	int segno = 0;
 	int vct = 0;
 
 	wsprintf(filenam, "%s%s", path, "bsrreq.bin");
@@ -136,13 +136,13 @@ int segnobsrfile()
 
 void compressBSR(char * filenamein, char * filenameout)
 {
-	FILE * inf;
-	FILE * outf;
-	char tmpstr[100];
-	int segno;
+	FILE * inf = nullptr; //init DM
+	FILE * outf = nullptr; //init DM
+	char tmpstr[100]{}; //init DM
+	int segno = 0;
 	int lastseg = -9;
 	int consct = 0;
-	int data;
+	int data = 0;
 	BOOL stopcompress = FALSE;
 
 	inf = fopen(filenamein,"rt");
@@ -197,19 +197,19 @@ void compressBSR(char * filenamein, char * filenameout)
 
 void decompressBSR(char * filenamein, char * filenameout)
 {
-	FILE * bsrin = NULL;
-	FILE * bsrout = NULL;
+	FILE * bsrin = nullptr;
+	FILE * bsrout = nullptr;
 
 	bsrin = fopen(filenamein,"rt");
 	bsrout = fopen(filenameout,"wt");
 
 	// decompress
-	if (bsrin != NULL) 
+	if (bsrin != nullptr) 
 	{
-		int segno,oldsegno = 0;
-		int par1;
+		int segno = 0,oldsegno = 0;
+		int par1 = 0;
 		char par2[100];
-		int data;
+		int data = 0;
 
 		fscanf(bsrin,"%d",&par1);
 		fprintf(bsrout,"%d\n",par1);
@@ -270,11 +270,11 @@ void writeselsegments(int num = 1)
 		DRMTransmitter.GetAudSrcEnc()->ClearPicFileNames();
 
 		//Added DM
-		//Trim the .gz from BSR request filenames for on-the-fly compressed files DM
+		//Trim the .lz from BSR request filenames for on-the-fly compressed files DM
 		//This actually cuts the specified char array short by terminating with a zero byte (no copy is made)
 		unsigned int tlen = idfilenamenodir.length() - 3;
-		if (stricmp(&idfilenamenodir[tlen], ".gz") == 0) {
-			idfilenamenodir[tlen] = 0; //terminate the string early to cut off the extra .gz extension DM
+		if (stricmp(&idfilenamenodir[tlen], ".lz") == 0) {
+			idfilenamenodir[tlen] = 0; //terminate the string early to cut off the extra .lz extension DM
 		}
 
 		DRMTransmitter.GetAudSrcEnc()->SetPicFileName(idfilename, idfilenamenodir,vecsToSend);

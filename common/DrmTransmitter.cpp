@@ -151,8 +151,7 @@ void CDRMTransmitter::StartParameters(CParameter& Param)
 	Param.MSCPrLe.iPartB = 0;
 
 	/* Either one audio or one data service can be chosen */
-	_BOOLEAN bIsAudio = FALSE; // TRUE; //does this need external access? - NO everything assumes data mode DM =======
-//	_BOOLEAN bIsAudio = TRUE; //does this need external access? - NO everything assumes data mode DM =======
+	_BOOLEAN bIsAudio = FALSE; //does this need external access? - NO everything assumes data mode DM
 	
 	/* In the current version only one service and one stream is supported. The
 	   stream IDs must be 0 in both cases */

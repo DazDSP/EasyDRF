@@ -473,8 +473,8 @@ int percentage = 0;
 
 int CAudioSourceDecoder::getdecodperc(void)
 {
-	double tot;
-	double fact;
+	double tot = 0;
+	double fact = 0;
 	tot = (double)succdecod + (double)errdecod; //edited DM added (double)
 	if (tot == 0.0) return 0;
 	fact = 100.0/tot;
@@ -484,7 +484,7 @@ int CAudioSourceDecoder::getdecodperc(void)
 
 void CAudioSourceDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int i,k;
+	int i = 0,k = 0;
 
 	/* Check if something went wrong in the initialization routine */
 	if (DoNotProcessData == TRUE)
@@ -600,9 +600,9 @@ void CAudioSourceDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 	else if (IsSPEEXAudio == TRUE)
 	{
 		bool spxcrc = TRUE;
-		int j;
-		short tmp;
-		int ind;
+		int j = 0;
+		short tmp = 0;
+		int ind = 0;
 		iOutputBlockSize = 0;
 
 		if (iTotalFrameSize >= 990)
@@ -758,8 +758,8 @@ void CAudioSourceDecoder::InitInternal(CParameter& ReceiverParam)
 	is AAC"
 	* NOTE: AAC is not used in WinDRM/EasyDRF - DM
 */
-	int iCurAudioStreamID;
-	int iCurSelServ;
+	int iCurAudioStreamID = 0;
+	int iCurSelServ = 0;
 
 	succdecod = 0;
 	errdecod = 0;
@@ -822,7 +822,8 @@ void CAudioSourceDecoder::InitInternal(CParameter& ReceiverParam)
 			break;
 		}
 
-
+		//added to disable speech decoding in P mode (Picture mode) - This can stop exceptions happening in the speech decoder DM
+		if (runmode != 'P') {
 		/* Init for decoding -------------------------------------------- */
 		if (ReceiverParam.Service[iCurSelServ].AudioParam.eAudioCoding == CParameter::AC_LPC)
 			IsLPCAudio = TRUE;
@@ -832,6 +833,7 @@ void CAudioSourceDecoder::InitInternal(CParameter& ReceiverParam)
 			IsCELPAudio = TRUE;
 		if (ReceiverParam.Service[iCurSelServ].AudioParam.eAudioCoding == CParameter::AC_SSTV)
 			IsSSTVData = TRUE;
+		}
 
 
 	}

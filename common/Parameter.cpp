@@ -145,9 +145,9 @@ void CParameter::GetActiveStreams(CVector<int>& veciActStr)
 
 _REAL CParameter::GetBitRate(int iServiceID)
 {
-	int iNoBitsPerFrame;
-	int iLenPartA;
-	int iLenPartB;
+	int iNoBitsPerFrame = 0;
+	int iLenPartA = 0;
+	int iLenPartB = 0;
 
 	/* First, check if audio or data service and get lengths */
 	if (Service[iServiceID].eAudDataFlag == SF_AUDIO)

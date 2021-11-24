@@ -47,7 +47,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>$(Projectname)</TargetName>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -56,7 +56,7 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>$(Projectname)</TargetName>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -275,6 +275,7 @@
     <ClInclude Include="Logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RS-defs.h" />
     <ClInclude Include="sound\Sound.h" />
     <ClInclude Include="zconf.h" />
     <ClInclude Include="zlib.h" />

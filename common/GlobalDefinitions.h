@@ -139,11 +139,24 @@ typedef unsigned int					_MESSAGE_IDENT;
 #define GUI_CONTROL_UPDATE_TIME			500	/* Milliseconds */
 
 /* Definitions for LED/status indicators DM ----------------------------------*/
+#define RNEIPINK						0xBD80FF
+#define DARKRED							0x000070
 #define RED								0x0000FF
+#define ORANGE							0x0090FF
 #define YELLOW							0x00DEFF
 #define GREEN							0x30FF00
 #define BLUE							0xFF7000
+#define	GREY							0x707070
+#define DARKGREEN						0x207010
+#define MAGENTA							0xFF00FF
+#define BLACK							0x000000
 
+/* Definitions for filestat DM ----------------------------------*/
+#define FS_BLANK						0
+#define FS_WAIT							1
+#define FS_TRY							2
+#define FS_SAVED						3
+#define FS_FAILED						4
 
 /* Global enumerations ------------------------------------------------------ */
 enum ESpecOcc {SO_0, SO_1}; /* SO: Spectrum Occupancy */

@@ -63,14 +63,14 @@ protected:
 	CComplexVector			veccFFTInput;
 	CComplexVector			veccFFTOutput;
 
-	int						iShiftedKmin{}; //init DM
-	int						iEndIndex{}; //init DM
-	int						iDFTSize{}; //init DM
-	int						iGuardSize{}; //init DM
+	int						iShiftedKmin;
+	int						iEndIndex;
+	int						iDFTSize;
+	int						iGuardSize;
 
-	_COMPLEX				cCurExp{}; //init DM
-	_COMPLEX				cExpStep{}; //init DM
-	_REAL					rDefCarOffset{}; //init DM
+	_COMPLEX				cCurExp;
+	_COMPLEX				cExpStep;
+	_REAL					rDefCarOffset;
 
 	virtual void InitInternal(CParameter& TransmParam);
 	virtual void ProcessDataInternal(CParameter& TransmParam);
@@ -85,26 +85,26 @@ public:
 	void GetPowDenSpec(CVector<_REAL>& vecrData);
 
 protected:
-	CVector<_REAL>			vecrPDSResult{}; //init DM
+	CVector<_REAL>			vecrPDSResult;
 
-	CFftPlans				FftPlan{}; //init DM
-	CComplexVector			veccFFTInput{}; //init DM
-	CComplexVector			veccFFTOutput{}; //init DM
+	CFftPlans				FftPlan;
+	CComplexVector			veccFFTInput;
+	CComplexVector			veccFFTOutput;
 
-	CVector<_REAL>			vecrPowSpec{}; //init DM
-	int						iLenPowSpec{}; //init DM
+	CVector<_REAL>			vecrPowSpec;
+	int						iLenPowSpec;
 
-	int						iShiftedKmin{}; //init DM
-	int						iShiftedKmax{}; //init DM
-	int						iDFTSize{}; //init DM
-	int						iGuardSize{}; //init DM
-	int						iNumCarrier{}; //init DM
+	int						iShiftedKmin;
+	int						iShiftedKmax;
+	int						iDFTSize;
+	int						iGuardSize;
+	int						iNumCarrier;
 
-	_COMPLEX				cCurExp{}; //init DM
+	_COMPLEX				cCurExp;
 
-	CReal					rLamPSD{}; //init DM
+	CReal					rLamPSD;
 
-	_REAL					rInternIFNorm{}; //init DM
+	_REAL					rInternIFNorm;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

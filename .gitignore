@@ -436,3 +436,5 @@ old/
 /common/TransmitterFilter-old2.h
 /common/TransmitterFilter-old.h
 /Release/EasyDRF Pic Mode.lnk
+/Release/*.xml
+/Release/*.sarif

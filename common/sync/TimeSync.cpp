@@ -40,17 +40,17 @@
 /* Implementation *************************************************************/
 void CTimeSync::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int				i, j, k;
-	int				iMaxIndex;
-	int				iNewStIndCount; 
-	int				iIntDiffToCenter;
-	int				iCurPos;
-	int				iStartIndex;
-	int				iDetectedRModeInd;
-	int				iDecInpuSize;
-	CReal			rMaxValue;
-	CReal			rMaxValRMCorr;
-	CReal			rSecHighPeak;
+	int				i = 0, j = 0, k = 0; //inits DM
+	int				iMaxIndex = 0;
+	int				iNewStIndCount = 0;
+	int				iIntDiffToCenter = 0;
+	int				iCurPos = 0;
+	int				iStartIndex = 0;
+	int				iDetectedRModeInd = 0;
+	int				iDecInpuSize = 0;
+	CReal			rMaxValue = 0;
+	CReal			rMaxValRMCorr = 0;
+	CReal			rSecHighPeak = 0;
 	CRealVector		rvecInpTmp;
 	CRealVector		rResMode(NUM_ROBUSTNESS_MODES);
 	/* Max number of detected peaks ("5" for safety reasons. Could be "2") */

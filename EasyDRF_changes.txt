@@ -1,3 +1,13 @@
+EasyDRF Changes - by Daz Man November 25th, 2021
+* Updates to allow tiny files to decode correctly (down to 0 bytes)
+* Improved RS decoding for small files
+* Improved filename loading from old header
+* Added receive percent display to Filestats box
+* Fixed inaccurate active segment count
+* Bargraph moved to PaintWaveData function
+* State LEDs blank in transmit mode
+
+
 EasyDRF Changes - by Daz Man November 19th, 2021
 * Compiled with maximum optimization for speed
 * CPU usage greatly reduced

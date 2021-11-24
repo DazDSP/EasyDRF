@@ -245,7 +245,9 @@ void getvar(void)
 		else if (qamtype >= 64) qamtype = 64;
 		else qamtype = 16;
 		if (modetype <= 0) modetype = 0;
-		else if (modetype >= 1) modetype = 1;
+		if (modetype == 1) modetype = 1; //added DM
+		if (modetype == 2) modetype = 2; //added DM
+//		else if (modetype >= 1) modetype = 1;
 		if (interleave <= 0) interleave = 0;
 		else if (interleave >= 1) interleave = 1;
 		if (specoccuppa <= 0) specoccuppa = 0;

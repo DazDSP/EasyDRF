@@ -138,8 +138,8 @@ void CMLCEncoder::ProcessDataInternal(CParameter& Parameter)
 
 void CMLCEncoder::InitInternal(CParameter& TransmParam)
 {
-	int i;
-	int	iNumInBits;
+	int i = 0;
+	int	iNumInBits = 0;
 
 	CalculateParam(TransmParam, eChannelType);
 	

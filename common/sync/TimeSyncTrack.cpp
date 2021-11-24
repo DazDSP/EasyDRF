@@ -42,16 +42,16 @@ void CTimeSyncTrack::Process(CParameter& Parameter,
 							 CComplexVector& veccChanEst, int iNewTiCorr,
 							 _REAL& rLenPDS, _REAL& rOffsPDS)
 {
-	int			i, j;
-	int			iIntShiftVal;
-	int			iFirstPathDelay;
-	CReal		rPeakBound;
-	CReal		rPropGain;
-	CReal		rCurEnergy;
-	CReal		rWinEnergy;
-	CReal		rMaxWinEnergy;
-	_BOOLEAN	bDelayFound;
-	_BOOLEAN	bPDSResultFound;
+	int			i = 0, j = 0; //inits DM
+	int			iIntShiftVal = 0;
+	int			iFirstPathDelay = 0;
+	CReal		rPeakBound = 0;
+	CReal		rPropGain = 0;
+	CReal		rCurEnergy = 0;
+	CReal		rWinEnergy = 0;
+	CReal		rMaxWinEnergy = 0;
+	_BOOLEAN	bDelayFound = FALSE;
+	_BOOLEAN	bPDSResultFound = FALSE;
 
 	/* Rotate the averaged PDP to follow the time shifts -------------------- */
 	/* Update timing correction history (shift register) */
@@ -553,10 +553,10 @@ void CTimeSyncTrack::GetAvPoDeSp(CVector<_REAL>& vecrData,
 								_REAL& rStartGuard, _REAL& rEndGuard,
 								_REAL& rPDSBegin, _REAL& rPDSEnd)
 {
-	int		i;
-	int		iHalfSpec;
-	_REAL	rScaleIncr;
-	_REAL	rScaleAbs;
+	int		i = 0;
+	int		iHalfSpec = 0;
+	_REAL	rScaleIncr = 0;
+	_REAL	rScaleAbs = 0;
 
 	/* Init output vectors */
 	vecrData.Init(iNumIntpFreqPil, (_REAL) 0.0);

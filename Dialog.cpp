@@ -75,41 +75,42 @@ DWORD mscLEDcol = RED; //Red is default
 int ECCmode = 1; //changed to int DM - 1-3 = Instances OLD, 4,5,6,7 = RS1,RS2,RS3,RS4 NEW
 string EZHeaderID = "EasyDRFHeader/|"; //header ID string
 
-unsigned int EncSegSize = 0; //Encoder current segment size DM
 unsigned int EncFileSize = 0; //Encoder current file size DM
+//unsigned int PreviousTransportID = 0; //Encoder previous Transmport ID
 
-//int RSretryDelay = 0; //no longer needed...
 unsigned int RxRSlevel = 0;	//added by DM to detect RS encoding on incoming file segments, even if file header fails - Used in DABMOT.cpp
+unsigned int RxRSlevelold = 0;	//previous value of RxRSlevel
+
 unsigned int DecFileSize = 0; //Decoder current file size DM
 unsigned int HdrFileSize = 0; //Decoder current file size DM
+unsigned int SerialFileSize = 0;
+int unsigned RSfilesize = 0; //The size of the RS encoded data (this is the number of 255 byte blocks)
+
 int totsize = 0; //total segment count global DM
 int actsize = 0; //Decoder active segment count global DM
 int actpos = 0; //Decoder active position global DM
-unsigned int SerialFileSize = 0;
-unsigned int RScount; //save RS attempts count
-unsigned int RSpsegs; //save RS segs on last attempt
-unsigned char filestat; //file save status - 0=WAIT, 1=try..., 2=SAVED
+
+unsigned int DecSegSize = 0; //Decoder Segment Size copy
+unsigned int DecTotalSegs = 0; //Decoder total segments - the actual int being used...
+unsigned int CompTotalSegs = 0; //Computed total segments
+
+unsigned int RScount = 0; //save RS attempts count
+unsigned int RSpsegs = 0; //save RS segs on last attempt
+unsigned int RSpercent = 0; //test for RS data level
+
+unsigned char filestat; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED
 
 #if RS_SIZE_METHOD == 1
-int DecCheckReg = 0b00000000000000001111111111111111; //reset 16 bits for new version
+unsigned int DecCheckReg = 0x00FFFF; //reset 16 bits for new version
 #endif
 
 #if RS_SIZE_METHOD == 0
-int DecCheckReg = 0b00001111111111111111111111111111; //Decoder check register for serial segment total transmission
+unsigned int DecCheckReg = 0b00001111111111111111111111111111; //Decoder check register for serial segment total transmission
 #endif
 
-int RSfilesize = 0; //The size of the RS encoded data (this is the number of 255 byte blocks)
-
-int DecSegSize = 0; //Decoder Segment Size copy
-int DecTotalSegs = 0; //Decoder total segments - the actual int being used...
-int CompTotalSegs = 0; //Computed total segments
-int DecVecbSize = 0; //debug the raw data size available
-
-int DecPacketID = 0; //TEST
-
-int RSlastTransportID = 0; //Last RS decoder transport ID
-int DecTransportID = 0; //Current decoder transport ID
-int BarTransportID = 0;
+unsigned int RSlastTransportID = 0; //Last RS decoder transport ID
+unsigned int DecTransportID = 0; //Current decoder transport ID
+unsigned int BarTransportID = 0;
 
 int BGbusy = 0; //Bargraph thread flag
 int RSbusy = 0; //RS decoder thread flag
@@ -132,10 +133,11 @@ int BarRedraw = 0;
 int Bartotsizeold = 0;
 
 //string DMfilename = {}; //added DM 130 is now 260 - (Windows max path length is 255 characters)
-char DMfilename[260]; //added DM 130 is now 260 - (Windows max path length is 255 characters)
-char DMfilename2[260]; //added DM 130 is now 260 - (Windows max path length is 255 characters)
-char DMdecodestat[15]; //File decode status
+char DMfilename[260]{}; //added DM 130 is now 260 - (Windows max path length is 255 characters)
+char DMfilename2[260]{}; //added DM 130 is now 260 - (Windows max path length is 255 characters)
+char DMdecodestat[15]{}; //File decode status
 
+bool DMnewfile = TRUE;
 
 char erasures[3][8192 / 8]{}; //array for segment erasure data (saves the first/last good CRC segment numbers)
 int erasuressegsize[3] = {0,0,0}; //save the segment size that was used for each array
@@ -152,8 +154,8 @@ char bsrpath[260] = { "" }; //Added DM
 
 int DMRSindex = 0; //write index for above array
 int DMRSpsize = 0; //previous segment size
+
 int DMmodehash = 0; //a hash of the transmit parameters, to make mode changes generate unique objects by adding it to the transport ID - DM
-int runonce = 0; //added DM
 float DMSNRaverage = 0;
 float DMSNRmax = 0;
 int DMobjectnum = 0;
@@ -163,7 +165,7 @@ float DMSNRmaxarray[50]{ 0 };
 int DMgoodsegsarray[50]{ 0 };
 int DMtotalsegsarray[50]{ 0 };
 int DMpossegssarray[50]{ 0 };
-int DMspeechmodecount = 0;  //not used yet...
+//int DMspeechmodecount = 0;  //not used yet...
 
 //moved from further down DM
 long file_size[64]; //edited DM was 32
@@ -195,15 +197,15 @@ string rxcall     = "nocall";
 string lastrxcall = "nocall";
 string consrxcall = "nocall"; 
 
-int numdevIn; //edited DM
-int numdevOut; //edited DM
+int numdevIn = 0; //edited DM  //init DM
+int numdevOut = 0; //edited DM //init DM
 
 int disptype = 0; //0=spectr, 1=psd, 2=level
 int newdata = 0;
 int numbsrsegments = 0;
 int acthash = 0;
-int bsrposind;
-int txbsrposind;
+int bsrposind = 0; //init DM
+int txbsrposind = 0; //init DM
 BOOL bCloseMe = FALSE;
 
 HWND bsrhand;
@@ -264,26 +266,40 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d", DMfilename, RSfilesize, DecTransportID, erasureswitch);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 	//compute the file save status message based on the number in filestat
-	if (filestat == 0) {
-		//WAIT
-		strcpy(DMdecodestat, "WAIT"); //File decode status
-		lasterror2 = sprintf_s(tempstr, "%s", DMdecodestat);
+	if (filestat == FS_BLANK) {
+		//BLANK
+//		strcpy(DMdecodestat, ""); //File decode status
+		lasterror2 = sprintf_s(tempstr, " ");
 		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
 	}
-	if (filestat == 1) {
-		//wait or try xxx
-		strcpy(DMdecodestat, "try..."); //File decode status
-		lasterror2 = sprintf_s(tempstr, "%s%03d", DMdecodestat, RScount);
-		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
-	}
-	if (filestat == 2) {
-		//SAVED
-		strcpy(DMdecodestat, "SAVED"); //File decode status
-		lasterror2 = sprintf_s(tempstr, "%s", DMdecodestat);
-		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+
+	if (IsRX) {
+
+		if (filestat == FS_WAIT) {
+			//WAIT
+			lasterror2 = sprintf_s(tempstr, "WAIT %02d%%", RSpercent);
+			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+		}
+		if (filestat == FS_TRY) {
+			//wait or try xxx
+			lasterror2 = sprintf_s(tempstr, "Try... %03d", RScount);
+			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+		}
+		if (filestat == FS_SAVED) {
+			//SAVED
+			lasterror2 = sprintf_s(tempstr, "SAVED");
+			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+		}
+		if (filestat == FS_FAILED) {
+			//FAILED
+			lasterror2 = sprintf_s(tempstr, "FAILED");
+			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+		}
 	}
 }
 
@@ -349,7 +365,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 
 	if (MessID == MS_RESET_ALL)
 	{
-		int i;
+		int i = 1;
 		for (i = 1; i < 9; i++) messtate[i] = -1; //clear messtate array DM
 		//set all indicators to RED
 		ioLEDcol = RED; //Red is default
@@ -359,7 +375,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 		facLEDcol = RED; //Red is default
 		mscLEDcol = RED; //Red is default
 
-		updateLEDs(); //read the values above, and draw them
+		//updateLEDs(); //read the values above, and draw them
 
 		if (rtsonfac) endrts();
 		return;
@@ -368,6 +384,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 	{
 		//convert the colour first, then send it to the correct LED - DM
 		int lc = 0;
+		if (iMessageParam == 3) lc = GetSysColor(COLOR_3DFACE); //BLACK; // MAGENTA; // DARKGREEN; // RNEIPINK; // ORANGE; // DARKRED; // BLUE; // GREY; //Convert colour
 		if (iMessageParam == 2) lc = RED; //Convert colour
 		if (iMessageParam == 1) lc = YELLOW; //Convert colour
 		if (iMessageParam == 0) lc = GREEN; //Convert colour
@@ -389,7 +406,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 		else if (MessID == MS_TIME_SYNC)
 			timeLEDcol = lc;
 		else return;
-		updateLEDs();
+		//updateLEDs();
 		messtate[MessID] = iMessageParam;
 	}
 }
@@ -398,10 +415,10 @@ void updateLEDs(void) {
 	HWND hwnd = messhwnd; //main window
 	HDC hdc = GetDC(hwnd);
 
-	int x = 15; //x position of LEDs
+	constexpr int x = 15; //x position of LEDs
 	int y = 0;
-	int top = 27;
-	int hgt = 18;
+	constexpr int top = 27;
+	constexpr int hgt = 18;
 	int i = 0;
 
 	SetBkColor(hdc, ioLEDcol);
@@ -439,9 +456,10 @@ static void PaintWaveData ( HWND hDlg , BOOL erase )
 {
     HWND hwndShowWave = GetDlgItem( hDlg, IDS_WAVE_PANE );
 
+	DrawBar(messhwnd); //This works much better here! DM
+	updateLEDs();
     InvalidateRect( hwndShowWave, nullptr, erase );
     UpdateWindow( hwndShowWave );
-	updateLEDs();
     return;
 }
 
@@ -517,10 +535,10 @@ void PlaySound(  void *dummy  )
 	isplaying = FALSE;
 }
 
-int actdevinr;
-int actdevint;
-int actdevoutr;
-int actdevoutt;
+int actdevinr = 0; //inits DM
+int actdevint = 0;
+int actdevoutr = 0;
+int actdevoutt = 0;
 
 BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -540,17 +558,26 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HDC hdc = (HDC)wParam;
 			int bkcol = 0;
-			//if filestat == 0 use blue background
-			//if filestat == 1 use yellow background
-			//if filestat == 2 use green background
-			if (filestat == 0) {
+			//if filestat == FS_BLANK use Window background
+			//if filestat == FS_WAIT use blue background
+			//if filestat == FS_TRY  use yellow background
+			//if filestat == FS_SAVED use green background
+			//if filestat == FS_FAILED use red background
+			if (filestat == FS_BLANK) {
+				//bkcol = BLUE; //change to window background colour
+				bkcol = GetSysColor(COLOR_3DFACE);
+			}
+			if (filestat == FS_WAIT) {
 				bkcol = BLUE;
 			}
-			if (filestat == 1) {
+			if (filestat == FS_TRY) {
 				bkcol = YELLOW;
 			}
-			if (filestat == 2) {
+			if (filestat == FS_SAVED) {
 				bkcol = GREEN;
+			}
+			if (filestat == FS_FAILED) {
+				bkcol = RED;
 			}
 			// Do not return a brush created by CreateSolidBrush(...) because you'll get a memory leak
 			SetBkColor(hdc, bkcol); //main background
@@ -576,7 +603,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		getvar(); //read settings.txt and set variables from it
 		comtx(gettxport());
 		checkcomport(hwnd,gettxport());
-		//InitBsr(); //DLL version code needs this removed DM =========================================================================================================
+		//InitBsr(); //DLL version code needs this removed DM
 
 		EZHeaderID = "EasyDRFHeader/|000000"; //set basic header ID string DM
 
@@ -658,7 +685,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //				DRMReceiver.SetFreqAcqSensivity(2.0 - (_REAL)sensivity/100.0); //edited DM -------------- needs disabling for update -----------------
 	
 				RX_Running = TRUE;
-				_beginthread(RxFunction,0,NULL);
+				_beginthread(RxFunction,0,nullptr); //edited DM on compiler advice
 			}
 			catch(CGenErr)
 			{
@@ -693,7 +720,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				DRMTransmitter.GetAudSrcEnc()->SetTheStartDelay(starttx_time_long); //Edited DM
 
 				TX_Running = TRUE;
-				_beginthread(TxFunction,0,NULL);
+				_beginthread(TxFunction,0,nullptr);
 			}
 			catch(CGenErr)
 			{
@@ -710,8 +737,8 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		UseTextMessage = gettext();
 		if ((UseTextMessage) && (TX_Running))
 		{
-			FILE * txtset = NULL;
-			char textbuf[200];
+			FILE * txtset = nullptr;
+			char textbuf[200]{};
 			txtset = fopen("textmessage.txt","rt");
 			if (txtset != NULL)
 			{
@@ -823,7 +850,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 		else
 		{
 			if (TX_Running) DRMTransmitter.NotSend();
-			IsRX = TRUE;
+			IsRX = TRUE; //switch to receive mode
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			if (RX_Running) DRMReceiver.Rec();
@@ -832,14 +859,11 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
 			SetDlgItemText(hwnd, IDC_EDIT,   " ");
 			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
 			SetDlgItemText(hwnd, IDC_EDIT3,  " ");
+			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
 			SetDlgItemText(hwnd, IDC_EDIT6,  " "); //added DM
 			if (strlen(rxdevice) >=1) SelectSrc(rxdevice);
 			
-			//Clear bargraph DM
-			ClearBar(hwnd);
-
 		}
         break;
     case IDB_START:
@@ -852,21 +876,24 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				//{
 					SetTXmode(FALSE);
 					DRMReceiver.NotRec();
-					IsRX = FALSE;
+					IsRX = FALSE; //Switch off receiver mode
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 					if (TX_Running) 
 					{	
 						DRMTransmitter.Init();
 						if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
-							MessageBox( hwnd,"Mode does not allow Voice","Wrong Mode",0);	
+							MessageBox( hwnd,"Mode does not allow Voice","Wrong Mode",0);	//this should force return to receive mode... DM
 						DRMTransmitter.Send();
 						sprintf(dcbuf,"%d",(int)DRMTransmitter.GetCarOffset());
 						SetDlgItemText( hwnd, IDC_DCFREQ, dcbuf);
+
 					}
+
 					SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
 					SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
 					if (strlen(txdevice) >=1) SelectSrc(txdevice);
+
 				//}
 				//else
 				//{
@@ -877,7 +904,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 		else
 		{
 			if (TX_Running) DRMTransmitter.NotSend();
-			IsRX = TRUE;
+			IsRX = TRUE; //Switch from transmit to receive
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			DRMReceiver.Rec();
@@ -886,13 +913,10 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
 			SetDlgItemText(hwnd, IDC_EDIT,   " ");
 			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
 			SetDlgItemText(hwnd, IDC_EDIT3,  " ");
+			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
 			SetDlgItemText(hwnd, IDC_EDIT6,  " "); //added DM
 			if (strlen(rxdevice) >=1) SelectSrc(rxdevice);
-
-			//Clear bargraph DM
-			ClearBar(hwnd);
 
 		}
         break;
@@ -1147,12 +1171,12 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				picsize = NewPic.vecbRawData.Size();
 				if (SaveRXFile)
 				{
-					wsprintf(filename, "%s%s", rxcorruptpath,NewPic.strName.c_str()); //edited DM ======================= CHECK THIS
+					wsprintf(filename, "%s%s", rxcorruptpath,NewPic.strName.c_str()); //edited DM
 //					wsprintf(filename, "Corrupt\\%s",NewPic.strName.c_str());
-					set = fopen(filename,"wb"); //saved partial file is opened here for writing DM - *MANUAL ONLY* - make an automatic routine?
+					set = fopen(filename,"wb"); //saved partial file is opened here for writing DM
 					if (set != nullptr)
 					{
-						for (i=0;i<picsize;i++) putc(NewPic.vecbRawData[i],set); //write partial file data DM  *MANUAL ONLY*
+						for (i=0;i<picsize;i++) putc(NewPic.vecbRawData[i],set); //write partial file data DM
 						fclose(set); //close file DM
 					}
 					else
@@ -1325,397 +1349,398 @@ float levelsmooth = 1.0;
 
 int oldseg = 0;
 
-void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
+void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 {
 	int i = 0;
-//	unsigned int i; //edited DM
-//	int specarrlen; //edited DM
-	char tempstr[100]; //was 20 DM
+	//	unsigned int i; //edited DM
+	//	int specarrlen; //edited DM
+	char tempstr[100]{}; //was 20 DM
 	char interl = ' ';
-  int qam = 0;
-  int prot = 0;
-  float snr = 0;
-
-  try
-  {
-
-	isspdisp++;
-	if (isspdisp >= 4) isspdisp = 0;
-
-	if (stoptx == 0) OnCommand(messhwnd,IDB_START,0);
-	if (stoptx >= 0) stoptx--;
-
-	if (IsRX && RX_Running)
+	int qam = 0;
+	int prot = 0;
+	float snr = 0;
+	try
 	{
-		newdata++;
-		level = (int)(170.0 * DRMReceiver.GetReceiver()->GetLevelMeter());
-		//NEW spectral AGC routine Daz Man 2021
-		//apply a sensible threshold to the level input
-		level = max(level, 1.0); //what is the scaling???
-		//smooth the level
-		//if (level > levelsmooth * 2) (level = levelsmooth * 2); //slew limit attack
-		levelsmooth = max(level, levelsmooth * 0.9); //integrator for decay
 
-		//calculate the gain value
-		specagc = (float)70.0 / levelsmooth;
-		
-//original routine
-//		if (level * specagc >= 120)
-//			specagc -= (float)1; //was 0.1 DM  = attack time
-//		else if (level * specagc <= 80)
-//			specagc += (float)0.1; //was 0.1 DM = recovery time
-//		if (specagc >= 15.0) specagc = 15.0;
+		isspdisp++;
+		if (isspdisp >= 4) isspdisp = 0;
 
-		if (disptype == 0)	//spectrum
+		if (stoptx == 0) OnCommand(messhwnd, IDB_START, 0);
+		if (stoptx >= 0) stoptx--;
+
+		if (IsRX && RX_Running)
 		{
-			DCFreq = (int)DRMReceiver.GetParameters()->GetDCFrequency();
-			DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
-			if (vecrData.Size() >= 500)
+			newdata++;
+			level = (int)(170.0 * DRMReceiver.GetReceiver()->GetLevelMeter());
+			//NEW spectral AGC routine Daz Man 2021
+			//apply a sensible threshold to the level input
+			level = max(level, 1.0); //what is the scaling???
+			//smooth the level
+			//if (level > levelsmooth * 2) (level = levelsmooth * 2); //slew limit attack
+			levelsmooth = max(level, levelsmooth * 0.9); //integrator for decay
+
+			//calculate the gain value
+			specagc = (float)70.0 / levelsmooth;
+
+			//original routine
+			//		if (level * specagc >= 120)
+			//			specagc -= (float)1; //was 0.1 DM  = attack time
+			//		else if (level * specagc <= 80)
+			//			specagc += (float)0.1; //was 0.1 DM = recovery time
+			//		if (specagc >= 15.0) specagc = 15.0;
+
+			if (disptype == 0)	//spectrum
 			{
-				for (i=0;i<250;i++)
-					specbufarr[i] = (3.0 * specbufarr[i] + vecrData[2*i] + vecrData[2*i+1]) * 0.2;
-				for (i=0;i<250;i++)
+				DCFreq = (int)DRMReceiver.GetParameters()->GetDCFrequency();
+				DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
+				if (vecrData.Size() >= 500)
 				{
-					specarr[i] = (int)(specbufarr[i] * 40.0 * specagc); //
+					for (i = 0; i < 250; i++)
+						specbufarr[i] = (3.0 * specbufarr[i] + vecrData[2 * i] + vecrData[2 * i + 1]) * 0.2;
+					for (i = 0; i < 250; i++)
+					{
+						specarr[i] = (int)(specbufarr[i] * 40.0 * specagc); //
+					}
+				}
+				if (isspdisp != 0) PaintWaveData(hwnd, TRUE);
+			}
+			if (disptype == 3)	//waterfall
+			{
+				DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
+				if (vecrData.Size() >= 500)
+				{
+					for (i = 0; i < 250; i++)
+						specarr[i] = 25.0 * vecrData[i] * specagc; //
+				}
+				if (isspdisp != 0) PaintWaveData(hwnd, FALSE);
+			}
+			if (disptype == 8)	//Moving Waterfall
+			{
+				DCFreq = (int)DRMReceiver.GetParameters()->GetDCFrequency();
+				DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
+				if (vecrData.Size() >= 500)
+				{
+					for (i = 0; i < 500; i++)
+						specarr[i] = 40.0 * vecrData[i] * specagc; //
+				}
+				if (isspdisp != 0) PaintWaveData(hwnd, FALSE);
+			}
+		}
+		if (isspdisp != 0) return;
+
+		if (IsRX && RX_Running)
+		{
+			if (disptype == 1)	//shifted PSD
+			{
+				int tmp = 0;
+				DRMReceiver.GetOFDMDemod()->GetPowDenSpec(vecrData);
+				if (vecrData.Size() >= 256)  // size = 512
+					for (i = 0; i < 250; i++)
+					{
+						if (robmode == 'E') tmp = (int)(-3.0 * vecrData[i + 42]) + 75; //was 45 DM 
+						else tmp = (int)(-3.0 * vecrData[i + 85]) + 75; //was 45 DM
+						specarr[i] = tmp;
+					}
+			}
+			if (disptype == 4)	//Transfer Funct.
+			{
+				int tmp = 0;
+				DRMReceiver.GetChanEst()->GetTransferFunction(vecrData, vecrScale);
+				specarrlen = vecrData.Size();
+				for (i = 0; i < specarrlen; i++)
+				{
+					tmp = (int)(-0.5 * vecrData[i]) + 45;
+					specarr[i] = tmp;
+					tmp = (int)(-0.5 * vecrScale[i]) + 85;
+					specarrim[i] = tmp;
 				}
 			}
-			if (isspdisp != 0) PaintWaveData(hwnd,TRUE);
-		}
-		if (disptype == 3)	//waterfall
-		{
-			DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
-			if (vecrData.Size() >= 500)
+			if (disptype == 5)	//Impulse Response
 			{
-				for (i=0;i<250;i++)
-					specarr[i] = 25.0 * vecrData[i] * specagc; //
-			}
-			if (isspdisp != 0) PaintWaveData(hwnd,FALSE);
-		}
-		if (disptype == 8)	//Moving Waterfall
-		{
-			DCFreq = (int)DRMReceiver.GetParameters()->GetDCFrequency();
-			DRMReceiver.GetReceiver()->GetInputSpec(vecrData);
-			if (vecrData.Size() >= 500)
-			{
-				for (i=0;i<500;i++)
-					specarr[i] = 40.0 * vecrData[i] * specagc; //
-			}
-			if (isspdisp != 0) PaintWaveData(hwnd,FALSE);
-		}
-	}
-	if (isspdisp != 0) return;
-
-	if (IsRX && RX_Running)
-	{
-		if (disptype == 1)	//shifted PSD
-		{
-			int tmp;
-			DRMReceiver.GetOFDMDemod()->GetPowDenSpec(vecrData);
-			if (vecrData.Size() >= 256)  // size = 512
-				for (i = 0; i < 250; i++)
+				int tmp = 0;
+				_REAL				rLowerBound, rHigherBound;
+				_REAL				rStartGuard, rEndGuard;
+				_REAL				rPDSBegin, rPDSEnd;
+				DRMReceiver.GetChanEst()->
+					GetAvPoDeSp(vecrData, vecrScale, rLowerBound, rHigherBound,
+						rStartGuard, rEndGuard, rPDSBegin, rPDSEnd);
+				specarrlen = vecrData.Size();
+				for (i = 0; i < specarrlen; i++)
 				{
-					if (robmode == 'E') tmp = (int)(-3.0 * vecrData[i + 42]) + 75; //was 45 DM 
-					else tmp = (int)(-3.0 * vecrData[i + 85]) + 75; //was 45 DM
+					tmp = (int)(-1.5 * vecrData[i]) + 100;
 					specarr[i] = tmp;
 				}
-		}
-		if (disptype == 4)	//Transfer Funct.
-		{
-			int tmp;
-			DRMReceiver.GetChanEst()->GetTransferFunction(vecrData, vecrScale);
-			specarrlen = vecrData.Size();
-			for (i = 0; i < specarrlen; i++)
-			{
-				tmp = (int)(-0.5 * vecrData[i]) + 45;
-				specarr[i] = tmp;
-				tmp = (int)(-0.5 * vecrScale[i]) + 85;
-				specarrim[i] = tmp;
 			}
-		}
-		if (disptype == 5)	//Impulse Response
-		{
-			int tmp;
-			_REAL				rLowerBound, rHigherBound;
-			_REAL				rStartGuard, rEndGuard;
-			_REAL				rPDSBegin, rPDSEnd;
-			DRMReceiver.GetChanEst()->
-				GetAvPoDeSp(vecrData, vecrScale, rLowerBound, rHigherBound,
-					rStartGuard, rEndGuard, rPDSBegin, rPDSEnd);
-			specarrlen = vecrData.Size();
-			for (i = 0; i < specarrlen; i++)
+			if (disptype == 6)	//FAC constellation
 			{
-				tmp = (int)(-1.5 * vecrData[i]) + 100;
-				specarr[i] = tmp;
+				int tmp = 0;
+				CVector<_COMPLEX>	veccData;
+				DRMReceiver.GetFACMLC()->GetVectorSpace(veccData);
+				specarrlen = veccData.Size();
+				for (i = 0; i < specarrlen; i++)
+				{
+					tmp = (int)(50.0 * veccData[i].real());
+					specarr[i] = tmp;
+					tmp = (int)(50.0 * veccData[i].imag());
+					specarrim[i] = tmp;
+				}
 			}
-		}
-		if (disptype == 6)	//FAC constellation
-		{
-			int tmp;
-			CVector<_COMPLEX>	veccData;
-			DRMReceiver.GetFACMLC()->GetVectorSpace(veccData);
-			specarrlen = veccData.Size();
-			for (i = 0; i < specarrlen; i++)
+			if (disptype == 7)	//MSC constellation
 			{
-				tmp = (int)(50.0 * veccData[i].real());
-				specarr[i] = tmp;
-				tmp = (int)(50.0 * veccData[i].imag());
-				specarrim[i] = tmp;
+				int tmp = 0;
+				CVector<_COMPLEX>	veccData;
+				DRMReceiver.GetMSCMLC()->GetVectorSpace(veccData);
+				specarrlen = veccData.Size();
+				if (specarrlen >= 530) specarrlen = 530;
+				for (i = 0; i < specarrlen; i++)
+				{
+					tmp = (int)(50.0 * veccData[i].real());
+					specarr[i] = tmp;
+					tmp = (int)(50.0 * veccData[i].imag());
+					specarrim[i] = tmp;
+				}
 			}
-		}
-		if (disptype == 7)	//MSC constellation
-		{
-			int tmp;
-			CVector<_COMPLEX>	veccData;
-			DRMReceiver.GetMSCMLC()->GetVectorSpace(veccData);
-			specarrlen = veccData.Size();
-			if (specarrlen >= 530) specarrlen = 530;
-			for (i = 0; i < specarrlen; i++)
-			{
-				tmp = (int)(50.0 * veccData[i].real());
-				specarr[i] = tmp;
-				tmp = (int)(50.0 * veccData[i].imag());
-				specarrim[i] = tmp;
-			}
-		}
 
-#define BARGRAPH_IN_NEW_THREAD 1
+#define BARGRAPH_IN_NEW_THREAD 2
 #if BARGRAPH_IN_NEW_THREAD == 1
-		if (BGbusy == 0) {
-		std::thread BarDraw(DrawBar, hwnd); //launch the Bargraph in a new thread
-		BarDraw.detach(); //detach and terminate after running
-		}
+			if (BGbusy == 0) {
+				std::thread BarDraw(DrawBar, hwnd); //launch the Bargraph in a new thread
+				BarDraw.detach(); //detach and terminate after running
+			}
 #endif
 #if BARGRAPH_IN_NEW_THREAD == 0
-		//======================================================================================================================================================
-		//SEGMENT BARGRAPH by Daz Man 2021
-		//======================================================================================================================================================
-		RECT rect{};
-		int width = 218;
-		if (GetWindowRect(hwnd, &rect))
-		{
-			width = (rect.right - rect.left)-1;
-			//int height = rect.bottom - rect.top;
-		}
-		//read erasures buffer and convert it to a line graph
-		const int x = DRMReceiver.GetDataDecoder()->GetActPos(); //get current segment number
-		int y = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
-		
-		//if the GetTotSize function fails (it does sometimes - reason unknown), we can use our own computation if in RS mode
-//		if ((DecSegSize > 0) && (HdrFileSize > 0)){
-//			y = ceil((float)HdrFileSize / DecSegSize); //segment total = filesize/segsize
-//		}
-
-		y = max(DecTotalSegs, y);
-		y = max(y, x);
-
-		if (y == 0) { y = 1; } //don't divide by zero!
-
-		//The desired width is "width"
-		//the actual width is "y"
-		//the correction "n" is width/y
-		//to use int scaling, n*1000 = BarLastSeg*1000/y
-
-		//int n = width / max(totsize, DecTotalSegs);
-//		int n = float(width << 12) / (y << 12);
-		int n = (width * 1000) /y;
-		//this executes every 100mS, so make sure it doesn't run too often
-		if ((BarLastSeg != x) && (CRCOK)) {
-			int d = 0;
-
-			if (n > 1000) { n = 1000; } //Don't stretch bargraph
-
-			HDC hdc = GetDC(hwnd);
-			MoveToEx(hdc, BARL, BARY, nullptr);
-			/*
-			XFORM xForm;
-			xForm.eM11 = (FLOAT)2.0;
-			xForm.eM12 = (FLOAT)0.0;
-			xForm.eM21 = (FLOAT)0.0;
-			xForm.eM22 = (FLOAT)2.0;
-			xForm.eDx = 0;
-			xForm.eDy = 0;
-			SetWorldTransform(hdc, &xForm);
-			*/
-			//HPEN penz;
-			HPEN penx = nullptr;
-			HPEN penb = nullptr;
-			HPEN penr = nullptr;
-			HPEN peng = nullptr;
-			LOGBRUSH lbb;
-			lbb.lbStyle = BS_SOLID;
-			lbb.lbColor = RGB(0,0,0);
-			lbb.lbHatch = 0;
-			LOGBRUSH lbr;
-			lbr.lbStyle = BS_SOLID;
-			lbr.lbColor = RED; // RGB(255, 0, 0);
-			lbr.lbHatch = 0;
-			LOGBRUSH lbg;
-			lbg.lbStyle = BS_SOLID;
-			lbg.lbColor = GREEN; // RGB(60, 255, 0);
-			lbg.lbHatch = 0;
-			LOGBRUSH lbx;
-			lbx.lbStyle = BS_SOLID;
-			lbx.lbColor = GetSysColor(COLOR_3DFACE); //RGB(127, 127, 127);
-			lbx.lbHatch = 0;
-
-			const int pwidth = 1;
-			penb = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbb, 0, nullptr); //Black for current segment
-			penr = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbr, 0, nullptr); //Red for no segment received
-			peng = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbg, 0, nullptr); //Green for good segment
-			penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
-			//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
-
-			//Erase the last black line - for the 2nd/3rd pass etc.
-			if (x < BarLastSeg) {
-				SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
-				MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
-				LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
-			}
-
-			//data is good and we have a valid new segment - so update the graph
-			//copy from buffer and draw to the screen
-			//only read as far into the buffer as we need to...
-			for (i = 0; i < y; i++) {
-				//for each bit read, set the display red on 0 and green on 1
-				d = (erasures[erasureswitch][i >> 3] >> (i & 7)) & 1; //get the correct bit
-				//if (d == 0) { d = 0xFF0000; } //make 0 = 0xFF0000 = 16711680 red
-				//if (d == 1) { d = 0x00FF00; } //make 1 = 0x00FF00 = 65280    green
-		
-				if (d == 0) {
-					SelectObject(hdc, penr); //select red pen
-					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-					LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
-				}
-				if (d == 1) {
-					SelectObject(hdc, peng);//select green pen
-					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-					LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
-				}
-			}
-
-//			MoveToEx(hdc, floor((x+1)*n), BARY, nullptr);
-//			LineTo(hdc, floor((x + 3) * n), BARY); //draw a black tip on the line
-
-			SelectObject(hdc, penb);
-			MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
-			LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
-
-			//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
-			if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
-
-				SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
-				MoveToEx(hdc, ((x * n) / 1000)+5, BARY, nullptr);
-				LineTo(hdc, BARR, BARY); //erase the rest of the window
-				BarTransportID = DecTransportID;
-				BarLastTot = y; //update totsegs
-			}
-
-			DeleteObject(penr);
-			DeleteObject(peng);
-			DeleteObject(penb);
-			DeleteObject(penx);
-			//DeleteObject(penz);
-
-			BarLastSeg = x;
-
-			ReleaseDC(hwnd, hdc);
-
-		}
-#endif
-		//are there any blocks that need cleaning?
-		if (erasureflags > 0) {
-			//There are currently three blocks total (0,1,2)
-			//don't erase the current block
-			//don't erase the previous block
-			//erase the next block to be used
-			//find the next block number
-			int a = erasureswitch + 1;
-			if (a > 2) { a = 0; }
-			const int b = erasureflags && 1 << a; //mask it
-			if (b > 0) {
-			//block is used - erase it
-			for (int d = 0; d < 1024; d++) {
-			erasures[a][d] = 0; //clear mem before using it again
-			}
-			erasureflags = erasureflags & ~b; //clear the flag
-			}
-		}
-		//======================================================================================================================================================
-
-		if (DRMReceiver.GetParameters()->Service[0].IsActive())	//flags, etc.
-		{
-			CParameter::EAudCod ecodec;
-			firstnorx = TRUE;
-			rxcall = DRMReceiver.GetParameters()->Service[0].strLabel; //Get callsign from the incoming data DM
-			if (rxcall == lastrxcall) consrxcall = rxcall;				//?
-			else if (rxcall.length() >= 3) lastrxcall = rxcall;			//?
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)rxcall.c_str());
-			snr = (float)DRMReceiver.GetChanEst()->GetSNREstdB();	//Get SNR DM
-			sprintf(tempstr, "%.1f", snr);							//Format for display DM
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr); //Display SNR DM
-			snr = DRMReceiver.GetParameters()->GetDCFrequency();
-			sprintf(tempstr, "%d", (int)snr);
-			SendMessage(GetDlgItem(hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)tempstr);
-
-			if (DRMReceiver.GetParameters()->Service[0].eAudDataFlag == CParameter::SF_AUDIO)
+			//======================================================================================================================================================
+			//SEGMENT BARGRAPH by Daz Man 2021
+			//======================================================================================================================================================
+			RECT rect{};
+			int width = 218;
+			if (GetWindowRect(hwnd, &rect))
 			{
-				sprintf(tempstr, "%d ", DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ======================== This is for speech mode DM
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
-
-				wsprintf(tempstr, "MSCbits = %d  AudioBits = %d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits);
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive blocksize DM ================
-
-				ecodec = DRMReceiver.GetParameters()->Service[0].AudioParam.eAudioCoding;
-				if (ecodec == CParameter::AC_LPC)
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
-				else if (ecodec == CParameter::AC_SPEEX)
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
-				else if (ecodec == CParameter::AC_SSTV)
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
-				else
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)" ");
+				width = (rect.right - rect.left) - 1;
+				//int height = rect.bottom - rect.top;
 			}
-			else
-			{
-				lasterror = 0;
+			//read erasures buffer and convert it to a line graph
+			const int x = DRMReceiver.GetDataDecoder()->GetActPos(); //get current segment number
+			int y = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
 
-				//compute average and peak SNR for logging DM
-				float error = (float)((float)DRMReceiver.GetChanEst()->GetSNREstdB() - DMSNRaverage);
-				DMSNRaverage = (float)DMSNRaverage + error * 0.01 + (0.01 * (max(error, 0.0) * 0.5)); //slew towards average
-				DMSNRmax = (float)max(DMSNRmax * 0.9999, (float)DRMReceiver.GetChanEst()->GetSNREstdB());
+			//if the GetTotSize function fails (it does sometimes - reason unknown), we can use our own computation if in RS mode
+	//		if ((DecSegSize > 0) && (HdrFileSize > 0)){
+	//			y = ceil((float)HdrFileSize / DecSegSize); //segment total = filesize/segsize
+	//		}
 
-				//This is data mode (file receive) DM
-				if (RxRSlevel == 0) {
-					sprintf(tempstr, "Data"); //
-				}
-				else
-					sprintf(tempstr, "RS%d Data", RxRSlevel); //
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
+			y = max(DecTotalSegs, y);
+			y = max(y, x);
 
-				totsize = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
-				totsize = max(totsize, CompTotalSegs);//Computed from old header DM
-				totsize = max(totsize, DecTotalSegs); //From new serial backup DM
+			if (y == 0) { y = 1; } //don't divide by zero!
 
-				actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM
-				actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
+			//The desired width is "width"
+			//the actual width is "y"
+			//the correction "n" is width/y
+			//to use int scaling, n*1000 = BarLastSeg*1000/y
 
-				sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
+			//int n = width / max(totsize, DecTotalSegs);
+	//		int n = float(width << 12) / (y << 12);
+			int n = (width * 1000) / y;
+			//this executes every 100mS, so make sure it doesn't run too often
+			if ((BarLastSeg != x) && (CRCOK)) {
+				int d = 0;
 
+				if (n > 1000) { n = 1000; } //Don't stretch bargraph
+
+				HDC hdc = GetDC(hwnd);
+				MoveToEx(hdc, BARL, BARY, nullptr);
 				/*
-				RSfilesize = DecFileSize; //This is exactly what was sent, after RS coding into multiples of 255
-				if (RSfilesize == 0) {
-					RSfilesize = HdrFileSize; //grab it from the old header if available
-				}
-				if ((HdrFileSize > 0) && (RSfilesize != HdrFileSize)) {
-					RSfilesize = HdrFileSize; //grab it from the old header if there's an error (version conflict)
-				}
+				XFORM xForm;
+				xForm.eM11 = (FLOAT)2.0;
+				xForm.eM12 = (FLOAT)0.0;
+				xForm.eM21 = (FLOAT)0.0;
+				xForm.eM22 = (FLOAT)2.0;
+				xForm.eDx = 0;
+				xForm.eDy = 0;
+				SetWorldTransform(hdc, &xForm);
 				*/
+				//HPEN penz;
+				HPEN penx = nullptr;
+				HPEN penb = nullptr;
+				HPEN penr = nullptr;
+				HPEN peng = nullptr;
+				LOGBRUSH lbb;
+				lbb.lbStyle = BS_SOLID;
+				lbb.lbColor = RGB(0, 0, 0);
+				lbb.lbHatch = 0;
+				LOGBRUSH lbr;
+				lbr.lbStyle = BS_SOLID;
+				lbr.lbColor = RED; // RGB(255, 0, 0);
+				lbr.lbHatch = 0;
+				LOGBRUSH lbg;
+				lbg.lbStyle = BS_SOLID;
+				lbg.lbColor = GREEN; // RGB(60, 255, 0);
+				lbg.lbHatch = 0;
+				LOGBRUSH lbx;
+				lbx.lbStyle = BS_SOLID;
+				lbx.lbColor = GetSysColor(COLOR_3DFACE); //RGB(127, 127, 127);
+				lbx.lbHatch = 0;
 
-				//=========================================================================================================================================================
-				//This is for non-RS received files that have ALL segments decoded OK - DM
-				//do not execute this on RS coded files DM
-					CMOTObject NewPic; //Generate "NewPic" from the cpp class - figure out exactly how this works! DM
+				const int pwidth = 1;
+				penb = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbb, 0, nullptr); //Black for current segment
+				penr = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbr, 0, nullptr); //Red for no segment received
+				peng = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbg, 0, nullptr); //Green for good segment
+				penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
+				//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
+
+				//Erase the last black line - for the 2nd/3rd pass etc.
+				if (x < BarLastSeg) {
+					SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
+					MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
+					LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
+				}
+
+				//data is good and we have a valid new segment - so update the graph
+				//copy from buffer and draw to the screen
+				//only read as far into the buffer as we need to...
+				for (i = 0; i < y; i++) {
+					//for each bit read, set the display red on 0 and green on 1
+					d = (erasures[erasureswitch][i >> 3] >> (i & 7)) & 1; //get the correct bit
+					//if (d == 0) { d = 0xFF0000; } //make 0 = 0xFF0000 = 16711680 red
+					//if (d == 1) { d = 0x00FF00; } //make 1 = 0x00FF00 = 65280    green
+
+					if (d == 0) {
+						SelectObject(hdc, penr); //select red pen
+						MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+						LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
+					}
+					if (d == 1) {
+						SelectObject(hdc, peng);//select green pen
+						MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+						LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+					}
+				}
+
+				//			MoveToEx(hdc, floor((x+1)*n), BARY, nullptr);
+				//			LineTo(hdc, floor((x + 3) * n), BARY); //draw a black tip on the line
+
+				SelectObject(hdc, penb);
+				MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
+				LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
+
+				//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
+				if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
+
+					SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
+					MoveToEx(hdc, ((x * n) / 1000) + 5, BARY, nullptr);
+					LineTo(hdc, BARR, BARY); //erase the rest of the window
+					BarTransportID = DecTransportID;
+					BarLastTot = y; //update totsegs
+				}
+
+				DeleteObject(penr);
+				DeleteObject(peng);
+				DeleteObject(penb);
+				DeleteObject(penx);
+				//DeleteObject(penz);
+
+				BarLastSeg = x;
+
+				ReleaseDC(hwnd, hdc);
+
+			}
+#endif
+			//are there any blocks that need cleaning?
+			if (erasureflags > 0) {
+				//There are currently three blocks total (0,1,2)
+				//don't erase the current block
+				//don't erase the previous block
+				//erase the next block to be used
+				//find the next block number
+				int a = erasureswitch + 1;
+				if (a > 2) { a = 0; }
+				const int b = erasureflags && 1 << a; //mask it
+				if (b > 0) {
+					//block is used - erase it
+					for (int d = 0; d < 1024; d++) {
+						erasures[a][d] = 0; //clear mem before using it again
+					}
+					erasureflags = erasureflags & ~b; //clear the flag
+				}
+			}
+			//======================================================================================================================================================
+
+			if (DRMReceiver.GetParameters()->Service[0].IsActive())	//flags, etc.
+			{
+				CParameter::EAudCod ecodec;
+				firstnorx = TRUE;
+				rxcall = DRMReceiver.GetParameters()->Service[0].strLabel; //Get callsign from the incoming data DM
+				if (rxcall == lastrxcall) consrxcall = rxcall;				//?
+				else if (rxcall.length() >= 3) lastrxcall = rxcall;			//?
+				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)rxcall.c_str());
+				snr = (float)DRMReceiver.GetChanEst()->GetSNREstdB();	//Get SNR DM
+				sprintf(tempstr, "%.1f", snr);							//Format for display DM
+				SendMessage(GetDlgItem(hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr); //Display SNR DM
+				snr = DRMReceiver.GetParameters()->GetDCFrequency();
+				sprintf(tempstr, "%d", (int)snr);
+				SendMessage(GetDlgItem(hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+				if (DRMReceiver.GetParameters()->Service[0].eAudDataFlag == CParameter::SF_AUDIO)
+				{
+					sprintf(tempstr, "%d ", DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ======================== This is for speech mode DM
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+					wsprintf(tempstr, "MSCbits = %d  AudioBits = %d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits);
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive blocksize DM ================
+
+					ecodec = DRMReceiver.GetParameters()->Service[0].AudioParam.eAudioCoding;
+					if (ecodec == CParameter::AC_LPC)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
+					else if (ecodec == CParameter::AC_SPEEX)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
+					else if (ecodec == CParameter::AC_SSTV)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
+					else
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)" ");
+				}
+				else
+				{
+					lasterror = 0;
+
+					//compute average and peak SNR for logging DM
+					float error = (float)((float)DRMReceiver.GetChanEst()->GetSNREstdB() - DMSNRaverage);
+					DMSNRaverage = (float)DMSNRaverage + error * 0.01 + (0.01 * (max(error, 0.0) * 0.5)); //slew towards average
+					DMSNRmax = (float)max(DMSNRmax * 0.9999, (float)DRMReceiver.GetChanEst()->GetSNREstdB());
+
+					//This is data mode (file receive) DM
+					if (RxRSlevel == 0) {
+						sprintf(tempstr, "Data"); //
+					}
+					else
+						sprintf(tempstr, "RS%d Data", RxRSlevel); //
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+					totsize = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
+					totsize = max(totsize, CompTotalSegs);//Computed from old header DM
+					totsize = max(totsize, DecTotalSegs); //From new serial backup DM
+
+					//actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM - This is now updated directly inside the DataDecoder class
+					actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
+
+					
+					sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+					/*
+					RSfilesize = DecFileSize; //This is exactly what was sent, after RS coding into multiples of 255
+					if (RSfilesize == 0) {
+						RSfilesize = HdrFileSize; //grab it from the old header if available
+					}
+					if ((HdrFileSize > 0) && (RSfilesize != HdrFileSize)) {
+						RSfilesize = HdrFileSize; //grab it from the old header if there's an error (version conflict)
+					}
+					*/
+
+					//=========================================================================================================================================================
+					//This is for non-RS received files that have ALL segments decoded OK - DM
+					//Do not execute this on RS coded files DM
+					//Maybe this should be moved to the DABMOT code or the MOTSlideShow code??? DABMOT is where the RS decoder is
+					CMOTObject NewPic; //Generate "NewPic" from the CMOTObject class DM
 					if (DRMReceiver.GetDataDecoder()->GetSlideShowPicture(NewPic))
 					{
 #if BUFFERDEBUG
@@ -1743,424 +1768,432 @@ void CALLBACK TimerProc (HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						if (RxRSlevel == 0) {
 
 
-						//RxRSlevel is sent using 3 of the previously unused bits in the segment header
-						//This code section does not use the extra RS coding, so RxRSlevel must == 0
-						// 
-						//This executes only when a complete file is received DM
-						char filename[260]{ 0 }; //was 130 DM - (Windows max path length is 255 characters) (HamDRM only uses 80 characters though...)
-						int picsize = 0; //edited DM - reverted
-						int filnamsize = 0;
-						FILE* set = nullptr; //changed to nullptr on compiler advice
-						picsize = NewPic.vecbRawData.Size();
+							//RxRSlevel is sent using 3 of the previously unused bits in the segment header
+							//This code section does not use the extra RS coding, so RxRSlevel must == 0
+							// 
+							//This executes only when a complete file is received DM
+							char filename[260]{ 0 }; //was 130 DM - (Windows max path length is 255 characters) (HamDRM only uses 80 characters though...)
+							int picsize = 0; //edited DM - reverted
+							int filnamsize = 0;
+							FILE* set = nullptr; //changed to nullptr on compiler advice
+							picsize = NewPic.vecbRawData.Size();
 
-						//check if the file is a BSR (request?) file from the other station DM
-						//This appears to be for INCOMING BSR files DM
-						if (strcmp(NewPic.strName.c_str(), "bsr.bin") == 0)
-						{
-							set = fopen("bsrreq.bin", "wt"); //save incoming BSR requests under this name DM =====================================
-							if (set != nullptr)
+							//check if the file is a BSR (request?) file from the other station DM
+							//This appears to be for INCOMING BSR files DM
+							if (strcmp(NewPic.strName.c_str(), "bsr.bin") == 0)
 							{
-								for (i = 0; i < picsize; i++) putc(NewPic.vecbRawData[i], set); //write incoming BSR request to the file DM
-								fclose(set);
-
-								//Decompress incoming BSR request file here DM
-								char filenam[300];
-								char filenam2[300];
-								wsprintf(filenam, "%s%s", bsrpath, "bsrreq.bin");
-								wsprintf(filenam2, "%s%s", bsrpath, "cbsrreq.bin");
-								CopyFile(filenam, filenam2, FALSE);
-								decompressBSR(filenam2, filenam); //decompress renamed to decompressBSR to prevent conflict with zlib DM
-								remove(filenam2); //delete temp file DM
-
-								filetosend = readbsrfile(bsrpath);
-							}
-							else
-								filetosend = 'x';
-
-							if (filetosend.size() >= 3)
-							{
-								//acthash = gethash(); //removed DM
-								//the hash used was the iTID (transmit ID) DM
-								acthash = 0; // gethash(); //removed DM
-
-								bsrposind = -1;	// Search for old position
-								for (int el = 0; el < NO_BSR_WIND; el++)
+								set = fopen("bsrreq.bin", "wt"); //save incoming BSR requests under this name DM =====================================
+								if (set != nullptr)
 								{
-									if (bsr_onscreen_arr[el] == TRUE)
+									for (i = 0; i < picsize; i++) putc(NewPic.vecbRawData[i], set); //write incoming BSR request to the file DM
+									fclose(set);
+
+									//Decompress incoming BSR request file here DM
+									char filenam[300];
+									char filenam2[300];
+									wsprintf(filenam, "%s%s", bsrpath, "bsrreq.bin");
+									wsprintf(filenam2, "%s%s", bsrpath, "cbsrreq.bin");
+									CopyFile(filenam, filenam2, FALSE);
+									decompressBSR(filenam2, filenam); //decompress renamed to decompressBSR to prevent conflict with zlib DM
+									remove(filenam2); //delete temp file DM
+
+									filetosend = readbsrfile(bsrpath);
+								}
+								else
+									filetosend = 'x';
+
+								if (filetosend.size() >= 3)
+								{
+									//acthash = gethash(); //removed DM
+									//the hash used was the iTID (transmit ID) DM
+									acthash = 0; // gethash(); //removed DM
+
+									bsrposind = -1;	// Search for old position
+									for (int el = 0; el < NO_BSR_WIND; el++)
 									{
-										if (acthash == hasharr[el])  //This is now set to zero DM - This should be OK, as it appears to just be a unique number for the BSR window DM
+										if (bsr_onscreen_arr[el] == TRUE)
 										{
-											if (bsrcall[el] == consrxcall)
+											if (acthash == hasharr[el])  //This is now set to zero DM - This should be OK, as it appears to just be a unique number for the BSR window DM
+											{
+												if (bsrcall[el] == consrxcall)
+												{
+													bsrposind = el;
+													el = NO_BSR_WIND;
+												}
+											}
+										}
+									}
+									if (bsrposind >= 0)	//Old pos Found
+									{
+										PostMessage(bsrhwnd[bsrposind], WM_NOTIFY, 0, 0);
+									}
+									else				//Find new pos
+									{
+										bsrposind = 0;	// Find new position
+										for (int el = 0; el < NO_BSR_WIND; el++)
+										{
+											if (bsr_onscreen_arr[el] == FALSE)
 											{
 												bsrposind = el;
 												el = NO_BSR_WIND;
 											}
 										}
+										bsr_onscreen_arr[bsrposind] = TRUE;
+										hasharr[bsrposind] = acthash;
+										bsrcall[bsrposind] = consrxcall;
+										bsrhwnd[bsrposind] =
+											CreateDialog(TheInstance, MAKEINTRESOURCE(DLG_ANSWERBSR), hwnd, AnswerBSRDlgProc);
 									}
 								}
-								if (bsrposind >= 0)	//Old pos Found
+							}
+							else if (SaveRXFile)
+							{
+								int iFileNameSize = 0; //edited DM - reverted
+								int tmphashval = 0;
+								unsigned char	xorfnam = 0;
+								unsigned char	addfnam = 0;
+								wsprintf(filename, "%s", NewPic.strName.c_str());
+								iFileNameSize = strlen(filename);
+								if (iFileNameSize > 255)	iFileNameSize = MAX_PATHLEN;  //was 80 now 260 DM - (Windows max path length is 255 characters)
+								for (i = 0; i < iFileNameSize; i++)
 								{
-									PostMessage(bsrhwnd[bsrposind], WM_NOTIFY, 0, 0);
+									xorfnam ^= filename[i];
+									addfnam += filename[i];
+									addfnam ^= (unsigned char)i;
 								}
-								else				//Find new pos
+								tmphashval = 256 * (int)addfnam + (int)xorfnam;
+								if (tmphashval <= 2) tmphashval += iFileNameSize;
+
+								for (int el = 0; el < NO_BSR_WIND; el++)
 								{
-									bsrposind = 0;	// Find new position
-									for (int el = 0; el < NO_BSR_WIND; el++)
+									if (tmphashval == txhasharr[el])
 									{
-										if (bsr_onscreen_arr[el] == FALSE)
+										if (txbsr_onscreen_arr[el] == TRUE)
 										{
-											bsrposind = el;
-											el = NO_BSR_WIND;
+											bCloseMe = TRUE;
+											SendMessage(txbsrhwnd[el], WM_NOTIFY, 0, 0);
 										}
 									}
-									bsr_onscreen_arr[bsrposind] = TRUE;
-									hasharr[bsrposind] = acthash;
-									bsrcall[bsrposind] = consrxcall;
-									bsrhwnd[bsrposind] =
-										CreateDialog(TheInstance, MAKEINTRESOURCE(DLG_ANSWERBSR), hwnd, AnswerBSRDlgProc);
 								}
-							}
-						}
-						else if (SaveRXFile)
-						{
-							int iFileNameSize = 0; //edited DM - reverted
-							int tmphashval = 0;
-							unsigned char	xorfnam = 0;
-							unsigned char	addfnam = 0;
-							wsprintf(filename, "%s", NewPic.strName.c_str());
-							iFileNameSize = strlen(filename);
-							if (iFileNameSize > 255)	iFileNameSize = MAX_PATHLEN;  //was 80 now 260 DM - (Windows max path length is 255 characters)
-							for (i = 0; i < iFileNameSize; i++)
-							{
-								xorfnam ^= filename[i];
-								addfnam += filename[i];
-								addfnam ^= (unsigned char)i;
-							}
-							tmphashval = 256 * (int)addfnam + (int)xorfnam;
-							if (tmphashval <= 2) tmphashval += iFileNameSize;
 
-							for (int el = 0; el < NO_BSR_WIND; el++)
-							{
-								if (tmphashval == txhasharr[el])
-								{
-									if (txbsr_onscreen_arr[el] == TRUE)
-									{
-										bCloseMe = TRUE;
-										SendMessage(txbsrhwnd[el], WM_NOTIFY, 0, 0);
-									}
-								}
-							}
+								wsprintf(lastrxfilename, "%s", NewPic.strName.c_str());
+								lastrxfilesize = picsize;
+								lastrxrobmode = DRMReceiver.GetParameters()->GetWaveMode();
+								lastrxspecocc = DRMReceiver.GetParameters()->GetSpectrumOccup();
+								lastrxcodscheme = DRMReceiver.GetParameters()->eMSCCodingScheme;
+								lastrxprotlev = DRMReceiver.GetParameters()->MSCPrLe.iPartB;
 
-							wsprintf(lastrxfilename, "%s", NewPic.strName.c_str());
-							lastrxfilesize = picsize;
-							lastrxrobmode = DRMReceiver.GetParameters()->GetWaveMode();
-							lastrxspecocc = DRMReceiver.GetParameters()->GetSpectrumOccup();
-							lastrxcodscheme = DRMReceiver.GetParameters()->eMSCCodingScheme;
-							lastrxprotlev = DRMReceiver.GetParameters()->MSCPrLe.iPartB;
+								//wsprintf(filename, "Rx Files\\%s", NewPic.strName.c_str());
+								strcpy(filename, NewPic.strName.c_str());
 
-							//wsprintf(filename, "Rx Files\\%s", NewPic.strName.c_str());
-							strcpy(filename, NewPic.strName.c_str());
-
-							//===========================================================================================
-							//Daz Man
-							//zlib-LZMA decompression
-							//test the file by checking for the extra filename extension to denote it's been compressed
-							//if it is present, write into buffer1 and expand the file using zlib and save into buffer2 for writing to file
-							//else, write file directly to disk
-							//finally close file and delete buffers from heap
-							//===========================================================================================
-							const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
+								//===========================================================================================
+								//Daz Man
+								//zlib-LZMA decompression
+								//test the file by checking for the extra filename extension to denote it's been compressed
+								//if it is present, write into buffer1 and expand the file using zlib and save into buffer2 for writing to file
+								//else, write file directly to disk
+								//finally close file and delete buffers from heap
+								//===========================================================================================
+								const uLongf BUFSIZE = 524288; //512k should be enough for anything practical - HEAP STORAGE
 #if USEGZIP
 
 							//If file is bigger than 512k, bypass decompression and save it directly DM
 							//.gz is used for standard mode to be compatible
-							if ((stricmp(&filename[strlen(filename) - 3], ".gz") == 0) && (picsize <= BUFSIZE)) {
-								//data is compressed, so decompress it
-								_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
-								_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer
-								i = 0;
-								while (i < picsize) {
-									buffer1[i] = NewPic.vecbRawData[i]; //save data to buffer1
-									i++;
-								}
-								uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
-								int result; //not used at this time
-								result = uncompress(buffer2, &filesize, buffer1, picsize); //decompress data using zlib
-
-								//cut extension off filename
-								filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
-
-								LogData(filename); //log the SNR stats DM
-
-								char savename[260] = "";
-								wsprintf(savename, "Rx Files\\%s", filename);
-
-								//saved file is opened here for writing DM
-								if ((set = fopen(savename, "wb")) == nullptr) {
-									// handle error here DM
-								}
-								else {
+								if ((stricmp(&filename[strlen(filename) - 3], ".gz") == 0) && (picsize <= BUFSIZE)) {
+									//data is compressed, so decompress it
+									_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
+									_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer
 									i = 0;
-									while (unsigned(i) < filesize) { //edit DM
-										putc(buffer2[i], set);
+									while (i < picsize) {
+										buffer1[i] = NewPic.vecbRawData[i]; //save data to buffer1
 										i++;
 									}
-									fclose(set); //file is closed here - but only if it was opened
-									filestat = 2; //File decode status
+									uLongf filesize = BUFSIZE; //to tell zlib how big the buffer is
+									int result; //not used at this time
+									result = uncompress(buffer2, &filesize, buffer1, picsize); //decompress data using zlib
+
+									//cut extension off filename
+									filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .gz extension DM
+
+									LogData(filename); //log the SNR stats DM
+
+									char savename[260] = "";
+									wsprintf(savename, "Rx Files\\%s", filename);
+
+									//saved file is opened here for writing DM
+									if ((set = fopen(savename, "wb")) == nullptr) {
+										// handle error here DM
+									}
+									else {
+										i = 0;
+										while (unsigned(i) < filesize) { //edit DM
+											putc(buffer2[i], set);
+											i++;
+										}
+										fclose(set); //file is closed here - but only if it was opened
+										filestat = 2; //File decode status
+									}
+									delete[] buffer1; //remove the buffer arrays from the heap
+									delete[] buffer2;
 								}
-								delete[] buffer1; //remove the buffer arrays from the heap
-								delete[] buffer2;
-							}
-							else if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
+								else if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
 #endif //USEGZIP
 #if !USEGZIP
-							if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
+									if ((stricmp(&filename[strlen(filename) - 3], ".lz") == 0) && (picsize <= BUFSIZE)) {
 
 #endif //!USEGZIP
-								//data is compressed, so decompress it
-								_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
-								_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer
-								i = 0;
-								while (i < picsize) {
-									buffer1[i] = NewPic.vecbRawData[i]; //save data to buffer1
-									i++;
-								}
-								SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
-								int result = 0; //not used at this time
+										//data is compressed, so decompress it
+										_BYTE* buffer1 = new _BYTE[BUFSIZE]; //File read buffer
+										_BYTE* buffer2 = new _BYTE[BUFSIZE]; //zlib decompression buffer
+										i = 0;
+										while (i < picsize) {
+											buffer1[i] = NewPic.vecbRawData[i]; //save data to buffer1
+											i++;
+										}
+										SizeT filesize = BUFSIZE; //to tell zlib how big the buffer is
+										int result = 0; //not used at this time
 #define propslength 5
-								SizeT filesizein = picsize;
-								SizeT outsize = BUFSIZE;
-								//original filesize is saved in 4 bytes after props
-								dcomperr = LzmaUncompress(buffer2, &outsize, buffer1 + propslength+3, &filesizein, buffer1, propslength);
+										SizeT filesizein = picsize;
+										SizeT outsize = BUFSIZE;
+										//original filesize is saved in 4 bytes after props
+										dcomperr = LzmaUncompress(buffer2, &outsize, buffer1 + propslength + 3, &filesizein, buffer1, propslength);
 
-								//grab original filesize that was saved after props
-								int i = 0;
-								filesize = (BYTE)(buffer1 + propslength)[i]; //byte 1
-								i++; //next
-								filesize |= (BYTE)(buffer1 + propslength)[i] << 8; //byte 2
-								i++; //next
-								filesize |= (BYTE)(buffer1 + propslength)[i] << 16; //byte 3
+										//grab original filesize that was saved after props
+										int i = 0;
+										filesize = (BYTE)(buffer1 + propslength)[i]; //byte 1
+										i++; //next
+										filesize |= (BYTE)(buffer1 + propslength)[i] << 8; //byte 2
+										i++; //next
+										filesize |= (BYTE)(buffer1 + propslength)[i] << 16; //byte 3
 
-								//outsize no longer used
+										//outsize no longer used
 
-								//cut extension off filename
-								filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
+										//cut extension off filename
+										filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
 
-								LogData(filename); //log the SNR stats DM
+										LogData(filename); //log the SNR stats DM
 
-								char savename[260] = "";
-								wsprintf(savename, "Rx Files\\%s", filename);
+										char savename[260] = "";
+										wsprintf(savename, "Rx Files\\%s", filename);
 
-								//saved file is opened here for writing DM
-								if ((set = fopen(savename, "wb")) == nullptr) {
-									// handle error here DM
-								}
-								else {
-									i = 0;
-									while (unsigned(i) < filesize) { //edit DM
-										putc(buffer2[i], set);
-										i++;
+										//saved file is opened here for writing DM
+										if ((set = fopen(savename, "wb")) == nullptr) {
+											// handle error here DM
+										}
+										else {
+											i = 0;
+											while (unsigned(i) < filesize) { //edit DM
+												putc(buffer2[i], set);
+												i++;
+											}
+											fclose(set); //file is closed here - but only if it was opened
+											filestat = FS_SAVED; //File decode status
+										}
+										delete[] buffer1; //remove the buffer arrays from the heap
+										delete[] buffer2;
 									}
-									fclose(set); //file is closed here - but only if it was opened
-									filestat = 2; //File decode status
-								}
-								delete[] buffer1; //remove the buffer arrays from the heap
-								delete[] buffer2;
-							}
-							else {
-								//data is not compressed, save normally - no need for extra buffers
-								//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.lz file is sent (?), so save it normally)
-								LogData(filename); //log the SNR stats DM
+									else {
+										//data is not compressed, save normally - no need for extra buffers
+										//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.lz file is sent (?), so save it normally)
+										LogData(filename); //log the SNR stats DM
 
-								char savename[260] = "";
-								wsprintf(savename, "Rx Files\\%s", filename);
+										char savename[260] = "";
+										wsprintf(savename, "Rx Files\\%s", filename);
 
-								//saved file is opened here for writing DM
-								if ((set = fopen(savename, "wb")) == nullptr) {
-									//handle error here DM
-								}
-								else {
-									//no error
-									//file data is written here DM
-									for (i = 0; i < picsize; i++) {
-										putc(NewPic.vecbRawData[i], set);
+										//saved file is opened here for writing DM
+										if ((set = fopen(savename, "wb")) == nullptr) {
+											//handle error here DM
+										}
+										else {
+											//no error
+											//file data is written here DM
+											for (i = 0; i < picsize; i++) {
+												putc(NewPic.vecbRawData[i], set);
+											}
+											fclose(set); //file is closed here
+											filestat = FS_SAVED; //File decode status
+										}
 									}
-									fclose(set); //file is closed here
-									filestat = 2; //File decode status
-								}
-							}
 
-							//for (i=0;i<picsize;i++) putc(NewPic.vecbRawData[i],set); //file data was written here DM - DISABLED NOW
-	//						}
-							//Consider deleting the auto-open function, as it could be a security risk DM - Deactivated
-							if (ShowRXFile)
-							{
-								filnamsize = strlen(filename);
-								if (filnamsize >= 11)
-								{
-									if (checkfilenam(filename, filnamsize))
+									//for (i=0;i<picsize;i++) putc(NewPic.vecbRawData[i],set); //file data was written here DM - DISABLED NOW
+			//						}
+									//Consider deleting the auto-open function, as it could be a security risk DM - Deactivated
+									if (ShowRXFile)
 									{
-										//if (stricmp(lastfilename, filename) != 0)
-											//ShellExecute(nullptr, "open", filename, nullptr, nullptr, SW_SHOWNORMAL); //Deactivated - Auto-opening files is a security risk DM
-										ShellExecute(nullptr, "open", rxfilepath, nullptr, nullptr, SW_SHOWDEFAULT); //Open the folder instead DM
+										filnamsize = strlen(filename);
+										if (filnamsize >= 11)
+										{
+											if (checkfilenam(filename, filnamsize))
+											{
+												//if (stricmp(lastfilename, filename) != 0)
+													//ShellExecute(nullptr, "open", filename, nullptr, nullptr, SW_SHOWNORMAL); //Deactivated - Auto-opening files is a security risk DM
+												ShellExecute(nullptr, "open", rxfilepath, nullptr, nullptr, SW_SHOWDEFAULT); //Open the folder instead DM
+											}
+											else
+											{
+												if (stricmp(lastfilename, filename) != 0)
+													MessageBox(hwnd, filename, "Executable File Saved", 0);
+											}
+										}
+										if (ShowOnlyFirst) wsprintf(lastfilename, "%s", filename);
 									}
-									else
-									{
-										if (stricmp(lastfilename, filename) != 0)
-											MessageBox(hwnd, filename, "Executable File Saved", 0);
-									}
-								}
-								if (ShowOnlyFirst) wsprintf(lastfilename, "%s", filename);
 							}
 						}
 					}
+
+						sendinfo(hwnd); //send stats to window
 				}
 
-				sendinfo(hwnd); //send stats to window
+					if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_A)
+						robmode = 'A';
+					if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_B)
+						robmode = 'B';
+					if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_E)
+						robmode = 'E';
+					if ((DRMReceiver.GetParameters()->GetSpectrumOccup()) == SO_0)
+						specocc = 3;
+					else if ((DRMReceiver.GetParameters()->GetSpectrumOccup()) == SO_1)
+						specocc = 5;
+					if (DRMReceiver.GetParameters()->eSymbolInterlMode == CParameter::SI_LONG)
+						interl = 'L';
+					else if (DRMReceiver.GetParameters()->eSymbolInterlMode == CParameter::SI_SHORT)
+						interl = 'S';
+					if (DRMReceiver.GetParameters()->eMSCCodingScheme == CParameter::CS_2_SM)
+						qam = 16;
+					else if (DRMReceiver.GetParameters()->eMSCCodingScheme == CParameter::CS_3_SM)
+						qam = 64;
+					else
+						qam = 4;
+					prot = DRMReceiver.GetParameters()->MSCPrLe.iPartB;
+					wsprintf(tempstr, "%c/%c/%d/%d/2.%d", robmode, interl, qam, prot, specocc);
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);
+					if ((DRMReceiver.GetParameters()->Service[0].eAudDataFlag == CParameter::SF_AUDIO) && (DRMReceiver.GetParameters()->Service[0].AudioParam.bTextflag == TRUE))
+					{
+						if ((AllowRXTextMessage) && (runmode != 'P'))
+						{
+							if ((!RXTextMessageON) && (!RXTextMessageWasClosed))
+								RXMessagehwnd = CreateDialog(TheInstance,
+									MAKEINTRESOURCE(DLG_RXTEXTMESSAGE), hwnd, RXTextMessageDlgProc);
+							else if (RXTextMessageON)
+								SendMessage(RXMessagehwnd, WM_NOTIFY, 0, 0);
+						}
+					}
 			}
-		
-			if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_A)
-				robmode = 'A';
-			if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_B)
-				robmode = 'B';
-			if (DRMReceiver.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_E)
-				robmode = 'E';
-			if ((DRMReceiver.GetParameters()->GetSpectrumOccup()) == SO_0)
-				specocc = 3;
-			else if ((DRMReceiver.GetParameters()->GetSpectrumOccup()) == SO_1)
-				specocc = 5;
-			if (DRMReceiver.GetParameters()->eSymbolInterlMode == CParameter::SI_LONG)
-				interl = 'L';
-			else if (DRMReceiver.GetParameters()->eSymbolInterlMode == CParameter::SI_SHORT)
-				interl = 'S';
-			if (DRMReceiver.GetParameters()->eMSCCodingScheme == CParameter::CS_2_SM)
-				qam = 16;
-			else if (DRMReceiver.GetParameters()->eMSCCodingScheme == CParameter::CS_3_SM)
-				qam = 64;
-			else 
-				qam = 4;
-			prot = DRMReceiver.GetParameters()->MSCPrLe.iPartB;
-			wsprintf(tempstr,"%c/%c/%d/%d/2.%d",robmode,interl,qam,prot,specocc);	
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);	
-			if ((DRMReceiver.GetParameters()->Service[0].eAudDataFlag == CParameter::SF_AUDIO) && (DRMReceiver.GetParameters()->Service[0].AudioParam.bTextflag == TRUE))
-			{
-				if ((AllowRXTextMessage) && (runmode != 'P'))
+				else if (firstnorx)
 				{
-					if ((!RXTextMessageON) && (!RXTextMessageWasClosed))
-						RXMessagehwnd = CreateDialog (TheInstance, 
-							MAKEINTRESOURCE (DLG_RXTEXTMESSAGE), hwnd, RXTextMessageDlgProc);
-					else if (RXTextMessageON)
-						SendMessage(RXMessagehwnd,WM_NOTIFY,0,0);
+					//if (RXTextMessageON) SendMessage(RXMessagehwnd,WM_CLOSE,0,0);
+					wsprintf(lastfilename, "%s", "none");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)"No Service");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)" ");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)" ");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)"0");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)" ");
+					SendMessage(GetDlgItem(hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)" ");
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)" "); //added DM
+					filestat = FS_BLANK;
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)" "); //added DM
+					
+					//Clear bargraph DM
+					ClearBar(hwnd);
+
+					firstnorx = FALSE;
 				}
+				else
+				{
+					RXTextMessageWasClosed = FALSE;
+				}
+		}
+			else if (!IsRX && TX_Running)
+			{
+				int numbits = 0, percent = 0;
+
+				firstnorx = TRUE;
+				level = (int)(170.0 * DRMTransmitter.GetReadData()->GetLevelMeter()); //this is for reading audio input level to the speech codecs? DM
+				//level = 1; // (int)(170.0 * DRMReceiver.GetReceiver()->GetLevelMeter()); //try this DM - probably wrong - it's for transmit level
+				if (TransmParam->Service[0].eAudDataFlag == CParameter::SF_AUDIO)
+				{
+					if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_LPC)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
+					if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SPEEX)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
+					if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SSTV)
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
+				}
+				else
+				{
+					if (ECCmode < 4) {
+						sprintf(tempstr, "Data"); //
+					}
+					else
+						sprintf(tempstr, "RS%d Data", ECCmode - 3); //
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+					numbits = DRMTransmitter.GetAudSrcEnc()->GetPicCnt();
+					percent = DRMTransmitter.GetAudSrcEnc()->GetPicPerc();
+					wsprintf(tempstr, "%d / %d%%", numbits, percent);
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+					wsprintf(tempstr, "Sending data of %d bytes", EncFileSize); //added info - in testing - DM
+					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
+
+					percent = DRMTransmitter.GetAudSrcEnc()->GetNoOfPic();
+					if ((numbits + 1 > percent) && (stoptx == -1)) stoptx = stoptx_time;
+				}
+				numbits = DRMTransmitter.GetParameters()->iNumDecodedBitsMSC;
+				wsprintf(tempstr, "%d", numbits);
+				SendMessage(GetDlgItem(hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr);
+				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)getcall());
+				if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_A)
+					robmode = 'A';
+				if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_B)
+					robmode = 'B';
+				if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_E)
+					robmode = 'E';
+				if ((DRMTransmitter.GetParameters()->GetSpectrumOccup()) == SO_0)
+					specocc = 3;
+				else if ((DRMTransmitter.GetParameters()->GetSpectrumOccup()) == SO_1)
+					specocc = 5;
+				if (DRMTransmitter.GetParameters()->eSymbolInterlMode == CParameter::SI_LONG)
+					interl = 'L';
+				else if (DRMTransmitter.GetParameters()->eSymbolInterlMode == CParameter::SI_SHORT)
+					interl = 'S';
+				if (DRMTransmitter.GetParameters()->eMSCCodingScheme == CParameter::CS_2_SM)
+					qam = 16;
+				else if (DRMTransmitter.GetParameters()->eMSCCodingScheme == CParameter::CS_3_SM)
+					qam = 64;
+				else
+					qam = 4;
+				prot = DRMTransmitter.GetParameters()->MSCPrLe.iPartB;
+				wsprintf(tempstr, "%c/%c/%d/%d/2.%d", robmode, interl, qam, prot, specocc);
+				SendMessage(GetDlgItem(hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);
+
+				DMmodehash = robmode + specocc * 4 + qam * 16 + max((ECCmode - 3), 0) * 32; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
+
+				PostWinMessage(MS_IOINTERFACE, 3); //Grey out LEDs
+				PostWinMessage(MS_FREQ_FOUND, 3); //Grey out LEDs
+				PostWinMessage(MS_TIME_SYNC, 3); //Grey out LEDs
+				PostWinMessage(MS_FRAME_SYNC, 3); //Grey out LEDs
+				PostWinMessage(MS_FAC_CRC, 3); //Grey out LEDs
+				PostWinMessage(MS_MSC_CRC, 3); //Grey out LEDs
+
 			}
-		}
-		else if (firstnorx)
-		{
-			//if (RXTextMessageON) SendMessage(RXMessagehwnd,WM_CLOSE,0,0);
-			wsprintf(lastfilename,"%s","none");
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)"No Service");
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)" ");
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)" ");
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)"0");
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)" ");
-			SendMessage (GetDlgItem (hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)" ");
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)" "); //added DM
-			//DMpercent = 0; //added DM
-			// 
-			//Clear bargraph DM
-			ClearBar(hwnd);
 
-			firstnorx = FALSE;
-		}
-		else
-		{
-			RXTextMessageWasClosed = FALSE;
-		}
-	}
-	else if (!IsRX && TX_Running)
-	{
-		int numbits = 0,percent = 0;
 
-		firstnorx = TRUE;
-		level = (int)(170.0 * DRMTransmitter.GetReadData()->GetLevelMeter()); //this is for reading audio input level to the speech codecs? DM
-		//level = 1; // (int)(170.0 * DRMReceiver.GetReceiver()->GetLevelMeter()); //try this DM - probably wrong - it's for transmit level
-		if (TransmParam->Service[0].eAudDataFlag == CParameter::SF_AUDIO)
-		{
-			if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_LPC)
-				SendMessage (GetDlgItem (hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
-			if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SPEEX)
-				SendMessage (GetDlgItem (hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
-			if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SSTV)
-				SendMessage (GetDlgItem (hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
-		}
-		else
-		{
-			if (ECCmode < 4) {
-				sprintf(tempstr, "Data"); //
+			if (IsRX)
+			{
+				if ((disptype == 3) || (disptype == 8))
+					PaintWaveData(hwnd, FALSE);
+				else
+					PaintWaveData(hwnd, TRUE);
 			}
 			else
-				sprintf(tempstr, "RS%d Data", ECCmode-3); //
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
+				PaintWaveData(hwnd, TRUE);
 
-			numbits = DRMTransmitter.GetAudSrcEnc()->GetPicCnt();
-			percent = DRMTransmitter.GetAudSrcEnc()->GetPicPerc();
-			wsprintf(tempstr,"%d / %d%%",numbits,percent);
-			SendMessage (GetDlgItem (hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
-
-			wsprintf(tempstr, "Sending data of %d bytes", EncFileSize); //added info - in testing - DM
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
-
-			percent = DRMTransmitter.GetAudSrcEnc()->GetNoOfPic();
-			if ((numbits+1 > percent) && (stoptx == -1)) stoptx = stoptx_time;
+	}
+		catch (CGenErr GenErr) //Add some descriptive messages here for the exception generated, and also delete heap buffers if they still exist DM
+		{
+			return;
 		}
-		numbits = DRMTransmitter.GetParameters()->iNumDecodedBitsMSC;
-		wsprintf(tempstr,"%d",numbits);
-		SendMessage (GetDlgItem (hwnd, IDC_EDIT4), WM_SETTEXT, 0, (LPARAM)tempstr);
-		SendMessage (GetDlgItem (hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)getcall());
-		if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_A)
-			robmode = 'A';
-		if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_B)
-			robmode = 'B';
-		if (DRMTransmitter.GetParameters()->GetWaveMode() == RM_ROBUSTNESS_MODE_E)
-			robmode = 'E';
-		if ((DRMTransmitter.GetParameters()->GetSpectrumOccup()) == SO_0)
-			specocc = 3;
-		else if ((DRMTransmitter.GetParameters()->GetSpectrumOccup()) == SO_1)
-			specocc = 5;
-		if (DRMTransmitter.GetParameters()->eSymbolInterlMode == CParameter::SI_LONG)
-			interl = 'L';
-		else if (DRMTransmitter.GetParameters()->eSymbolInterlMode == CParameter::SI_SHORT)
-			interl = 'S';
-		if (DRMTransmitter.GetParameters()->eMSCCodingScheme == CParameter::CS_2_SM)
-			qam = 16;
-		else if (DRMTransmitter.GetParameters()->eMSCCodingScheme == CParameter::CS_3_SM)
-			qam = 64;
-		else
-			qam = 4;
-		prot = DRMTransmitter.GetParameters()->MSCPrLe.iPartB;
-		wsprintf(tempstr,"%c/%c/%d/%d/2.%d",robmode,interl,qam,prot,specocc);	
-		SendMessage (GetDlgItem (hwnd, IDC_EDIT2), WM_SETTEXT, 0, (LPARAM)tempstr);	
-
-		DMmodehash = robmode + specocc*4 + qam*16 + max((ECCmode-3),0)*32; //compute a mode hash to add to the TID in RS modes - DM =============================================================================================
-
-	}
-
-
-	if (IsRX)
-	{
-		if ((disptype == 3) || (disptype == 8))
-			PaintWaveData(hwnd,FALSE);
-		else
-			PaintWaveData(hwnd,TRUE);
-	}
-	else
-		PaintWaveData(hwnd,TRUE);
-	
-  }
-  catch (CGenErr GenErr) //Add some descriptive messages here for the exception generated, and also delete heap buffers if they still exist DM
-  {
-  	return;
-  }
 
 }
 
@@ -2311,8 +2344,8 @@ BOOL CALLBACK SendBSRDlgProc
 BOOL CALLBACK AnswerBSRDlgProc
    (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
 {
-	char tmpbsrname[20];
-	int tmpno;
+	char tmpbsrname[20]{};
+	int tmpno = 0;
 	BOOL send3 = FALSE;
     switch (message)
     {
@@ -2945,13 +2978,12 @@ BOOL CALLBACK TXPictureDlgProc
 								if (hFind != INVALID_HANDLE_VALUE) {
 									//a file was found
 									file_size[TXpicpospt] = FindFileData.nFileSizeLow; //add file size info
- //									strcpy(pictfile[TXpicpospt],temp); //pictfile holds the full path and filename in a 2-dimansional array
 
 									//take the short name and use it to overwrite the name on the full path
 									strcpy(temp2, temp); //copy the full path to a new array
 									fixname(temp2, FindFileData.cFileName); //overwrite the wildcard filename with the name that was actually found
-									strcpy(filetitle[TXpicpospt], FindFileData.cFileName); //filetitle holds the short filename in a 2-dimansional array
-									strcpy(pictfile[TXpicpospt], temp2); //pictfile holds the full path and filename in a 2-dimansional array
+									strcpy(filetitle[TXpicpospt], FindFileData.cFileName); //filetitle holds the short filename in a 2D array
+									strcpy(pictfile[TXpicpospt], temp2); //pictfile holds the full path and filename in a 2D array
 									hResult = FindClose(hFind); //close file handle
 									TXpicpospt++; //increment array pointer
 								}
@@ -3375,21 +3407,16 @@ void DrawBar(HWND hwnd) {
 	//SEGMENT BARGRAPH by Daz Man 2021
 	//======================================================================================================================================================
 	RECT rect{};
-	int width = 218;
-	int i = 0;
+	unsigned int width = 218;
+	unsigned int i = 0;
 	if (GetWindowRect(hwnd, &rect))
 	{
 		width = (rect.right - rect.left) - 1;
 		//int height = rect.bottom - rect.top;
 	}
 	//read erasures buffer and convert it to a line graph
-	const int x = DRMReceiver.GetDataDecoder()->GetActPos(); //get current segment number
-	int y = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
-
-	//if the GetTotSize function fails (it does sometimes - reason unknown), we can use our own computation if in RS mode
-	//		if ((DecSegSize > 0) && (HdrFileSize > 0)){
-	//			y = ceil((float)HdrFileSize / DecSegSize); //segment total = filesize/segsize
-	//		}
+	const int x = actpos + 1; //get current segment number
+	unsigned int y = totsize; //Total segment count DM
 
 	y = max(DecTotalSegs, y);
 	y = max(y, x);
@@ -3401,8 +3428,6 @@ void DrawBar(HWND hwnd) {
 	//the correction "n" is width/y
 	//to use int scaling, n*1000 = BarLastSeg*1000/y
 
-	//int n = width / max(totsize, DecTotalSegs);
-	//		int n = float(width << 12) / (y << 12);
 	int n = (width * 1000) / y;
 	//this executes every 100mS, so make sure it doesn't run too often
 	if ((BarLastSeg != x) && (CRCOK)) {
@@ -3444,7 +3469,7 @@ void DrawBar(HWND hwnd) {
 		lbx.lbColor = GetSysColor(COLOR_3DFACE); //RGB(127, 127, 127);
 		lbx.lbHatch = 0;
 
-		const int pwidth = 1;
+		constexpr int pwidth = 1;
 		penb = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbb, 0, nullptr); //Black for current segment
 		penr = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbr, 0, nullptr); //Red for no segment received
 		peng = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbg, 0, nullptr); //Green for good segment
@@ -3505,7 +3530,7 @@ void DrawBar(HWND hwnd) {
 		BarLastSeg = x;
 
 		ReleaseDC(hwnd, hdc);
-
+//		InvalidateRect(hwnd,nullptr,FALSE);
 	}
 	BGbusy = 0; //flag that the thread has terminated
 }

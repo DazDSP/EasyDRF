@@ -91,10 +91,10 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 	/* For HamDRM this doesn't matter - any file works! DM */
 	/* Try to open file binary */
 
-	int iOldNumObj;
+	int iOldNumObj = 0; //init DM
 	FILE * pFiBody = fopen(strFileName.c_str(), "rb");
 
-	if (pFiBody != NULL)
+	if (pFiBody != nullptr) //edit DM
 	{
 		//		_BYTE byIn; //this is the original file buffer - only 1 byte long DM
 		//=============================================================================================================================
@@ -102,8 +102,8 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 		_BYTE* buffer1T = new _BYTE[BUFSIZE*2]; //File read buffer - now 1M to fit RS encoding
 		_BYTE* buffer2T = new _BYTE[BUFSIZE*2]; //zlib & interleaver buffer - now 1M to fit RS encoding
 		uLongf filesize;
-		unsigned int dd;
-		int result;
+		unsigned int dd = 0;
+		int result = 0;
 		filesize = 0;
 
 		// obtain file size : (there might be a more elegant way to do this...)
@@ -167,7 +167,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			//BYTE* buffer2Th = buffer2T + HeaderSize;
 			unsigned int ds = BUFSIZE*2;
 
-#define LZMA_PROPS_SIZE 5;
+//#define LZMA_PROPS_SIZE 5;
 				unsigned propsSize = LZMA_PROPS_SIZE;
 				//set these accordingly:
 				int level = 9; //Maximum compression
@@ -242,7 +242,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			//make sure the number of RS blocks to be decoded is the same as what was encoded
 			//Special interleaver test
 			//it is critical that the same filesize be used for interleaving and deinterleaving
-			bool rev = 0;
+			constexpr bool rev = 0;
 			distribute(buffer1T, buffer2T, filesize, rev); //output is put back into buffer2T
 		}
 
