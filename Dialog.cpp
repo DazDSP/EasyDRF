@@ -1719,9 +1719,9 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					totsize = max(totsize, CompTotalSegs);//Computed from old header DM
 					totsize = max(totsize, DecTotalSegs); //From new serial backup DM
 
+					//These are now directly saved out of the respective routine, instead of here DM
 					//actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM - This is now updated directly inside the DataDecoder class
-					actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
-
+					//actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
 					
 					sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
@@ -1971,7 +1971,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 										//cut extension off filename
 										filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
 
-										LogData(filename); //log the SNR stats DM
+										LogData(filename,1); //log the SNR stats DM
 
 										char savename[260] = "";
 										wsprintf(savename, "Rx Files\\%s", filename);
@@ -1995,7 +1995,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									else {
 										//data is not compressed, save normally - no need for extra buffers
 										//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.lz file is sent (?), so save it normally)
-										LogData(filename); //log the SNR stats DM
+										LogData(filename,1); //log the SNR stats DM
 
 										char savename[260] = "";
 										wsprintf(savename, "Rx Files\\%s", filename);
@@ -3415,7 +3415,7 @@ void DrawBar(HWND hwnd) {
 		//int height = rect.bottom - rect.top;
 	}
 	//read erasures buffer and convert it to a line graph
-	const int x = actpos + 1; //get current segment number
+	const int x = actpos; //get current segment number
 	unsigned int y = totsize; //Total segment count DM
 
 	y = max(DecTotalSegs, y);

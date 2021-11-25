@@ -1187,6 +1187,8 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 							RSdecoder.detach(); //detach and terminate after running
 						}
 					}
+					else	filestat = FS_WAIT; //reset File decode status if needed
+
 				}
 			}
 			//======================================================================================================================================================
@@ -1236,6 +1238,10 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		//actpos > 0 = only update if there is real data being sent
 		GetName(MOTObjectRaw); //added to read the filename and size from the old header DM ======================================
 		DMnewfile = FALSE;
+	}
+
+	if (bCRCOk == TRUE) {
+		LogData(DMfilename,0); //Update stats file
 	}
 
 	/* Return status of MOT object decoding */
@@ -1634,6 +1640,7 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 		if (vvbiSegment[i].Size() >= 1) iDataSegNum++;
 
 	actsize = iDataSegNum; //Grab this here so it's accurate DM
+	actpos = iNewEnlSize; //Grab this here so it's accurate DM
 }
 
 void CMOTObjectRaw::CDataUnitRx::Reset()
@@ -1850,7 +1857,7 @@ void RSdecode(unsigned char* RSbuffer) {
 					//cut .lz extension off filename
 					filenametest[strlen(filenametest) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
 
-					LogData(filenametest); //log the SNR stats DM
+					LogData(filenametest,1); //log the SNR stats DM
 
 					char RSfilenameS[260] = "";
 					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);
@@ -1874,7 +1881,7 @@ void RSdecode(unsigned char* RSbuffer) {
 				}
 				else {
 					//If data is noncompressed, save buffer2 to disk
-					LogData(filenametest); //log the SNR stats DM
+					LogData(filenametest,1); //log the SNR stats DM
 
 					char RSfilenameS[260] = "";
 					wsprintf(RSfilenameS, "Rx Files\\%s", filenametest);

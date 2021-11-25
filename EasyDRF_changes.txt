@@ -1,3 +1,9 @@
+EasyDRF Changes - by Daz Man November 26th, 2021
+* Improved active position count accuracy
+* Improved file state logic
+* Improved stats logging for SWRG
+
+
 EasyDRF Changes - by Daz Man November 25th, 2021
 * Updates to allow tiny files to decode correctly (down to 0 bytes)
 * Improved RS decoding for small files

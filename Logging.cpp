@@ -36,20 +36,21 @@
 //the JS file can be loaded into a web page for display
 
 //void LogData(unsigned int SNRaverage, unsigned int SNRmaximum, unsigned int goodsegments, unsigned int totalsegments) {
-void LogData(char* fn) {
+void LogData(char* fn, bool saved) {
 	//filenumber is derived from the filename - what if it doesn't arrive until the end? only execute this on save
+	//update the stats as the data comes in
 	//save the data as each file saves
-
-	//all the stats need to be saved in an array first, then dump the array out to the file
-	//use an object to hold the data
-	//add an object for each file number - can a JS number be an object? might need an alpha prefix!
+	// 
+	//save the stats in an array first, then dump the array out to a file
 	//compute stats in browser - just save the raw data here
+	//use a Javascript object to hold the data
+	//add an object for each file number
 
 	//save avSNR once, smoothed over time by the decoder
 	//SNRav = SNRaverage
 	//SNRmax = SNRmaximum
-	//gs = goodsegments
 	//ts = totalsegments
+	//gs = goodsegments
 	//ps = active position
 
 	//format is SWRG-nnn-nn.ext or SWRGtest-nnn-nn.ext
@@ -90,11 +91,14 @@ void LogData(char* fn) {
 				DMSNRavarray[DMobjectnum] = DMSNRaverage;
 				DMSNRmaxarray[DMobjectnum] = DMSNRmax;
 				
-				DMrxokarray[DMobjectnum] = 1; //record that this image DID save OK
+				if (saved == TRUE) {
+					DMrxokarray[DMobjectnum] = 1; //record that this file DID save OK
+				}
 
-				DMgoodsegsarray[DMobjectnum] = actsize;
 				DMtotalsegsarray[DMobjectnum] = totsize;
 				DMpossegssarray[DMobjectnum] = actpos;
+				//allow actsize to increase, but not decrease - because at the end of file it resets
+				DMgoodsegsarray[DMobjectnum] = max(actsize, DMgoodsegsarray[DMobjectnum]);
 
 				i -= 2; //point to the '-'
 				//update log file now

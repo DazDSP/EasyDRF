@@ -1,5 +1,5 @@
 #pragma once
-void LogData(char*);
+void LogData(char*,bool);
 extern char DMfilename[260];
 extern float DMSNRaverage;
 extern float DMSNRmax;
