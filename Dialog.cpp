@@ -97,8 +97,10 @@ unsigned int CompTotalSegs = 0; //Computed total segments
 unsigned int RScount = 0; //save RS attempts count
 unsigned int RSpsegs = 0; //save RS segs on last attempt
 unsigned int RSpercent = 0; //test for RS data level
+bool RSsw = 0;
 
-unsigned char filestat; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+unsigned char filestate = 0; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+char showgood = 0; //stretch colour timing for SAVED (green) and FAILED (red)
 
 #if RS_SIZE_METHOD == 1
 unsigned int DecCheckReg = 0x00FFFF; //reset 16 bits for new version
@@ -265,37 +267,35 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d", DMfilename, RSfilesize, DecTransportID, erasureswitch);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d-%01d", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
-	//compute the file save status message based on the number in filestat
-	if (filestat == FS_BLANK) {
+	//compute the file save status message based on the number in filestate
+	if (filestate == FS_BLANK) {
 		//BLANK
-//		strcpy(DMdecodestat, ""); //File decode status
 		lasterror2 = sprintf_s(tempstr, " ");
 		lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
 	}
 
 	if (IsRX) {
-
-		if (filestat == FS_WAIT) {
+		if (filestate == FS_WAIT) {
 			//WAIT
 			lasterror2 = sprintf_s(tempstr, "WAIT %02d%%", RSpercent);
 			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
 		}
-		if (filestat == FS_TRY) {
+		if (filestate == FS_TRY) {
 			//wait or try xxx
 			lasterror2 = sprintf_s(tempstr, "Try... %03d", RScount);
 			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
 		}
-		if (filestat == FS_SAVED) {
+		if (filestate == FS_SAVED) {
 			//SAVED
 			lasterror2 = sprintf_s(tempstr, "SAVED");
 			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
 		}
-		if (filestat == FS_FAILED) {
+		if (filestate == FS_FAILED) {
 			//FAILED
 			lasterror2 = sprintf_s(tempstr, "FAILED");
 			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
@@ -558,27 +558,31 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HDC hdc = (HDC)wParam;
 			int bkcol = 0;
-			//if filestat == FS_BLANK use Window background
-			//if filestat == FS_WAIT use blue background
-			//if filestat == FS_TRY  use yellow background
-			//if filestat == FS_SAVED use green background
-			//if filestat == FS_FAILED use red background
-			if (filestat == FS_BLANK) {
+			//if filestate == FS_BLANK use Window background
+			//if filestate == FS_WAIT use blue background
+			//if filestate == FS_TRY  use yellow background
+			//if filestate == FS_SAVED use green background
+			//if filestate == FS_FAILED use red background
+			if (filestate == FS_BLANK) {
 				//bkcol = BLUE; //change to window background colour
 				bkcol = GetSysColor(COLOR_3DFACE);
 			}
-			if (filestat == FS_WAIT) {
+			if ((filestate == FS_WAIT) && (showgood == 0)) {
 				bkcol = BLUE;
 			}
-			if (filestat == FS_TRY) {
+			if ((filestate == FS_TRY) && (showgood == 0)) {
 				bkcol = YELLOW;
 			}
-			if (filestat == FS_SAVED) {
+			if ((filestate == FS_SAVED) || (showgood > 0)) {
 				bkcol = GREEN;
 			}
-			if (filestat == FS_FAILED) {
+			if ((filestate == FS_FAILED) ||  (showgood < 0)) {
 				bkcol = RED;
 			}
+			//decay timer towards zero
+			if (showgood > 0) showgood -= 1;
+			if (showgood < 0) showgood += 1;
+
 			// Do not return a brush created by CreateSolidBrush(...) because you'll get a memory leak
 			SetBkColor(hdc, bkcol); //main background
 			SetDCBrushColor(hdc, bkcol); //perimeter background
@@ -1374,9 +1378,11 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			level = (int)(170.0 * DRMReceiver.GetReceiver()->GetLevelMeter());
 			//NEW spectral AGC routine Daz Man 2021
 			//apply a sensible threshold to the level input
-			level = max(level, 1.0); //what is the scaling???
+#define THRESHOLD 20
+#define LIMIT 3
 			//smooth the level
-			//if (level > levelsmooth * 2) (level = levelsmooth * 2); //slew limit attack
+			if (level > levelsmooth * LIMIT) (level = levelsmooth * LIMIT); //slew limit attack
+			level = max(level, THRESHOLD); //what is the scaling???
 			levelsmooth = max(level, levelsmooth * 0.9); //integrator for decay
 
 			//calculate the gain value
@@ -1652,8 +1658,10 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				//don't erase the previous block
 				//erase the next block to be used
 				//find the next block number
+				//UPDATE - erasureswitch is now pre-incremented, so it's pointing to the current block now
 				int a = erasureswitch + 1;
-				if (a > 2) { a = 0; }
+				//if (a > 2) { a = 0; }
+				a = a % 3; //mod 3 should work
 				const int b = erasureflags && 1 << a; //mask it
 				if (b > 0) {
 					//block is used - erase it
@@ -1700,7 +1708,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				}
 				else
 				{
-					lasterror = 0;
+					//lasterror = 0;
 
 					//compute average and peak SNR for logging DM
 					float error = (float)((float)DRMReceiver.GetChanEst()->GetSNREstdB() - DMSNRaverage);
@@ -1931,7 +1939,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 											i++;
 										}
 										fclose(set); //file is closed here - but only if it was opened
-										filestat = 2; //File decode status
+										filestate = 2; //File decode status
 									}
 									delete[] buffer1; //remove the buffer arrays from the heap
 									delete[] buffer2;
@@ -1987,7 +1995,8 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 												i++;
 											}
 											fclose(set); //file is closed here - but only if it was opened
-											filestat = FS_SAVED; //File decode status
+											filestate = FS_SAVED; //File decode status
+											showgood = SHOWCOL; //show green
 										}
 										delete[] buffer1; //remove the buffer arrays from the heap
 										delete[] buffer2;
@@ -2011,7 +2020,8 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 												putc(NewPic.vecbRawData[i], set);
 											}
 											fclose(set); //file is closed here
-											filestat = FS_SAVED; //File decode status
+											filestate = FS_SAVED; //File decode status
+											showgood = SHOWCOL; //show green
 										}
 									}
 
@@ -2090,7 +2100,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)" ");
 					SendMessage(GetDlgItem(hwnd, IDC_DCFREQ), WM_SETTEXT, 0, (LPARAM)" ");
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)" "); //added DM
-					filestat = FS_BLANK;
+					filestate = FS_BLANK;
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)" "); //added DM
 					
 					//Clear bargraph DM

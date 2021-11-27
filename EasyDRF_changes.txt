@@ -1,7 +1,14 @@
+EasyDRF Changes - by Daz Man November 27th, 2021
+* Small files percentage bug fixed
+* Dual RS buffers added
+
+
 EasyDRF Changes - by Daz Man November 26th, 2021
 * Improved active position count accuracy
 * Improved file state logic
 * Improved stats logging for SWRG
+* Active segment count now only resets on new file
+* Bargraph now reads cached data for improved accuracy on replays
 
 
 EasyDRF Changes - by Daz Man November 25th, 2021

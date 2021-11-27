@@ -63,7 +63,8 @@ public:
 		_BOOLEAN			bOK, bReady;
 		int					iDataSegNum;
 		int					iTotSegments;
-		CVector<_BYTE> RSbytes{1050000,0}; //added DM - working 1st Oct, 2021 - changed from BYTE to _BYTE Nov 18, 2021
+		CVector<_BYTE> RSbytes[2]{1050000, 0 }; //added DM - working 1st Oct, 2021 - changed from BYTE to _BYTE Nov 18, 2021
+		//CVector< CVector<_BYTE>> RSbytes{ { 2 },{1050000, 0 } }; //added DM - working 1st Oct, 2021 - changed from BYTE to _BYTE Nov 18, 2021 <<-- takes 9 megs more RAM to allocate
 	};
 
 	int			iTransportID;
@@ -196,5 +197,5 @@ protected:
 
 void GetName(CMOTObjectRaw& MOTObjectRaw);
 
-void RSdecode(unsigned char* RSbuffer); //added DM
+void RSdecode(unsigned char* RSbuffer, unsigned int  DecTransportIDc, unsigned int erasureswitchc); //added DM
 #endif // !defined(DABMOT_H__3B0UBVE98732KJVEW363E7A0D31912__INCLUDED_)

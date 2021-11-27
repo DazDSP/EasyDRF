@@ -151,7 +151,7 @@ typedef unsigned int					_MESSAGE_IDENT;
 #define MAGENTA							0xFF00FF
 #define BLACK							0x000000
 
-/* Definitions for filestat DM ----------------------------------*/
+/* Definitions for filestate DM ----------------------------------*/
 #define FS_BLANK						0
 #define FS_WAIT							1
 #define FS_TRY							2

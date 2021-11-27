@@ -63,6 +63,7 @@ extern unsigned int RxRSlevelold; //previous value of RxRSlevel
 extern int RSError;
 extern unsigned int RSfilesize;
 extern unsigned int RSpercent;
+extern bool RSsw;
 
 extern char erasures[3][8192 / 8];
 extern int erasuressegsize[3];
@@ -77,12 +78,10 @@ extern int DMRSindex;
 extern int DMRSpsize;
 
 extern char DMfilename[260];
-
-extern bool DMnewfile;
-
 extern char DMdecodestat[15];
 
 extern int DMmodehash;
+extern bool DMnewfile;
 
 //extern int DMspeechmodecount;
 
@@ -92,9 +91,12 @@ extern int RSbusy;
 extern unsigned int RScount; //save RS attempts count
 extern unsigned int RSpsegs; //save RS segs on last attempt
 
-extern unsigned char filestat; //file save status - 0=blank, 1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+extern unsigned char filestate; //file save status - 0=blank, 1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+extern char showgood; //stretch colour timing for SAVED (green) and FAILED (red)
 
 extern char runmode;
+
+#define SHOWCOL 10 //how long (in frames) to display green/red saved/failed colour for
 
 #if USEGZIP
 #define ZLIB_WINAPI
