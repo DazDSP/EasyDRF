@@ -34,9 +34,9 @@
 int CConvEncoder::Encode(CVector<_BINARY>& vecInputData, 
 						 CVector<_BINARY>& vecOutputData)
 {
-	int		iOutputCounter;
+	int		iOutputCounter = 0; //inits DM
 //	int		iCurPunctPattern; //unused? DM
-	_BYTE	byStateShiftReg;
+	_BYTE	byStateShiftReg = 0;
 
 	/* Set output size to zero, increment it each time a new bit is encoded */
 	iOutputCounter = 0;

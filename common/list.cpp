@@ -40,7 +40,7 @@ HWND hlbtx;
 
 BOOL CALLBACK MixerDlgProc (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
 {
-	UINT item{}; //init DM
+	UINT item = 0; //init DM
 	int i = 0; //init DM
     switch (message)
     {

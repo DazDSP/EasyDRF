@@ -42,24 +42,24 @@
 void CCellMappingTable::MakeTable(ERobMode eNewRobustnessMode, 
 								  ESpecOcc eNewSpectOccup)
 {
-	int				iNoMSCDummyCells; /* Number of MSC dummy cells */
-	int				iNumTimePilots; /* Number of time pilots per frame */
-	CScatPilots		ScatPilots;
-	int				iSym;
-	int				iFrameSym;
-	int				iCar;
-	int				iTimePilotsCounter;
-	int				iFreqPilotsCounter;
-	int				iScatPilotsCounter;
-	int				iMSCCounter;
-	int				iFACCounter;
-	int				iScatPilPhase;
-	int				iCarArrInd;
-	int				iSpecOccArrayIndex;
+	int				iNoMSCDummyCells = 0; //inits DM /* Number of MSC dummy cells */
+	int				iNumTimePilots = 0; /* Number of time pilots per frame */
+	CScatPilots		ScatPilots{};
+	int				iSym = 0;
+	int				iFrameSym = 0;
+	int				iCar = 0;
+	int				iTimePilotsCounter = 0;
+	int				iFreqPilotsCounter = 0;
+	int				iScatPilotsCounter = 0;
+	int				iMSCCounter = 0;
+	int				iFACCounter = 0;
+	int				iScatPilPhase = 0;
+	int				iCarArrInd = 0;
+	int				iSpecOccArrayIndex = 0;
 	/* Tables */
-	const int*		piTableFAC;
-	const int*		piTableTimePilots;
-	const int*		piTableFreqPilots;
+	const int*		piTableFAC = nullptr;
+	const int*		piTableTimePilots = nullptr;
+	const int*		piTableFreqPilots = nullptr;
 
 
 	/* Set Parameters and pointers to the tables ******************************/

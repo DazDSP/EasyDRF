@@ -74,39 +74,39 @@ public:
 	struct CRatio {int iEnum; int iDenom;};
 
 	/* Mapping table and pilot cell matrix */
-	CMatrix<int>		matiMapTab{}; //init DM 
-	CMatrix<_COMPLEX>	matcPilotCells{}; //init DM
+	CMatrix<int>		matiMapTab; 
+	CMatrix<_COMPLEX>	matcPilotCells;
 
-	int					iNumSymbolsPerSuperframe{}; //init DM
-	int					iNumSymPerFrame{}; //init DM /* Number of symbols per frame */
-	int					iNumCarrier{}; //init DM
-	int					iScatPilTimeInt{}; //init DM /* Time interpolation */
-	int					iScatPilFreqInt{}; //init DM /* Frequency interpolation */
+	int					iNumSymbolsPerSuperframe;
+	int					iNumSymPerFrame; /* Number of symbols per frame */
+	int					iNumCarrier;
+	int					iScatPilTimeInt; /* Time interpolation */
+	int					iScatPilFreqInt; /* Frequency interpolation */
 
-	int					iMaxNumMSCSym{}; //init DM /* Max number of MSC cells in a symbol */
+	int					iMaxNumMSCSym; /* Max number of MSC cells in a symbol */
 
 	/* Number of MSC cells in a symbol */
-	CVector<int>		veciNumMSCSym{}; //init DM 
+	CVector<int>		veciNumMSCSym; 
 
 	/* Number of FAC cells in a symbol */
-	CVector<int>		veciNumFACSym{}; //init DM 
+	CVector<int>		veciNumFACSym; 
 
-	int					iFFTSizeN{}; //init DM /* FFT size of the OFDM modulation */
-	int					iCarrierKmin{}; //init DM /* Carrier index of carrier with lowest frequency */
-	int					iCarrierKmax{}; //init DM /* Carrier index of carrier with highest frequency */
-	int					iIndexDCFreq{}; //init DM /* Index of DC carrier */
-	int					iShiftedKmin{}; //init DM /* Shifted carrier min ("sound card pass-band") */
-	int					iShiftedKmax{}; //init DM /* Shifted carrier max ("sound card pass-band") */
-	CRatio				RatioTgTu{}; //init DM /* Ratio between guard-interval and useful part */
-	int					iGuardSize{}; //init DM /* Length of guard-interval measured in "time-bins" */
-	int					iSymbolBlockSize{}; //init DM /* Useful part plus guard-interval in "time-bins" */
-	int					iNumIntpFreqPil{}; //init DM /* Number of time-interploated frequency pilots */
+	int					iFFTSizeN; /* FFT size of the OFDM modulation */
+	int					iCarrierKmin; /* Carrier index of carrier with lowest frequency */
+	int					iCarrierKmax; /* Carrier index of carrier with highest frequency */
+	int					iIndexDCFreq; /* Index of DC carrier */
+	int					iShiftedKmin; /* Shifted carrier min ("sound card pass-band") */
+	int					iShiftedKmax; /* Shifted carrier max ("sound card pass-band") */
+	CRatio				RatioTgTu; /* Ratio between guard-interval and useful part */
+	int					iGuardSize; /* Length of guard-interval measured in "time-bins" */
+	int					iSymbolBlockSize; /* Useful part plus guard-interval in "time-bins" */
+	int					iNumIntpFreqPil; /* Number of time-interploated frequency pilots */
 
-	int					iNumUsefMSCCellsPerFrame{}; //init DM /* Number of MSC cells per multiplex frame N_{MUX} */
+	int					iNumUsefMSCCellsPerFrame; /* Number of MSC cells per multiplex frame N_{MUX} */
 
 	/* Needed for SNR estimation and simulation */
-	_REAL				rAvPowPerSymbol{}; //init DM /* Total average power per symbol */
-	_REAL				rAvPilPowPerSym{}; //init DM /* Average power of pilots per symbol */
+	_REAL				rAvPowPerSymbol; /* Total average power per symbol */
+	_REAL				rAvPilPowPerSym; /* Average power of pilots per symbol */
 
 
 protected:
@@ -114,14 +114,14 @@ protected:
 	struct CScatPilots
 	{	
 		/* For the pase */
-		const int*  piConst{}; //init DM
-		int			iColSizeWZ{}; //init DM
-		const int*	piW{}; //init DM
-		const int*	piZ{}; //init DM
-		int			iQ{}; //init DM
+		const int*  piConst;
+		int			iColSizeWZ;
+		const int*	piW;
+		const int*	piZ;
+		int			iQ;
 
 		/* For the gain */
-		const int*	piGainTable{}; //init DM
+		const int*	piGainTable;
 	};
 
 

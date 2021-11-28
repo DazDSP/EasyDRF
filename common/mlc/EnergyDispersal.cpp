@@ -37,8 +37,8 @@
 void CEngergyDispersal::ProcessData(CVector<_BINARY>* pbiData)
 {
 	int			i = 0; //init DM
-	_UINT32BIT	iTempShiftRegister;
-	_BINARY		biPRBSbit;
+	_UINT32BIT	iTempShiftRegister = 0; //init DM
+	_BINARY		biPRBSbit = 0; //init DM
 
 	/* Init shift register and set all registers to "1" with bit-wise
 	   not-operation */

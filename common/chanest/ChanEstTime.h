@@ -49,8 +49,8 @@ protected:
 	_COMPLEX Rotate(const _COMPLEX cI, const int iCN, const int iTiDi) const;
 
 private:
-	int		iKminAbs{}; //init DM
-	_REAL	rArgMult{}; //init DM
+	int		iKminAbs;
+	_REAL	rArgMult;
 };
 
 

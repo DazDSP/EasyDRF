@@ -310,8 +310,8 @@ void CReceiveData::GetInputSpec(CVector<_REAL>& vecrData)
 	int				i = 0; //init DM
 	CComplexVector	veccSpectrum;
 	CRealVector		vecrFFTInput;
-	_REAL			rNormSqMag;
-	_REAL			rNormData;
+	_REAL			rNormSqMag{}; //init DM
+	_REAL			rNormData{}; //init DM
 
 	const int iLenInputVector = 2*2048;
 	const int iLenDSInputVector = 2048;

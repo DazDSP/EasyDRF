@@ -35,7 +35,7 @@
 
 
 /* Definitions ****************************************************************/
-#define MAX_RESAMPLE_OFFSET			200 /* Hz */
+#define MAX_RESAMPLE_OFFSET			200 /* Hz */ //needed to prevent buffer overrun
 
 
 /* Classes ********************************************************************/

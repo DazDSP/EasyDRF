@@ -52,12 +52,12 @@ public:
 				 int iLevel);
 
 protected:
-	int						iNumInBits{}; //init DM
-	int						iNumInBitsWithMemory{}; //init DM
+	int						iNumInBits;
+	int						iNumInBitsWithMemory;
 
-	CVector<int>			veciTablePuncPat{}; //init DM
+	CVector<int>			veciTablePuncPat;
 
-	CParameter::EChanType	eChannelType{}; //init DM
+	CParameter::EChanType	eChannelType;
 };
 
 

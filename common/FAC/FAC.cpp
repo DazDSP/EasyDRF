@@ -275,7 +275,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 	the modules to the new parameter 
 */
 	CParameter::CAudioParam	AudParam;
-	CParameter::CDataParam	DataParam;
+	CParameter::CDataParam	DataParam{}; //init DM
 
 	/* CRC ------------------------------------------------------------------ */
 	/* Check the CRC of this data block */
@@ -632,7 +632,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 
 		/* Label */
 		{
-			char	cNewChar;
+			char	cNewChar = 0; //init DM
 			int iframe = Parameter.iFrameIDReceiv;
 			/* Reset label string */
 			strlabel[iframe] = "";

@@ -40,7 +40,7 @@ void CFreqSyncAcq::ProcessDataInternal(CParameter& ReceiverParam)
 {
 	int			i = 0; //init DM
 	int			iMaxIndex = 0; //init DM
-	fftw_real	rMaxValue;
+	fftw_real	rMaxValue = 0; //init DM
 	int			iNumDetPeaks = 0; //init DM
 	_BOOLEAN	bNoPeaksLeft = FALSE; //init DM
 	CRealVector vecrPSDPilPoin(3);
@@ -232,7 +232,7 @@ void CFreqSyncAcq::ProcessDataInternal(CParameter& ReceiverParam)
 		{
 			int ioutvecs = (*pvecOutputData).Size();
 			int ihistvecs = vecrFFTHistory.Size();
-			int ifrom;
+			int ifrom = 0; //init DM
 			if (ioutvecs >= ihistvecs)
 			{ iOutputBlockSize = ihistvecs; ifrom = 0; }
 			else

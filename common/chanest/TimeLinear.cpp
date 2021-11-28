@@ -35,13 +35,13 @@ _REAL CTimeLinear::Estimate(CVectorEx<_COMPLEX>* pvecInputData,
 						    CVector<int>& veciMapTab, 
 						    CVector<_COMPLEX>& veccPilotCells, _REAL rSNR)
 {
-	int			i, j;
-	int			iPiHiIndex;
-	int			iTimeDiffOld;
-	int			iTimeDiffNew;
-	_COMPLEX	cOldPilot;
-	_COMPLEX	cNewPilot;
-	_COMPLEX	cGrad;
+	int			i = 0, j = 0; //inits DM
+	int			iPiHiIndex = 0;
+	int			iTimeDiffOld = 0;
+	int			iTimeDiffNew = 0;
+	_COMPLEX	cOldPilot = 0;
+	_COMPLEX	cNewPilot = 0;
+	_COMPLEX	cGrad = 0;
 
 	/* Channel estimation buffer -------------------------------------------- */
 	/* Move data in channel estimation-buffer 

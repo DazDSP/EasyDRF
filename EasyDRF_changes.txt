@@ -1,3 +1,7 @@
+EasyDRF Changes - by Daz Man November 28th, 2021
+* Timing acquisition filter changed to speed up locking in extreme cases
+
+
 EasyDRF Changes - by Daz Man November 27th, 2021
 * Small files percentage bug fixed
 * Dual RS buffers added

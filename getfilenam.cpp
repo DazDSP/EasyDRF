@@ -64,23 +64,23 @@ BOOL GetFileName (HWND hDlg, LPSTR lpszFile, LPSTR lpszFileTitle, int iMaxFileNm
     lpszFile[0] = '\0';
     ofn.lStructSize       = sizeof( OPENFILENAME );
     ofn.hwndOwner         = hDlg;
-    ofn.hInstance         = NULL;
+    ofn.hInstance         = nullptr; //edited DM
     ofn.lpstrFilter       = "*.*\0";
-    ofn.lpstrCustomFilter = NULL;
+    ofn.lpstrCustomFilter = nullptr;
     ofn.nMaxCustFilter    = 0;
     ofn.nFilterIndex      = 0;
     ofn.lpstrFile         = lpszFile;
     ofn.nMaxFile          = iMaxFileNmLen;
     ofn.lpstrFileTitle    = lpszFileTitle;
-	ofn.nMaxFileTitle     = 260; //edited DM (was 80)
-    ofn.lpstrInitialDir   = NULL;
-    ofn.lpstrTitle        = NULL;
+	ofn.nMaxFileTitle     = 259; //edited DM (was 80)
+    ofn.lpstrInitialDir   = nullptr;
+    ofn.lpstrTitle        = nullptr;
     ofn.nFileOffset       = 0;
     ofn.nFileExtension    = 1;
     ofn.lpstrDefExt       = szOFNDefExt;
     ofn.lCustData         = 0;
-    ofn.lpfnHook          = NULL;
-    ofn.lpTemplateName    = NULL;
+    ofn.lpfnHook          = nullptr;
+    ofn.lpTemplateName    = nullptr;
 
     /* invoke the common dialog box */
     ofn.Flags = OFN_HIDEREADONLY | OFN_PATHMUSTEXIST |
@@ -154,7 +154,7 @@ void SetTXmode(BOOL ispic)
 {
 	if (ispic)
 	{
-		int k,i,j;
+		int k = 0,i = 0,j = 0; //init DM
 		CVector<short>  dummy;
 		dummy.Init(0);
 		DRMTransmitter.GetParameters()->iNumAudioService = 0;
@@ -186,8 +186,8 @@ void SetTXmode(BOOL ispic)
 
 void putfiles(HWND hwnd)
 {
-	char acttxt[1200]; //1200 was 300 DM
-	int i;
+	char acttxt[6000]{}; //6000 was 1200 was originally 300 DM
+	int i = 0; //init DM
 	int strpt = 0;
 	if (TXpicpospt == 0) { SetDlgItemText( hwnd, IDC_PICFILE_TX, "  "); return; }
 	for (i=0;i<TXpicpospt;i++) 

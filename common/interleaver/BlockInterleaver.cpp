@@ -35,9 +35,9 @@
 void CBlockInterleaver::MakeTable(CVector<int>& veciIntTable, int iFrameSize, 
 								  int it_0)
 {
-	int i;
-	int	iHighestOne;
-	int is, iq;
+	int i = 0;
+	int	iHighestOne = 0;
+	int is = 0, iq = 0;
 
 	/* The following equations are taken directly from the DRM-standard paper 
 	   (7.3.3 and 7.6) */

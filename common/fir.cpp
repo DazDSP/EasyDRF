@@ -40,7 +40,7 @@ void FirInit(int dftsize,ESpecOcc spec)
 
 void DoFir (_COMPLEX * samples,_COMPLEX * outsamples)
 {
-	int i,k;
+	int i = 0,k; //init DM
 	_COMPLEX firres;
 
 	for (k=0;k<no_dft;k++)
