@@ -1244,14 +1244,16 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 
 		}
 	}
+
 	if (DMnewfile) {
 		//DMnewfile = only update if segment 0 (header) was sent
 		GetName(MOTObjectRaw); //added to read the filename and size from the old header DM
 		//DecodeObject(MOTObjectRaw);
 		DMnewfile = FALSE; //reset Segment 0 detection
 	}
-
-	LogData(DMfilename,0); //Update stats file
+	else {
+		LogData(DMfilename, 0); //Update stats file here, to avoid corruption at the end...
+	}
 
 	/* Return status of MOT object decoding */
 	return bMOTObjectReady;
@@ -1659,7 +1661,7 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 		}
 	}
 
-	actsize = iDataSegNum; //Grab this here so it's accurate DM - Increase only - reset on Transport ID change DM
+	actsize = iDataSegNum; //Grab this here so it's accurate DM
 	actpos = iNewEnlSize; //Grab this here so it's accurate DM
 }
 

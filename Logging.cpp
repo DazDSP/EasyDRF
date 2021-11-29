@@ -136,10 +136,10 @@ void LogData(char* fn, bool saved) {
 					}
 					*/
 
-					//do this DMobjectnum times
-					for (i = 0; i < DMobjectnum +1; i++) {
+					//do this a set number of times so no data is lost if something repeats
+					for (i = 0; i < 21; i++) {
 						//reuse the filenumber array to hold data
-						err = sprintf_s(filenumber, "data%02d={ok:%d,SNRav:%2.1f,SNRmax:%2.1f,gs:%d,ts:%d,ps:%d};\r\n", i, DMrxokarray[i], DMSNRavarray[i], DMSNRmaxarray[i], DMgoodsegsarray[i], DMtotalsegsarray[i], DMpossegssarray[i]);
+						err = sprintf_s(filenumber, "data%02d={ok:%d,SNRav:%2.1f,SNRmax:%2.1f,ts:%d,gs:%d,ps:%d};\r\n", i, DMrxokarray[i], DMSNRavarray[i], DMSNRmaxarray[i], DMtotalsegsarray[i], DMgoodsegsarray[i], DMpossegssarray[i]);
 						//write each char of filenumber array temp to file
 						for (j = 0; j < strlen(filenumber); j++) {
 							putc(filenumber[j], set);
