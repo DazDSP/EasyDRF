@@ -1,5 +1,6 @@
 EasyDRF Changes - by Daz Man December 2nd, 2021
 * Application window position is now saved and restored
+* Added "Build Date" in front of the build date in the titlebar
 
 
 EasyDRF Changes - by Daz Man December 1st, 2021

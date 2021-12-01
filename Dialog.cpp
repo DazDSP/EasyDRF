@@ -601,7 +601,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
 		SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File");
 
-		junk = sprintf_s(AppTitle, "EasyDRF - %s", BUILD);
+		junk = sprintf_s(AppTitle, "EasyDRF - Build Date: %s", BUILD);
 
 		//Set version number in title bar DM
 		aa = SetWindowTextA(hwnd, AppTitle);
