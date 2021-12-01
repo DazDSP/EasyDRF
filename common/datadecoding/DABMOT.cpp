@@ -886,18 +886,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					SerialFileSize = 0; //reset 
 					actsize = 0; //reset segment size (technically, it will always be 1 when data is incoming, but that will change lower down the file) DM
 
-					erasureflags = erasureflags || (1 << erasureswitch); //mark block as used for background erasing
-
-					//Swap the erasure buffer to write to each time the Transport ID changes
-						erasureswitch = (erasureswitch + 1); //next
-					if (erasureswitch > 2) { erasureswitch = 0; }
-
-					/*
-					//clear the next buffer here - this can be done here or in Dialog.cpp in the background
-					for (int d = 0; d < 1024; d++) {
-						erasures[erasureswitch][d] = 0; //clear mem before using it again
-					}
-					*/ 
 
 					CompTotalSegs = 0; //
 				}
@@ -981,7 +969,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			//that prevents the last (smaller) segment giving a false reading DM
 			DecSegSize = iSegmentSize; //global copy DM =============================================================================
 			//also, save the segment size that was used for each erasure buffer DM
-			erasuressegsize[erasureswitch] = iSegmentSize; //save to the correct array - this should be made to only update once... (although the LAST segment is SMALLER - but in RS mode, data is rounded up to 255 byte blocks)
+			erasuressegsize[RSsw] = iSegmentSize; //save to the correct array - this should be made to only update once per file, because the last segment is smaller
 		}
 		//Compute sizes when CRC is good ==========================================================================================================================
 		//Always use HdrFileSize if available (old)
@@ -1090,7 +1078,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						/* Init flag for body ok */
 						MOTObjectRaw.BodyRx.bOK = TRUE;
 
-						MOTObjectRaw.BodyRx.Add(vecbiNewData, iSegmentSize, iSegmentNum); //This is where the incoming segment bits get added DM
+						MOTObjectRaw.BodyRx.Add(vecbiNewData, iSegmentSize, iSegmentNum); //This is where the incoming segment bits get added - also the segment counts and erasure data is computed DM
 						MOTObjectRaw.iActSegment = iSegmentNum;
 
 #define NEWCODE TRUE
@@ -1196,7 +1184,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 							unsigned char* RSbuffer = nullptr;
 							RSbuffer = MOTObjectRaw.BodyRx.RSbytes[RSsw].data(); //grab the RSbytes buffer address and save it where we can access it easily
 
-							std::thread RSdecoder(RSdecode, RSbuffer, DecTransportID, erasureswitch); //launch the RS decoder in a new thread
+							std::thread RSdecoder(RSdecode, RSbuffer, DecTransportID, RSsw); //launch the RS decoder in a new thread
 							RSdecoder.detach(); //detach and terminate after running
 						}
 					}
@@ -1651,13 +1639,19 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 	int d = 0; //added DM
 	int e = 0; //added DM
 	for (i = 0; i < vvbiSegment.Size(); i++) {
+		e = i & 7; //mask bit addressing DM
+		//Erasure array bounds checking:
+		d = (i >> 3) & 1023; //limit to 0-1023
+
+		//if CRC was good:
 		if (vvbiSegment[i].Size() >= 1) {
 			iDataSegNum++;
 			//grab erasure data DM
-			e = i & 7;
-			//Erasure array bounds checking:
-			d = (i >> 3) & 1023; //limit to 0-1023
-			erasures[erasureswitch][d] |= 1 << e; //set the bit in the appropriate byte in the array
+			erasures[RSsw][d] |= 1 << e; //set the bit in the appropriate byte in the erasures array DM
+		}
+		//if CRC was bad:
+		else {
+			erasures[RSsw][d] &= ~(1 << e); //clear the bit in the appropriate byte in the erasures array - erasure clearing not needed anymore DM
 		}
 	}
 
@@ -1674,7 +1668,7 @@ void CMOTObjectRaw::CDataUnitRx::Reset()
 	iTotSegments = -1;
 }
 
-void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, unsigned int erasureswitchc) {
+void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc) {
 	//******************************************************************************
 	//This code runs in a new thread, then terminates... DM  Sep 29th, 2021
 	//******************************************************************************
@@ -1725,7 +1719,7 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, unsigned in
 	int i = 0;
 	int s = 0;
 	int RSfilesizeDec = 0; //The size of the decoded RS data
-	int RSsegsize = erasuressegsize[erasureswitchc];
+	int RSsegsize = erasuressegsize[RSswc];
 
 	//this must be > 0 to avoid exceptions
 	if (RSsegsize > 0) {
@@ -1739,7 +1733,7 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, unsigned in
 			//therefore:
 			//s = i / segment size
 			s = i / RSsegsize;
-			buffer3[i] = (erasures[erasureswitchc][s >> 3] >> (s & 7)) & 1; //get the correct packed bit from each byte
+			buffer3[i] = (erasures[RSswc][s >> 3] >> (s & 7)) & 1; //get the correct packed bit from each byte
 			i++;
 		}
 		//Deinterleave the erasures so they match up to the deinterleaved data positions

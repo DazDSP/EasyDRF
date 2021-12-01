@@ -1,3 +1,11 @@
+EasyDRF Changes - by Daz Man December 1st, 2021
+* Erasure code merged into segment buffer code and simplified
+
+
+EasyDRF Changes - by Daz Man November 30th, 2021
+* Improved stats logging reliability
+
+
 EasyDRF Changes - by Daz Man November 28th, 2021
 * Timing acquisition filter changed to speed up locking in extreme cases
 

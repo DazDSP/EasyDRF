@@ -97,7 +97,10 @@ unsigned int CompTotalSegs = 0; //Computed total segments
 unsigned int RScount = 0; //save RS attempts count
 unsigned int RSpsegs = 0; //save RS segs on last attempt
 unsigned int RSpercent = 0; //test for RS data level
-bool RSsw = 0;
+bool RSsw = 0; //switch RS and erasure arrays alternately on each file
+
+char erasures[2][8192 / 8]{}; //array for segment erasure data (saves the first/last good CRC segment numbers)
+int erasuressegsize[2] = { 0,0 }; //save the segment size that was used for each array
 
 unsigned char filestate = 0; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED
 char showgood = 0; //stretch colour timing for SAVED (green) and FAILED (red)
@@ -141,11 +144,6 @@ char DMdecodestat[15]{}; //File decode status
 
 bool DMnewfile = TRUE;
 
-char erasures[3][8192 / 8]{}; //array for segment erasure data (saves the first/last good CRC segment numbers)
-int erasuressegsize[3] = {0,0,0}; //save the segment size that was used for each array
-int erasureswitch = 0; //which array is being written to currently DM
-int erasureindex = 0;
-int erasureflags = 0;
 
 int lasterror2 = 0; //a place for functions to return errors to...
 
@@ -267,7 +265,7 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d-%01d", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d Bfr:%01d", DMfilename, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
@@ -1651,26 +1649,6 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 			}
 #endif
-			//are there any blocks that need cleaning?
-			if (erasureflags > 0) {
-				//There are currently three blocks total (0,1,2)
-				//don't erase the current block
-				//don't erase the previous block
-				//erase the next block to be used
-				//find the next block number
-				//UPDATE - erasureswitch is now pre-incremented, so it's pointing to the current block now
-				int a = erasureswitch + 1;
-				//if (a > 2) { a = 0; }
-				a = a % 3; //mod 3 should work
-				const int b = erasureflags && 1 << a; //mask it
-				if (b > 0) {
-					//block is used - erase it
-					for (int d = 0; d < 1024; d++) {
-						erasures[a][d] = 0; //clear mem before using it again
-					}
-					erasureflags = erasureflags & ~b; //clear the flag
-				}
-			}
 			//======================================================================================================================================================
 
 			if (DRMReceiver.GetParameters()->Service[0].IsActive())	//flags, etc.
@@ -3486,41 +3464,6 @@ void DrawBar(HWND hwnd) {
 		penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
 		//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
 
-		//Erase the last black line - for the 2nd/3rd pass etc.
-		if (x < BarLastSeg) {
-			SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
-			MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
-			LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
-		}
-
-		//data is good and we have a valid new segment - so update the graph
-		//copy from buffer and draw to the screen
-		//only read as far into the buffer as we need to...
-		for (i = 0; i < y; i++) {
-			//for each bit read, set the display red on 0 and green on 1
-			d = (erasures[erasureswitch][i >> 3] >> (i & 7)) & 1; //get the correct bit
-			//if (d == 0) { d = 0xFF0000; } //make 0 = 0xFF0000 = 16711680 red
-			//if (d == 1) { d = 0x00FF00; } //make 1 = 0x00FF00 = 65280    green
-
-			if (d == 0) {
-				SelectObject(hdc, penr); //select red pen
-				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
-			}
-			if (d == 1) {
-				SelectObject(hdc, peng);//select green pen
-				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
-			}
-		}
-
-		//			MoveToEx(hdc, floor((x+1)*n), BARY, nullptr);
-		//			LineTo(hdc, floor((x + 3) * n), BARY); //draw a black tip on the line
-
-		SelectObject(hdc, penb);
-		MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
-		LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
-
 		//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
 		if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
 
@@ -3531,6 +3474,53 @@ void DrawBar(HWND hwnd) {
 			BarLastTot = y; //update totsegs
 		}
 
+		//Erase the last black line - for the 2nd/3rd pass etc.
+		if (x < BarLastSeg) {
+			SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
+			MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
+			LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
+		}
+#define GLOBALBARBUF 1 //if this is set, bargraph erasure data is read via the global erasure buffer, otherwise it is read via the class variables (not working)
+#if GLOBALBARBUF == 1
+		//data is good and we have a valid new segment - so update the graph
+		//copy from buffer and draw to the screen
+		//only read as far into the buffer as we need to...
+		for (i = 0; i < y; i++) {
+			//for each bit read, set the display red on 0 and green on 1
+			d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
+			if (d == 0) {
+				SelectObject(hdc, penr); //select red pen
+				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+				LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
+			}
+			else {
+				SelectObject(hdc, peng);//select green pen
+				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+				LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+			}
+		}
+#endif
+#if GLOBALBARBUF == 0
+//this won't work, because vvbiSegment is buried in classes...
+		for (i = 0; i < vvbiSegment.Size(); i++) {
+			//for each bit read, set the display red on 0 and green on 1
+			//d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
+			if (vvbiSegment[i].Size() >= 1) {
+				SelectObject(hdc, peng);//select green pen
+				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+				LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+			}
+			else {
+				SelectObject(hdc, penr); //select red pen
+				MoveToEx(hdc, (i* n) / 1000, BARB, nullptr); //
+				LineTo(hdc, (i* n) / 1000, BART); //draw a red line up
+			}
+		}
+#endif
+		SelectObject(hdc, penb);
+		MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
+		LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
+
 		DeleteObject(penr);
 		DeleteObject(peng);
 		DeleteObject(penb);
@@ -3540,7 +3530,6 @@ void DrawBar(HWND hwnd) {
 		BarLastSeg = x;
 
 		ReleaseDC(hwnd, hdc);
-//		InvalidateRect(hwnd,nullptr,FALSE);
 	}
 	BGbusy = 0; //flag that the thread has terminated
 }

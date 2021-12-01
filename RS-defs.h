@@ -65,11 +65,8 @@ extern unsigned int RSfilesize;
 extern unsigned int RSpercent;
 extern bool RSsw;
 
-extern char erasures[3][8192 / 8];
-extern int erasuressegsize[3];
-extern int erasureswitch; //which array is being written to currently DM
-extern int erasureindex;
-extern int erasureflags;
+extern char erasures[2][8192 / 8]; //was 3 x 1024, now 2 x 1024
+extern int erasuressegsize[2]; //was 3, now 2
 
 extern int DecPrevSeg;
 extern int DecHighSeg;
