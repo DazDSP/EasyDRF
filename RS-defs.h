@@ -88,6 +88,7 @@ extern unsigned int RScount; //save RS attempts count
 extern unsigned int RSpsegs; //save RS segs on last attempt
 
 extern unsigned char filestate; //file save status - 0=blank, 1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+extern unsigned char filestate2; //file save status - 0=blank, 1=WAIT, 2=try..., 3=SAVED, 4=FAILED - for cache clearing
 extern char showgood; //stretch colour timing for SAVED (green) and FAILED (red)
 
 extern char runmode;

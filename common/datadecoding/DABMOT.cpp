@@ -859,7 +859,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					//DecSegSize = 0; //reset - this is updated lower down the page with the new value
 					RScount = 0; //reset RS decode attempt counter
 					//If in RS mode and previous file decoded, remove file data from picpool --- NEW --- (needed, because in RS modes data can be saved when still incomplete)
-					if ((filestate == FS_SAVED) && (RxRSlevel > 0)) {
+					if ((filestate2 == FS_SAVED) && (RxRSlevel > 0)) {
 						PicPool.poolremove(DecTransportID);
 						PicPool.getfrompool(DecTransportID, MOTObjectRaw); //is this needed - yes - it clears the output buffer if the cache is empty
 					}
@@ -885,8 +885,12 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					DecTotalSegs = 0; //reset
 					SerialFileSize = 0; //reset 
 					actsize = 0; //reset segment size (technically, it will always be 1 when data is incoming, but that will change lower down the file) DM
+					//erase the next erasure list in a new thread
+//					std::thread EraseNewErase(EraseNew); //erase the new erasure list in the background
+//					EraseNewErase.detach(); //detach and terminate after running
+					EraseNew(); //probably doesn't need to run in a new thread...
 
-
+					
 					CompTotalSegs = 0; //
 				}
 			}
@@ -1188,7 +1192,10 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 							RSdecoder.detach(); //detach and terminate after running
 						}
 					}
-					else	filestate = FS_WAIT; //reset File decode status if needed
+					else {
+						filestate = FS_WAIT; //reset File decode status if needed
+						filestate2 = FS_WAIT; //reset File decode status if needed
+					}
 				}
 			}
 			//======================================================================================================================================================
@@ -1649,10 +1656,6 @@ void CMOTObjectRaw::CDataUnitRx::Add(CVector<_BINARY>& vecbiNewData, const int i
 			//grab erasure data DM
 			erasures[RSsw][d] |= 1 << e; //set the bit in the appropriate byte in the erasures array DM
 		}
-		//if CRC was bad:
-		else {
-			erasures[RSsw][d] &= ~(1 << e); //clear the bit in the appropriate byte in the erasures array - erasure clearing not needed anymore DM
-		}
 	}
 
 	actsize = iDataSegNum; //Grab this here so it's accurate DM
@@ -1938,6 +1941,7 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc)
 
 			if (lasterror == 0) {
 				filestate = FS_SAVED; //File decode status = success
+				filestate2 = FS_SAVED; //reset File decode status
 				showgood = SHOWCOL; //show green
 				RSpsegs = 0; //reset on success
 			}
@@ -1947,6 +1951,7 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc)
 				if (RSlastTransportID == DecTransportIDc) {
 					showgood = 0 - SHOWCOL; //show red if failed
 					filestate = FS_FAILED; //File decode status
+					filestate2 = FS_FAILED; //File decode status
 				}
 
 			}
@@ -1959,5 +1964,12 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc)
 
 	RSbusy = 0;
 	return;
+}
+//******************************************************************************
+void EraseNew(void) {
+	bool RSswc = RSsw; //copy RSsw
+	for (int i = 0;i < 1023; i++) {
+		erasures[RSswc][i] = 0;
+	}
 }
 //******************************************************************************

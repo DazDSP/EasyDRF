@@ -197,4 +197,6 @@ protected:
 void GetName(CMOTObjectRaw& MOTObjectRaw);
 
 void RSdecode(unsigned char* RSbuffer, unsigned int  DecTransportIDc, bool RSswc); //added DM
+
+void EraseNew();
 #endif // !defined(DABMOT_H__3B0UBVE98732KJVEW363E7A0D31912__INCLUDED_)

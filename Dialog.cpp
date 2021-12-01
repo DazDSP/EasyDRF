@@ -107,6 +107,7 @@ char erasures[2][8192 / 8]{}; //array for segment erasure data (saves the first/
 int erasuressegsize[2] = { 0,0 }; //save the segment size that was used for each array
 
 unsigned char filestate = 0; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED
+unsigned char filestate2 = 0; //file save status - 0=blank,1=WAIT, 2=try..., 3=SAVED, 4=FAILED - Slightly different, for detecting when to clear the cache for each file
 char showgood = 0; //stretch colour timing for SAVED (green) and FAILED (red)
 
 #if RS_SIZE_METHOD == 1
@@ -1990,6 +1991,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 											}
 											fclose(set); //file is closed here - but only if it was opened
 											filestate = FS_SAVED; //File decode status
+											filestate2 = FS_SAVED; //File decode status
 											showgood = SHOWCOL; //show green
 										}
 										delete[] buffer1; //remove the buffer arrays from the heap
@@ -2015,6 +2017,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 											}
 											fclose(set); //file is closed here
 											filestate = FS_SAVED; //File decode status
+											filestate2 = FS_SAVED; //File decode status
 											showgood = SHOWCOL; //show green
 										}
 									}
@@ -3480,16 +3483,6 @@ void DrawBar(HWND hwnd) {
 		penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
 		//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
 
-		//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
-		if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
-
-			SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
-			MoveToEx(hdc, ((x * n) / 1000) + 5, BARY, nullptr);
-			LineTo(hdc, BARR, BARY); //erase the rest of the window
-			BarTransportID = DecTransportID;
-			BarLastTot = y; //update totsegs
-		}
-
 		//Erase the last black line - for the 2nd/3rd pass etc.
 		if (x < BarLastSeg) {
 			SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
@@ -3536,6 +3529,16 @@ void DrawBar(HWND hwnd) {
 		SelectObject(hdc, penb);
 		MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
 		LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
+
+		//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
+		if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
+
+			SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
+			MoveToEx(hdc, ((x * n) / 1000) + 5, BARY, nullptr);
+			LineTo(hdc, BARR, BARY); //erase the rest of the window
+			BarTransportID = DecTransportID;
+			BarLastTot = y; //update totsegs
+		}
 
 		DeleteObject(penr);
 		DeleteObject(peng);
