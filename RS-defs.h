@@ -31,7 +31,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-//extern unsigned int PreviousTransportID; //Previously used Transport ID
 extern int ECCmode; //Used to be called LeadIn DM
 extern string EZHeaderID; //header ID string
 extern unsigned int EncFileSize; //Encoder current file size

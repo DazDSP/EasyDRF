@@ -16,6 +16,9 @@
   --------------------------------------------------------------------*/
 
 #include "Parameter.h"
+extern RECT WindowPosition;
+extern int	WindowX;
+extern int	WindowY;
 
 extern int disptype;
 extern BOOL rxaudfilt;

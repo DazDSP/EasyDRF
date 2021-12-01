@@ -206,6 +206,7 @@ void savevar(void)
 		fprintf(set,"%d Interleave\n",interleave);
 		fprintf(set, "%d FastReset\n", fastres);
 		fprintf(set, "%d Instances/RS\n", ECCmode); //added DM
+		fprintf(set, "%d %d %d %d WindowPosition\n", WindowPosition); //added DM
 		fclose(set);
 	}
 }
@@ -233,6 +234,7 @@ void getvar(void)
 		fscanf(set,"%d %s",&interleave,&rubbish);
 		fscanf(set, "%d %s", &fastres, &rubbish);
 		fscanf(set, "%d %s", &ECCmode, &rubbish); //added DM
+		fscanf(set, "%d %d %d %d %s", &WindowX, &WindowY, &rubbish, &rubbish, &rubbish); //added DM
 		fclose(set);
 		if (audfiltrx == 1) rxaudfilt = TRUE;
 		else rxaudfilt = FALSE;

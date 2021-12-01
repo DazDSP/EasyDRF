@@ -63,6 +63,10 @@ CAudioSourceEncoder* AudioSourceEncoder;
 
 #define MAX_PATHLEN 255 //in case the routines can't handle a 255 char path like Windows can, we can reduce this (it's limited to 80 chars elsewhere...) DM
 
+RECT WindowPosition; //save and load app window position
+int	WindowX;
+int	WindowY;
+
 //Status LED colours DM
 DWORD ioLEDcol = RED; //Red is default
 DWORD freqLEDcol = RED; //Red is default
@@ -603,6 +607,17 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		aa = SetWindowTextA(hwnd, AppTitle);
 
 		getvar(); //read settings.txt and set variables from it
+
+		//Restore previous window position
+		RECT rect;
+		int width;
+		int height;
+		if (GetWindowRect(hwnd, &rect))	{
+			width = (rect.right - rect.left);
+			height = (rect.bottom - rect.top);
+			MoveWindow(hwnd, WindowX, WindowY, width, height, TRUE);
+		}
+
 		comtx(gettxport());
 		checkcomport(hwnd,gettxport());
 		//InitBsr(); //DLL version code needs this removed DM
@@ -820,7 +835,8 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
  		comtx('0');
 		KillTimer(hwnd,1);
-		savevar();
+		GetWindowRect(hwnd, &WindowPosition); //get window position so next time it starts in the same place on the desktop
+		savevar(); //save settings on exit
         DestroyWindow (hwnd);
  		DRMReceiver.Stop(); 
 		DRMTransmitter.Stop();
