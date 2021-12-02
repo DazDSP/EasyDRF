@@ -818,37 +818,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 			if (bCRCOk == TRUE) {
 				//Reset the segtotal registers when the Transport ID changes DM =======================================================================
 				if ((iTransportID > 0) && (DecTransportID != iTransportID)) {
-/*
-#define LCRS 0 //Last chance RS decode enable
-#if LCRS == 1
-					//==========================================================================================
-					//Last chance RS decode - NEW
-					//Check if the previous file decoded - if not, try to decode it here first
-					//if filestate != FS_SAVED then RS decode if DecFileSize > 0
-					//also delay this code a few mS or so to allow time to copy the old buffer - otherwise ping-pong buffers will be needed for all info (data & size info)
-					//** NOTE RxRSlevelold is the previous value of RxRSlevel
-					if ((RxRSlevelold > 0) && (filestate < FS_SAVED)) {
-						//This means the data in the buffer is RS coded, and it hasn't been saved
-						//Try to RS decode the data right now
-						//Filename and filesize data haven't been updated yet, so should be good still...
-						//Try decode one last time, regardless of the data proportion available
-						if (DecFileSize > 0) {
-							if ((RSlastTransportID != DecTransportID) && (RSbusy == 0)) {
-								RSlastTransportID = DecTransportID; //save last Transport ID so we don't try again
-								RSbusy = 1; //only run one instance of this
-								//RSpsegs = actsize; //update
-								unsigned char* RSbuffer = nullptr;
-								RSbuffer = MOTObjectRaw.BodyRx.RSbytes[RSsw].data(); //grab the RSbytes buffer address and save it where we can access it easily
-
-								std::thread RSdecoder(RSdecode, RSbuffer, DecTransportID, erasureswitch); //launch the RS decoder in a new thread
-								RSdecoder.detach(); //detach and terminate after running
-								//Sleep(1); //wait, so the data buffer can be read before being overwritten
-							}
-						}
-					}
-					//==========================================================================================
-#endif //LCRS
-*/
 					RSsw ^= 1; //switch RS buffers here
 #if RS_SIZE_METHOD == 1
 					DecCheckReg = 0x00FFFF; //reset 16 bits for new version
@@ -885,12 +854,11 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 					DecTotalSegs = 0; //reset
 					SerialFileSize = 0; //reset 
 					actsize = 0; //reset segment size (technically, it will always be 1 when data is incoming, but that will change lower down the file) DM
-					//erase the next erasure list in a new thread
-//					std::thread EraseNewErase(EraseNew); //erase the new erasure list in the background
-//					EraseNewErase.detach(); //detach and terminate after running
-					EraseNew(); //probably doesn't need to run in a new thread...
-
-					
+					//erase the next erasure list buffer
+					for (int i = 0; i < 1023; i++) {
+						erasures[RSsw][i] = 0;
+					}
+				
 					CompTotalSegs = 0; //
 				}
 			}
@@ -1870,7 +1838,7 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc)
 							//Data is LZMA compressed, uncompress into buffer1 and save
 							//data is compressed, so decompress it
 							i = 0;
-							SizeT filesize = BUFSIZE; //to tell LZMA how big the buffer is
+							//SizeT filesize = BUFSIZE; //to tell LZMA how big the buffer is
 #define propslength 5
 							SizeT filesizein = RSfilesizeDec; // filesizetest;
 							SizeT outsize = BUFSIZE;
@@ -1964,12 +1932,5 @@ void RSdecode(unsigned char* RSbuffer, unsigned int DecTransportIDc, bool RSswc)
 
 	RSbusy = 0;
 	return;
-}
-//******************************************************************************
-void EraseNew(void) {
-	bool RSswc = RSsw; //copy RSsw
-	for (int i = 0;i < 1023; i++) {
-		erasures[RSswc][i] = 0;
-	}
 }
 //******************************************************************************

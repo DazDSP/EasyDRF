@@ -438,3 +438,6 @@ old/
 /Release/EasyDRF Pic Mode.lnk
 /Release/*.xml
 /Release/*.sarif
+/Release/EasyDRF.exp
+/Release/EasyDRF.lib
+/Release/vc142.idb
