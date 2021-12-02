@@ -98,7 +98,7 @@
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\EasyDRF.exe</OutputFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
@@ -152,6 +152,7 @@
       <AdditionalDependencies>gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <SetChecksum>true</SetChecksum>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
