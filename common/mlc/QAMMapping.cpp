@@ -42,9 +42,9 @@ void CQAMMapping::Map(CVector<_BINARY>& vecbiInputData1,
 	We always use "& 1" when we combine binary values with logical operators
 	for safety reasons.
 */
-	int	i;
-	int	iIndexReal;
-	int	iIndexImag;
+	int	i = 0; //inits DM
+	int	iIndexReal = 0;
+	int	iIndexImag = 0;
 
 	switch (eMapType)
 	{

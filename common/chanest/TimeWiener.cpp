@@ -35,10 +35,10 @@ _REAL CTimeWiener::Estimate(CVectorEx<_COMPLEX>* pvecInputData,
 						    CVector<int>& veciMapTab,
 						    CVector<_COMPLEX>& veccPilotCells, _REAL rSNR)
 {
-	int			j, i;
-	int			iPiHiIndex;
-	int			iCurrFiltPhase;
-	int			iTimeDiffNew;
+	int			j = 0, i = 0; //inits DM
+	int			iPiHiIndex = 0;
+	int			iCurrFiltPhase = 0;
+	int			iTimeDiffNew = 0;
 	_COMPLEX	cNewPilot;
 
 	/* Timing correction history -------------------------------------------- */
@@ -188,11 +188,11 @@ int CTimeWiener::DisToNextPil(const int iPiHiIndex, const int iSymNum) const
 
 int CTimeWiener::Init(CParameter& ReceiverParam)
 {
-	int		iNoPiFreqDirAll;
-	int		iSymDelyChanEst;
-	int		iNumPilOneOFDMSym;
-	int		iNumIntpFreqPil;
-	_REAL	rSNR;
+	int		iNoPiFreqDirAll = 0;
+	int		iSymDelyChanEst = 0;
+	int		iNumPilOneOFDMSym = 0;
+	int		iNumIntpFreqPil = 0;
+	_REAL	rSNR = 0;
 
 	/* Init base class, must be at the beginning of this init! */
 	CPilotModiClass::InitRot(ReceiverParam);
@@ -313,9 +313,9 @@ int CTimeWiener::Init(CParameter& ReceiverParam)
 
 _REAL CTimeWiener::UpdateFilterCoef(_REAL rNewSNR, _REAL rNewSigma)
 {
-	int		j;
-	int		iCurrDiffPhase;
-	_REAL	rMMSE;
+	int		j = 0;
+	int		iCurrDiffPhase = 0;
+	_REAL	rMMSE = 0;
 
 	/* Calculate MMSE for wiener filtering for all phases and average */
 	rMMSE = (_REAL) 0.0;
@@ -357,10 +357,10 @@ CReal CTimeWiener::TimeOptimalFilter(CRealVector& vecrTaps, const int iTimeInt,
 									 const CReal rNewSigma, const CReal rTs,
 									 const int iLength)
 {
-	int			i;
-	CReal		rFactorArgExp;
-	CReal		rMMSE;
-	int			iCurPos;
+	int			i = 0;
+	CReal		rFactorArgExp = 0;
+	CReal		rMMSE = 0;
+	int			iCurPos = 0;
 
 	CRealVector	vecrReturn(iLength);
 	CRealVector vecrRpp(iLength);
@@ -409,13 +409,13 @@ CReal CTimeWiener::ModLinRegr(CComplexVector& veccCorrEst)
 	int iVecLen = Size(veccCorrEst);
 
 	/* Init vectors and variables */
-	CReal		rSigmaRet;
+	CReal		rSigmaRet = 0;
 	CRealVector Tau(iVecLen);
 	CRealVector Z(iVecLen);
 	CRealVector W(iVecLen);
 	CRealVector Wmrem(iVecLen);
-	CReal		Wm, Zm;
-	CReal		A1;
+	CReal		Wm = 0, Zm = 0;
+	CReal		A1 = 0;
 
 	/* Generate the tau vector */
 	for (int i = 0; i < iVecLen; i++)

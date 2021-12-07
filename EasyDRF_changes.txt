@@ -1,3 +1,8 @@
+EasyDRF Changes - by Daz Man December 7th, 2021
+* RNEI stats logging added
+* Various inits cleaned up
+
+
 EasyDRF Changes - by Daz Man December 3rd, 2021
 * Removed unused menu entry and minor code cleanup
 * Disabled debugging info in compiler

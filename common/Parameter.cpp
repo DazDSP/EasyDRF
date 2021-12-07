@@ -80,7 +80,7 @@ int CParameter::GetNumActiveServices()
 
 void CParameter::GetActiveServices(CVector<int>& veciActServ)
 {
-	int				i;
+	int				i = 0; //init DM
 	CVector<int>	vecbServices(MAX_NUM_SERVICES, 0);
 
 	/* Init return vector */
@@ -103,8 +103,8 @@ void CParameter::GetActiveServices(CVector<int>& veciActServ)
 
 void CParameter::GetActiveStreams(CVector<int>& veciActStr)
 {
-	int					i;
-	int					iNumStreams;
+	int					i = 0; //init DM
+	int					iNumStreams = 0; //init DM
 	CVector<int>		vecbStreams(MAX_NUM_STREAMS, 0);
 
 	/* Determine which streams are active */

@@ -46,14 +46,14 @@ public:
 				 _REAL rRation);
 
 protected:
-	_REAL					rTStep{}; //init DM
-	_REAL					rtOut{}; //init DM
-	_REAL					rBlockDuration{}; //init DM
+	_REAL					rTStep;
+	_REAL					rtOut;
+	_REAL					rBlockDuration;
 
-	CShiftRegister<_REAL>	vecrIntBuff{}; //init DM
-	int						iHistorySize{}; //init DM
+	CShiftRegister<_REAL>	vecrIntBuff;
+	int						iHistorySize;
 
-	int						iInputBlockSize{}; //init DM
+	int						iInputBlockSize;
 };
 
 class CAudioResample
@@ -66,13 +66,13 @@ public:
 	void Resample(CVector<_REAL>& rInput, CVector<_REAL>& rOutput);
 
 protected:
-	_REAL					rRation{}; //init DM
+	_REAL					rRation;
 
-	CShiftRegister<_REAL>	vecrIntBuff{}; //init DM
-	int						iHistorySize{}; //init DM
+	CShiftRegister<_REAL>	vecrIntBuff;
+	int						iHistorySize;
 
-	int						iInputBlockSize{}; //init DM
-	int						iOutputBlockSize{}; //init DM
+	int						iInputBlockSize;
+	int						iOutputBlockSize;
 };
 
 

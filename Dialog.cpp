@@ -59,13 +59,15 @@ CAudioSourceEncoder* AudioSourceEncoder;
 
 #define starttx_time 14 //12 edited DM - This allows the decoder more time to lock
 #define starttx_time_long 24 //This allows the decoder even longer to lock
-#define stoptx_time 20 //10 edited DM - This stops the end of the transmission being cut short
+#define stoptx_time 20 //this is a multiple of the timer interval //10 edited DM - This stops the end of the transmission being cut short
 
 #define MAX_PATHLEN 255 //in case the routines can't handle a 255 char path like Windows can, we can reduce this (it's limited to 80 chars elsewhere...) DM
 
 RECT WindowPosition; //save and load app window position
 int	WindowX;
 int	WindowY;
+int width = 440;
+int height = 310;
 
 //Status LED colours DM
 DWORD ioLEDcol = RED; //Red is default
@@ -611,8 +613,6 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		//Restore previous window position
 		RECT rect;
-		int width;
-		int height;
 		if (GetWindowRect(hwnd, &rect))	{
 			width = (rect.right - rect.left);
 			height = (rect.bottom - rect.top);
@@ -825,7 +825,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		DRMTransmitter.GetParameters()->SetSpectrumOccup(getspec());
 		DRMTransmitter.GetParameters()->InitCellMapTable(getmode(),getspec());
 
-		SetTimer(hwnd,1,100,TimerProc); //Original is 100mS
+		SetTimer(hwnd,1,100,TimerProc); //Original is 100mS //TEST 50mS - This affects timing of Tx/Rx switching, as well as speeding up the graphics display
 
 		return TRUE;   
 		
@@ -1396,7 +1396,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 #define THRESHOLD 20
 #define LIMIT 3
 			//smooth the level
-			if (level > levelsmooth * LIMIT) (level = levelsmooth * LIMIT); //slew limit attack
+			if (level > levelsmooth * LIMIT) { level = levelsmooth * LIMIT; } //slew limit attack
 			level = max(level, THRESHOLD); //what is the scaling???
 			levelsmooth = max(level, levelsmooth * 0.9); //integrator for decay
 
@@ -2231,8 +2231,8 @@ BOOL CALLBACK SendBSRDlgProc
 {
 	
 
-	char tmpbsrname[20];
-	int tmpno;
+	char tmpbsrname[20]{};
+	int tmpno = 0;
 	BOOL send3 = FALSE;
     switch (message)
     {

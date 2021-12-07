@@ -44,10 +44,10 @@ public:
 	virtual ~COFDMCellMapping() {}
 
 protected:
-	int			iNumSymPerFrame{}; //init DM
-	int			iNumCarrier{}; //init DM
-	int			iSymbolCounter{}; //init DM
-	_COMPLEX*	pcDummyCells{}; //init DM
+	int			iNumSymPerFrame;
+	int			iNumCarrier;
+	int			iSymbolCounter;
+	_COMPLEX*	pcDummyCells;
 
 	virtual void InitInternal(CParameter& TransmParam);
 	virtual void ProcessDataInternal(CParameter& TransmParam);
@@ -60,15 +60,15 @@ public:
 	virtual ~COFDMCellDemapping() {}
 
 protected:
-	int		iNumSymPerFrame{}; //init DM
-	int		iNumCarrier{}; //init DM
-	int		iNumUsefMSCCellsPerFrame{}; //init DM
+	int		iNumSymPerFrame;
+	int		iNumCarrier;
+	int		iNumUsefMSCCellsPerFrame;
 
-	int		iSymbolCounter{}; //init DM
-	int		iCurrentFrameID{}; //init DM
+	int		iSymbolCounter;
+	int		iCurrentFrameID;
 
-	int		iMSCCellCounter{}; //init DM
-	int		iFACCellCounter{}; //init DM
+	int		iMSCCellCounter;
+	int		iFACCellCounter;
 
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);

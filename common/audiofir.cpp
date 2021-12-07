@@ -74,7 +74,7 @@ bool useRXfilt = false;
 
 float AudFirRX (float input)
 {
-	int i;
+	int i = 0; //init DM
 	if (!useRXfilt) return input;
 	for (i=0;i<audfiltlen-1;i++)
 		firbufRX[i] = firbufRX[i+1];

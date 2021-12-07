@@ -35,10 +35,10 @@
 \******************************************************************************/
 void COFDMCellMapping::ProcessDataInternal(CParameter& TransmParam)
 {
-	int iCar;
-	int iMSCCounter;
-	int iFACCounter;
-	int iDummyCellCounter;
+	int iCar = 0; //inits DM
+	int iMSCCounter = 0; //inits DM
+	int iFACCounter = 0; //inits DM
+	int iDummyCellCounter = 0; //inits DM
 	int iSymbolCounterAbs;
 
 	/* Mapping of the data and pilot cells on the OFDM symbol --------------- */
@@ -144,12 +144,12 @@ void COFDMCellMapping::InitInternal(CParameter& TransmParam)
 \******************************************************************************/
 void COFDMCellDemapping::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int iCar;
-	int iMSCCounter;
-	int iFACCounter;
-	int iSymbolCounterAbs;
-	int iNewSymbolCounter;
-	int iNewFrameID;
+	int iCar = 0; //inits DM
+	int iMSCCounter = 0; //inits DM
+	int iFACCounter = 0; //inits DM
+	int iSymbolCounterAbs = 0; //inits DM
+	int iNewSymbolCounter = 0; //inits DM
+	int iNewFrameID = 0; //inits DM
 
 	/* Set absolute symbol position */
 	iSymbolCounterAbs = iCurrentFrameID * iNumSymPerFrame + iSymbolCounter;

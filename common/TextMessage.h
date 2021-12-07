@@ -76,13 +76,13 @@ public:
 	void ClearAllText();
 
 protected:
-	CTextMessage	CurTextMessage{}; //init DM
-	CVector<string>	vecstrText{}; //init DM
-	int				iSegCnt{}; //init DM
-	int				iByteCnt{}; //init DM
-	int				iNumMess{}; //init DM
-	int				iMessCnt{}; //init DM
-	_BINARY			biToggleBit{}; //init DM
+	CTextMessage	CurTextMessage;
+	CVector<string>	vecstrText;
+	int				iSegCnt;
+	int				iByteCnt;
+	int				iNumMess;
+	int				iMessCnt;
+	_BINARY			biToggleBit;
 };
 
 
@@ -93,9 +93,9 @@ public:
 	CTextMessSegment() : byData(BYTES_PER_SEG_TEXT_MESS), bIsOK(FALSE),
 		iNumBytes(0) {}
 
-	CVector<_BYTE>	byData{}; //init DM
-	_BOOLEAN		bIsOK{}; //init DM
-	int				iNumBytes{}; //init DM
+	CVector<_BYTE>	byData;
+	_BOOLEAN		bIsOK;
+	int				iNumBytes;
 };
 
 class CTextMessageDecoder
@@ -113,26 +113,26 @@ protected:
 	void SetText();
 	void ResetSegments();
 
-	CVector<_BINARY>	biStreamBuffer{}; //init DM
+	CVector<_BINARY>	biStreamBuffer;
 
-	string*				pstrText{}; //init DM
+	string*				pstrText;
 
-	_BINARY				biCommandFlag{}; //init DM
+	_BINARY				biCommandFlag;
 
-	_BINARY				biFirstFlag{}; //init DM
-	_BINARY				biLastFlag{}; //init DM
-	_BYTE				byCommand{}; //init DM
-	_BYTE				bySegmentID{}; //init DM
-	_BINARY				biToggleBit{}; //init DM
-	_BYTE				byLengthBody{}; //init DM
-	int					iBitCount{}; //init DM
-	int					iNumSegments{}; //init DM
+	_BINARY				biFirstFlag;
+	_BINARY				biLastFlag;
+	_BYTE				byCommand;
+	_BYTE				bySegmentID;
+	_BINARY				biToggleBit;
+	_BYTE				byLengthBody;
+	int					iBitCount;
+	int					iNumSegments;
 
-	_BINARY				biOldToggleBit{}; //init DM
+	_BINARY				biOldToggleBit;
 
 	CTextMessSegment	Segment[MAX_NUM_SEG_TEXT_MESSAGE];
 
-	CCRC				CRCObject{}; //init DM
+	CCRC				CRCObject;
 };
 
 

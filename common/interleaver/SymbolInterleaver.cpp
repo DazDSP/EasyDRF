@@ -40,7 +40,7 @@
 \******************************************************************************/
 void CSymbInterleaver::ProcessDataInternal(CParameter& TransmParam)
 {
-	int i, j;
+	int i = 0, j = 0; //inits DM
 
 	/* Write data in interleaver-memory (always index "0") */
 	for (i = 0; i < iInputBlockSize; i++)
@@ -65,7 +65,7 @@ void CSymbInterleaver::ProcessDataInternal(CParameter& TransmParam)
 
 void CSymbInterleaver::InitInternal(CParameter& TransmParam)
 {
-	int i;
+	int i = 0;
 
 	/* Set internal parameters */
 	iN_MUX = TransmParam.iNumUsefMSCCellsPerFrame;
@@ -112,7 +112,7 @@ void CSymbInterleaver::InitInternal(CParameter& TransmParam)
 \******************************************************************************/
 void CSymbDeinterleaver::ProcessDataInternal(CParameter& ReceiverParam)
 {
-	int i, j;
+	int i = 0, j = 0;
 
 	/* Deinterleave data according to the deinterleaver table. Use the
 	   the interleaver-blocks described in the DRM-standard 
@@ -148,7 +148,7 @@ void CSymbDeinterleaver::ProcessDataInternal(CParameter& ReceiverParam)
 
 void CSymbDeinterleaver::InitInternal(CParameter& ReceiverParam)
 {
-	int i;
+	int i = 0;
 
 	/* Set internal parameters */
 	iN_MUX = ReceiverParam.iNumUsefMSCCellsPerFrame;

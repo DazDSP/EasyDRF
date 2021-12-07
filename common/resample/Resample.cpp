@@ -116,7 +116,7 @@ void CResample::Init(int iNewInputBlockSize)
 
 void CAudioResample::Resample(CVector<_REAL>& rInput, CVector<_REAL>& rOutput)
 {
-	int j;
+	int j = 0; //init DM
 
 	if (rRation == (_REAL) 1.0)
 	{

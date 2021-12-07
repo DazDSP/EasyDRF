@@ -52,8 +52,8 @@ public:
 	void Init(int iNewOutputBlockSize, CParameter::ECodScheme eNewCodingScheme);
 
 protected:
-	int						iOutputBlockSize{}; //init DM
-	CParameter::ECodScheme	eMapType{}; //init DM
+	int						iOutputBlockSize;
+	CParameter::ECodScheme	eMapType;
 };
 
 

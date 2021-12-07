@@ -121,10 +121,10 @@ void CTextMessageEncoder::ClearAllText()
 
 void CTextMessage::SetText(const string& strMessage, const _BINARY biToggleBit)
 {
-	int		i, j;
-	int		iNumBodyBytes;
-	_BINARY	biFirstFlag;
-	_BINARY	biLastFlag;
+	int		i = 0, j = 0; //inits DM
+	int		iNumBodyBytes = 0;
+	_BINARY	biFirstFlag = 0;
+	_BINARY	biLastFlag = 0;
 	CCRC	CRCObject;
 
 	/* Get length of text message. 
@@ -261,7 +261,7 @@ void CTextMessage::SetText(const string& strMessage, const _BINARY biToggleBit)
 \******************************************************************************/
 void CTextMessageDecoder::Decode(CVector<_BINARY>& pData)
 {
-	int			i, j;
+	int			i = 0, j = 0; //inits DM
 	_BOOLEAN	bBeginningFound;
 
 	/* Reset binary vector function. Always four bytes of data */

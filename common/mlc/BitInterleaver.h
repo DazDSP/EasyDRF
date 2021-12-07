@@ -45,12 +45,12 @@ public:
 	void Interleave(CVector<_BINARY>& InputData);
 
 protected:
-	int					ix_in1{}; //init DM
-	int					ix_in2{}; //init DM
-	CVector<int>		veciIntTable1{}; //init DM
-	CVector<int>		veciIntTable2{}; //init DM
-	CVector<_BINARY>	vecbiInterlMemory1{}; //init DM
-	CVector<_BINARY>	vecbiInterlMemory2{}; //init DM
+	int					ix_in1;
+	int					ix_in2;
+	CVector<int>		veciIntTable1;
+	CVector<int>		veciIntTable2;
+	CVector<_BINARY>	vecbiInterlMemory1;
+	CVector<_BINARY>	vecbiInterlMemory2;
 };
 
 class CBitDeinterleaver: public CBlockInterleaver
@@ -63,12 +63,12 @@ public:
 	void Deinterleave(CVector<CDistance>& vecInput);
 
 protected:
-	int					ix_in1{}; //init DM
-	int					ix_in2{}; //init DM
-	CVector<int>		veciIntTable1{}; //init DM
-	CVector<int>		veciIntTable2{}; //init DM
-	CVector<CDistance>	vecDeinterlMemory1{}; //init DM
-	CVector<CDistance>	vecDeinterlMemory2{}; //init DM
+	int					ix_in1;
+	int					ix_in2;
+	CVector<int>		veciIntTable1;
+	CVector<int>		veciIntTable2;
+	CVector<CDistance>	vecDeinterlMemory1;
+	CVector<CDistance>	vecDeinterlMemory2;
 };
 
 

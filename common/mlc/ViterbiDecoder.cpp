@@ -33,11 +33,11 @@
 _REAL CViterbiDecoder::Decode(CVector<CDistance>& vecNewDistance,
 							  CVector<_BINARY>& vecbiOutputBits)
 {
-	int				i;
-	int				iDistCnt;
-	int				iCurDecState;
-	_VITMETRTYPE*	pCurTrelMetric;
-	_VITMETRTYPE*	pOldTrelMetric;
+	int				i = 0; //inits DM
+	int				iDistCnt = 0;
+	int				iCurDecState = 0;
+	_VITMETRTYPE*	pCurTrelMetric = nullptr;
+	_VITMETRTYPE*	pOldTrelMetric = nullptr;
 
 #ifdef USE_SIMD
 	/* -------------------------------------------------------------------------

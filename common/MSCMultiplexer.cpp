@@ -82,7 +82,7 @@ void CMSCDemultiplexer::ProcessDataInternal(CParameter& ReceiverParam)
 
 void CMSCDemultiplexer::InitInternal(CParameter& ReceiverParam)
 {
-	int	iCurDataStreamID;
+	int	iCurDataStreamID = 0; //init DM
 
 	/* Audio ---------------------------------------------------------------- */
 	/* Check if current selected service is an audio service and get stream
@@ -134,7 +134,7 @@ void CMSCDemultiplexer::InitInternal(CParameter& ReceiverParam)
 void CMSCDemultiplexer::GetStreamPos(CParameter& Param, const int iStreamID,
 									 CStreamPos& StPos)
 {
-	int				i;
+	int				i = 0; //init DM
 	CVector<int>	veciActStreams;
 
 	if (iStreamID != STREAM_ID_NOT_USED)

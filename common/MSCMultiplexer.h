@@ -47,14 +47,14 @@ protected:
 	class CStreamPos
 	{
 	public:
-		int	iOffsetLow{}; //init DM
-		int	iOffsetHigh{}; //init DM
-		int	iLenLow{}; //init DM
-		int	iLenHigh{}; //init DM
+		int	iOffsetLow;
+		int	iOffsetHigh;
+		int	iLenLow;
+		int	iLenHigh;
 	};
 
-	CStreamPos AudStreamPos{}; //init DM
-	CStreamPos DataStreamPos{}; //init DM
+	CStreamPos AudStreamPos;
+	CStreamPos DataStreamPos;
 
 	void GetStreamPos(CParameter& Param, const int iStreamID,
 					  CStreamPos& StPos);
