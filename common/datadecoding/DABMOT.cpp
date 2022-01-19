@@ -714,7 +714,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 	/* "- 2": 16 bits for CRC at the end */
 	for (i = 0; i < iLenGroupDataField / SIZEOF__BYTE - 2; i++)
 		CRCObject.AddByte((_BYTE)vecbiNewData.Separate(SIZEOF__BYTE));
-
+	
 	bCRCOk = CRCObject.CheckCRC(vecbiNewData.Separate(16));
 	CRCOK = bCRCOk; //global DM
 
@@ -969,7 +969,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		}
 
 		//Header is 88 bytes to here
-
+	
 		/* Get MOT data ----------------------------------------------------- */
 		/* Segment number and user access data is needed */
 		if ((biSegmentFlag == TRUE) && (biUserAccFlag == TRUE) && (biTransportIDFlag == 1))
@@ -1207,7 +1207,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 
 		}
 	}
-
+	
 	if (DMnewfile) {
 		//DMnewfile = only update if segment 0 (header) was sent
 		GetName(MOTObjectRaw); //added to read the filename and size from the old header DM

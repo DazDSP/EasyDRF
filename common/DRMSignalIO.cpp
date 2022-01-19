@@ -194,11 +194,17 @@ void CReceiveData::ProcessDataInternal(CParameter& Parameter)
 			(*pvecOutputData)[i] = temp - averdc;
 #else
 			/* Use only desired channel, chosen by "RECORDING_CHANNEL" */
-			(*pvecOutputData)[i] = (_REAL)vecsSoundBuffer[2 * i + RECORDING_CHANNEL]; //added DM
+			//(*pvecOutputData)[i] = (_REAL)vecsSoundBuffer[2 * i + RECORDING_CHANNEL]; //added DM
 			//(*pvecOutputData)[i] = (_REAL) vecsSoundBuffer[i]; //edited DM
+
+			//Add highpass filter to avoid DC causing data errors DM 2022
+			//find the DC offset by integrating the sample values
+			averdc = (_REAL)(averdc*0.98)+(vecsSoundBuffer[2 * i + RECORDING_CHANNEL])*0.02; //add sample value to DC computation DM
+			(*pvecOutputData)[i] = (_REAL)vecsSoundBuffer[2 * i + RECORDING_CHANNEL]-averdc; //subtract average DC value DM
 #endif
 		}
 
+		/* This old DC removal code is NOT being used (and it can't handle varying DC offset either...) DM
 		the_dcsum -= dcsumbuf[dcsumbufpt];
 		dcsumbufpt++;
 		if (dcsumbufpt >= no_dc_tap) dcsumbufpt = 0;
@@ -206,6 +212,7 @@ void CReceiveData::ProcessDataInternal(CParameter& Parameter)
 		the_dcsum += dcsumbuf[dcsumbufpt];
 
 		averdc = the_dcsum;
+		*/
 	}
 	else
 	{
