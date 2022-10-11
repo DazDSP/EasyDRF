@@ -64,7 +64,7 @@ void CInputResample::InitInternal(CParameter& ReceiverParam)
 	/* Define block-sizes for input and output */
 	iInputBlockSize = ReceiverParam.iSymbolBlockSize;
 
-	/* With this parameter we define the maximum lenght of the output buffer
+	/* With this parameter we define the maximum length of the output buffer
 	   Due to the constrained sample rate offset estimation the output
 	   buffer size is also constrained to a certain number of samples. The
 	   maximum possible number of samples defines the output buffer maximum

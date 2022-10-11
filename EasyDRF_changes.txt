@@ -1,6 +1,9 @@
+EasyDRF Changes - by Daz Man October 11th, 2022
+* Automatic PAPR transmit processing added
+* Decoding performance improvements
+
 EasyDRF Changes - by Daz Man January 20th, 2022
 * DC blocking filter added to audio input
-
 
 EasyDRF Changes - by Daz Man December 7th, 2021
 * RNEI stats logging added

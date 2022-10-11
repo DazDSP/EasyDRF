@@ -208,7 +208,7 @@ if (bIsAudio == TRUE)
 	   64-QAM mixture of the previous two mappings (HMmix): CS_3_HMMIX */
 	Param.eMSCCodingScheme = CParameter::CS_2_SM;
 
-	/* Set desired intermedia frequency (IF) in Hertz */
+	/* Set desired intermediate frequency (IF) in Hertz */
 	SetCarOffset(350); /* Default */
 
 }

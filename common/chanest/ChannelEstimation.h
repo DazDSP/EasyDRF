@@ -47,9 +47,9 @@
 
 
 /* Definitions ****************************************************************/
-#define LEN_WIENER_FILT_FREQ_RMA		6
-#define LEN_WIENER_FILT_FREQ_RMB		11
-#define LEN_WIENER_FILT_FREQ_RME		11
+#define LEN_WIENER_FILT_FREQ_RMA		6 //was 6
+#define LEN_WIENER_FILT_FREQ_RMB		11 //was 11
+#define LEN_WIENER_FILT_FREQ_RME		11 //was 11
 
 /* Time constant for IIR averaging of fast signal power estimation */
 #define TICONST_SNREST_FAST				((CReal) 3.0) /* sec */ //Edited DM - was 30
@@ -58,10 +58,10 @@
 #define TICONST_SNREST_SLOW				((CReal) 10.0) /* sec */ //Edited DM was 100
 
 /* Initial value for SNR */
-#define INIT_VALUE_SNR_WIEN_FREQ_DB		((_REAL) 10.0) /* dB */
+#define INIT_VALUE_SNR_WIEN_FREQ_DB		((_REAL) 10.0) /* dB */ //was 10.0
 
 /* SNR estimation initial SNR value */
-#define INIT_VALUE_SNR_ESTIM_DB			((_REAL) 10.0) /* dB */
+#define INIT_VALUE_SNR_ESTIM_DB			((_REAL) 10.0) /* dB */ //was 10.0
 
 /* If this flag is set, the Wiener filter coefficients are updated every DRM
    frame. If not, the update is done every OFDM symbol. If the update is only
@@ -70,9 +70,9 @@
    window (defined by beginning and end value) */
 #undef UPD_WIENER_FREQ_EACH_DRM_FRAME
 
-/* Wrap around bound for calculation of group delay. It is wraped by the 2 pi
+/* Wrap around bound for calculation of group delay. It is wrapped by the 2 pi
    periodicity of the angle() function */
-#define WRAP_AROUND_BOUND_GRP_DLY		((_REAL) 4.0)
+#define WRAP_AROUND_BOUND_GRP_DLY		((_REAL) 4.0) //was 4.0
 
 /* Classes ********************************************************************/
 class CChannelEstimation : public CReceiverModul<_COMPLEX, CEquSig>

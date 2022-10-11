@@ -690,7 +690,7 @@ void CChannelEstimation::GetTransferFunction(CVector<_REAL>& vecrData, CVector<_
 	   the module was already initialized */
 	if (iNumCarrier != 0)
 	{
-		_REAL rDiffPhase, rOldPhase;
+		_REAL rDiffPhase = 0.0, rOldPhase = 0.0; //init DM
 
 		/* Lock resources */
 		Lock();
@@ -721,9 +721,9 @@ void CChannelEstimation::GetTransferFunction(CVector<_REAL>& vecrData, CVector<_
 				rDiffPhase = Angle(veccChanEst[i]) - rOldPhase;
 
 			/* Take care of wrap around of angle() function */
-			if (rDiffPhase > WRAP_AROUND_BOUND_GRP_DLY)
+			if (rDiffPhase > WRAP_AROUND_BOUND_GRP_DLY) //why is this testing for > 4.0, when it is wrapped at 2*PI? DM
 				rDiffPhase -= 2.0 * crPi;
-			if (rDiffPhase < -WRAP_AROUND_BOUND_GRP_DLY)
+			if (rDiffPhase < -WRAP_AROUND_BOUND_GRP_DLY) //as above DM
 				rDiffPhase += 2.0 * crPi;
 
 			/* Apply normalization */

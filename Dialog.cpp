@@ -129,6 +129,7 @@ int RSbusy = 0; //RS decoder thread flag
 int RSError = 0; //To display RS decoding errors
 int dcomperr = 0; //decompressor error
 int lasterror = 0; //save RS error count
+int lastRSbcERR = 0; //save last RS error block number
 
 bool CRCOK = 0;
 
@@ -272,7 +273,7 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d Bfr:%01d", DMfilename, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
@@ -299,6 +300,7 @@ void sendinfo(HWND hwnd) {
 			//SAVED
 			lasterror2 = sprintf_s(tempstr, "SAVED");
 			lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)tempstr); //send to filestats window DM
+			lastRSbcERR = 0; //clear RS errors
 		}
 		if (filestate == FS_FAILED) {
 			//FAILED
@@ -629,7 +631,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//Get a list of the input and output sound devices installed on the PC and list them in the menu:
 		numdevIn = DRMReceiver.GetSoundInterface()->GetNumDevIn(); //edited DM
 		numdevOut = DRMReceiver.GetSoundInterface()->GetNumDevOut(); //edited DM
-		SetMixerValues(numdevIn); //??? Find out what this does... DM
+		//SetMixerValues(numdevIn); //??? Find out what this does... DM ** REMOVED Sep 2022 because it crashes under Linux for some reason....
 		hMenu = GetSubMenu(GetMenu(hwnd), 1);	
 		if (numdevIn >= 30) numdevIn = 30; //edited DM - limit to max 30 devices
 		if (numdevOut >= 30) numdevOut = 30; //edited DM - limit to max 30 devices
@@ -733,7 +735,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				AudioSourceEncoder = DRMTransmitter.GetAudSrcEnc();
 				AudioSourceEncoder->ClearTextMessage();
 				AudioSourceEncoder->ClearPicFileNames();
-				DRMTransmitter.SetCarOffset(350.0);
+//				DRMTransmitter.SetCarOffset(350.0); //remmed DM
 //				DRMTransmitter.GetAudSrcEnc()->SetStartDelay(starttx_time_long); //Edited DM
 				DRMTransmitter.GetAudSrcEnc()->SetTheStartDelay(starttx_time_long); //Edited DM
 
@@ -1958,7 +1960,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 #define propslength 5
 										SizeT filesizein = picsize;
 										SizeT outsize = BUFSIZE;
-										//original filesize is saved in 4 bytes after props
+										//original filesize is saved in 3 bytes after props
 										dcomperr = LzmaUncompress(buffer2, &outsize, buffer1 + propslength + 3, &filesizein, buffer1, propslength);
 
 										//grab original filesize that was saved after props
@@ -2625,8 +2627,8 @@ BOOL CALLBACK DRMSettingsDlgProc
     return FALSE;
 }
 
-int centerfreq = 350;
-int windowsize = 200;
+int centerfreq = 350; //Default low frequency edge of signal (not centre frequency) DM
+int windowsize = 5; //was 200, changed to 5 by DM Aug 2022 - This is the default decoder frequency search window size in Hz. Narrower works better in noise. =============================
 
 BOOL CALLBACK DRMRXSettingsDlgProc
    (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)

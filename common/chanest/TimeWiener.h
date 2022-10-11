@@ -39,11 +39,11 @@
 
 /* Definitions ****************************************************************/
 /* Number of taps we want to use for sigma estimation */
-#define NO_TAPS_USED4SIGMA_EST			3
+#define NO_TAPS_USED4SIGMA_EST			3 //was 3
 
 /* Lengths of wiener filter for wiener filtering in time direction */
 #define LEN_WIENER_FILT_TIME_RMA		15
-#define LEN_WIENER_FILT_TIME_RMB		20
+#define LEN_WIENER_FILT_TIME_RMB		20 //was 20
 #define LEN_WIENER_FILT_TIME_RME		9
 
 /* Maximum values for doppler for a specific robustness mode.
@@ -60,10 +60,10 @@
 #define LOW_BOUND_SIGMA					((_REAL) 0.1 /* Hz */ / 2)
 
 /* Initial value for SNR */
-#define INIT_VALUE_SNR_WIEN_TIME_DB		((_REAL) 25.0) /* dB */
+#define INIT_VALUE_SNR_WIEN_TIME_DB		((_REAL) 25.0) /* dB */ //was 25.0
 
 /* Time constant for IIR averaging of time correlation estimation */
-#define TICONST_TI_CORREL_EST			((CReal) 60.0) /* sec */
+#define TICONST_TI_CORREL_EST			((CReal) 60.0) /* sec */ //was 60.0
 
 /* Overestimation factor for sigma estimation.
    We overestimate the sigma since the channel estimation result is much worse

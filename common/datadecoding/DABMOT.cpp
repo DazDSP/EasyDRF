@@ -812,6 +812,11 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		/* Transport Id */
 		if (biTransportIDFlag == 1) {
 			iTransportID = (int)vecbiNewData.Separate(16);
+			//TODO - add Modehash to iTransportID here and save
+			//Modehash should include:
+			//Received callsign, robmode, specocc, qam, and max((ECCmode-3),0) all hashed together and saved in the upper 16 bits of iTransportID
+			//This allows the transport ID transmitted to be normal, and the mode will automatically be added to it
+			//if either changes, it is treated as a new object for caching
 			
 			//Header is 72 bytes to here...
 						

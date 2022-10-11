@@ -33,7 +33,7 @@
 
 /* Definitions ****************************************************************/
 /* Default number of iterations at application startup */
-#define MC_NUM_ITERATIONS				1
+#define MC_NUM_ITERATIONS				4 //was 1 DM changed Aug 31, 2022 - This only works in modes higher than QAM4
 
 /* Generator polynomials used for channel coding (octal form, defined by 
    a leading "0"!). We must bit-reverse the octal-forms given in the standard 

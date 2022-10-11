@@ -240,7 +240,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 
 			//compute the data exactly for the transmission, but don't let the RS decoder decode junk
 			//make sure the number of RS blocks to be decoded is the same as what was encoded
-			//Special interleaver test
+			//RS Data Interleaver
 			//it is critical that the same filesize be used for interleaving and deinterleaving
 			constexpr bool rev = 0;
 			distribute(buffer1T, buffer2T, filesize, rev); //output is put back into buffer2T

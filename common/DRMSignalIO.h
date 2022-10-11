@@ -54,7 +54,7 @@
    no right or left channel choice must be made */
 //#define MIX_INPUT_CHANNELS
 
-/* Chose recording channel: 0: Left, 1: Right, disabled if previous flag is
+/* Choose recording channel: 0: Left, 1: Right, disabled if previous flag is
    set! */
 #define RECORDING_CHANNEL			0
 
@@ -99,12 +99,32 @@ protected:
 	EOutFormat		eOutputFormat;
 
 	CReal			rDefCarOffset;
-	CRealVector		rvecA;
-	CRealVector		rvecB;
-	CRealVector		rvecZReal; /* State memory real part */
-	CRealVector		rvecZImag; /* State memory imaginary part */
-	CRealVector		rvecDataReal;
-	CRealVector		rvecDataImag;
+	CRealVector		rvecA; 
+	CRealVector		rvecB; //Bandpass filter coeffs DM
+	CRealVector		rvecC; //Weaver PAPR lowpass filter coeffs DM 
+	CRealVector		rvecD; //Weaver PAPR lowpass filter coeffs DM 
+	CRealVector		rvecDD; //Decimation filter coeffs DM 
+	CRealVector		rvecE; //24k interpolation filter coeffs DM
+	CRealVector		rvecF; //48k interpolation filter coeffs DM
+	CRealVector		rvecZI; //48kHz state memory
+	CRealVector		rvecZQ; //48kHz state memory
+	CRealVector		rvecZDecI;  //12kHz state memory
+	CRealVector		rvecDataDecI; //12kHz decimation buffer
+	CRealVector		rvecDataDecQ; //12kHz decimation buffer
+	CRealVector		rvecDataI;  //48kHz buffer
+	CRealVector		rvecDataQ;  //48kHz buffer
+	CRealVector		rvecData2I; //24kHz buffer
+	CRealVector		rvecData2Q; //24kHz buffer
+	CRealVector		rvecZDecI2; //12kHz state memory
+	CRealVector		rvecZDecQ2; //12kHz state memory
+	CRealVector		rvecZDecI3; //12kHz state memory
+	CRealVector		rvecZDecQ3; //12kHz state memory
+	CRealVector		rvecZDecI4; //12kHz state memory
+	CRealVector		rvecZDecQ4; //12kHz state memory
+	CRealVector		rvecZDecI5; //12kHz state memory
+	CRealVector		rvecZDecQ5; //12kHz state memory
+	CRealVector		rvecZI6; //48kHz state memory
+	CRealVector		rvecZQ6; //48kHz state memory
 
 	CReal			rNormFactor;
 

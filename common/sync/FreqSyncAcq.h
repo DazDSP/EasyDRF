@@ -59,11 +59,11 @@
 
 /* The average symbol duration of all possible robustness modes is 22.5 ms. A
    timeout of approx. 2 seconds corresponds from that to 100 */
-#define AVERAGE_TIME_OUT_NUMBER			100
+#define AVERAGE_TIME_OUT_NUMBER			100 //was 100
 
 /* Ratio between highest and second highest peak at the frequency pilot
    positions in the PSD estimation (after peak detection) */
-#define MAX_RAT_PEAKS_AT_PIL_POS		3 /* originally 2, -> 3db */
+#define MAX_RAT_PEAKS_AT_PIL_POS		3 //was 3 /* originally 2, -> 3db */
 
 
 /* Classes ********************************************************************/

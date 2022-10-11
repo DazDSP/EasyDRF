@@ -38,14 +38,14 @@
 
 /* Definitions ****************************************************************/
 
-#define MAX_TIMING_CORRECTIONS			3
-#define MAX_ROBMODE_CORRECTIONS			2
+#define MAX_TIMING_CORRECTIONS			3 //was 3
+#define MAX_ROBMODE_CORRECTIONS			2 //was 2
 
 #define LAMBDA_LOW_PASS_START			((CReal) 0.9) //((CReal) 0.9) is better in cases of large time error - edited DM - was ((CReal) 0.99)
-#define TIMING_BOUND_ABS				150
+#define TIMING_BOUND_ABS				5000 //was 150 DM
 
 /* Non-linear correction of the timing if variation is too big */
-#define NUM_SYM_BEFORE_RESET			5
+#define NUM_SYM_BEFORE_RESET			5 //was 5
 
 /* Definitions for robustness mode detection */
 #define NUM_BLOCKS_FOR_RM_CORR			16
@@ -53,7 +53,7 @@
 
 /* The guard-interval correlation is only updated every "STEP_SIZE_GUARD_CORR"
    samples to save computations */
-#define STEP_SIZE_GUARD_CORR			4
+#define STEP_SIZE_GUARD_CORR			4 //was 4
 
 /* "GRDCRR_DEC_FACT": Downsampling factor. We only use approx. 6 [12] kHz for
    correlation, therefore we can use a decimation of 8 [4]

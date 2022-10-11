@@ -38,19 +38,19 @@
 /* Definitions ****************************************************************/
 /* Define target position for first path in guard-interval. The number defines
    the fraction of the guard-interval */
-#define TARGET_TI_POS_FRAC_GUARD_INT		9
+#define TARGET_TI_POS_FRAC_GUARD_INT		9 //was  9
 
 /* Weights for bound calculation. First parameter is for peak distance and 
    second for distance from minimum value */
-#define TETA1_DIST_FROM_MAX_DB				20
-#define TETA2_DIST_FROM_MIN_DB				23
+#define TETA1_DIST_FROM_MAX_DB				20 //was 20
+#define TETA2_DIST_FROM_MIN_DB				23 //was 23
 #define TETA1_DIST_FROM_MAX_DB_RMD			20 /* Robustness mode D */
 #define TETA2_DIST_FROM_MIN_DB_RMD			15 /* Robustness mode D */
 
 /* Control parameters */
-#define CONT_PROP_IN_GUARD_INT				((_REAL) 0.06)
-#define CONT_PROP_BEFORE_GUARD_INT			((_REAL) 0.08)
-#define CONT_PROP_ENERGY_METHOD				((_REAL) 0.02)
+#define CONT_PROP_IN_GUARD_INT				((_REAL) 0.06)  //was 0.06
+#define CONT_PROP_BEFORE_GUARD_INT			((_REAL) 0.08)	//was 0.08
+#define CONT_PROP_ENERGY_METHOD				((_REAL) 0.02)	//was 0.02
 
 /* Time constant for IIR averaging of PDS estimation */
 #define TICONST_PDS_EST_TISYNC				((CReal) 0.25) /* sec */
@@ -60,18 +60,18 @@
    actual energy is most certainly higher than the minimum, we need to
    overestimate the result. Specify the number of samples for minimum search
    and the overestimation factor */
-#define NUM_SAM_IR_FOR_MIN_STAT				10
-#define OVER_EST_FACT_MIN_STAT				((CReal) 4.0)
+#define NUM_SAM_IR_FOR_MIN_STAT				10 //was 10
+#define OVER_EST_FACT_MIN_STAT				((CReal) 4.0) //was 4.0
 
 /* Parameter of controlling the closed loop for sample rate offset */
-#define CONTR_SAMP_OFF_INT_FTI				((_REAL) 0.001)
+#define CONTR_SAMP_OFF_INT_FTI				((_REAL) 0.001) //was 0.001
 
 /* Length of history for sample rate offset estimation using time corrections
    in seconds */
 #define HIST_LEN_SAM_OFF_EST_TI_CORR		((CReal) 30.0) /* sec */
 
 /* Length of history used for sample rate offset acquisition estimate */
-#define SAM_OFF_EST_TI_CORR_ACQ_LEN			((CReal) 4.0) /* sec */
+#define SAM_OFF_EST_TI_CORR_ACQ_LEN			((CReal) 4.0) /* sec */   //was 4.0
 
 
 /* Classes ********************************************************************/

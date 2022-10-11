@@ -40,6 +40,8 @@
 #define RS3dataLength 160;
 #define RS4dataLength 128;
 
+extern int lastRSbcERR;
+
 //====================================================================================================================================
 // Encoders
 //====================================================================================================================================
@@ -375,6 +377,7 @@ int rs1decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
 
         if (!decoder.decode(block, erasure_location_list)){
           errors++;
+          lastRSbcERR = bc; //save last RS error block number
             //replace data by zeroes
             int j = 0;
             while (j < data_length) {
@@ -464,6 +467,7 @@ int rs2decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
 
         if (!decoder.decode(block, erasure_location_list)){
           errors++;
+          lastRSbcERR = bc; //save last RS error block number
             //replace data by zeroes
             int j = 0;
             while (j < data_length) {
@@ -553,6 +557,7 @@ int rs3decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
 
         if (!decoder.decode(block, erasure_location_list)){
           errors++;
+          lastRSbcERR = bc; //save last RS error block number
             //replace data by zeroes
             int j = 0;
             while (j < data_length) {
@@ -642,6 +647,7 @@ int rs4decodeE(unsigned char* inbuf, unsigned char* inbuf2, unsigned  char* outb
 
         if (!decoder.decode(block, erasure_location_list)){
           errors++;
+          lastRSbcERR = bc; //save last RS error block number
             //replace data by zeroes
             int j = 0;
             while (j < data_length) {

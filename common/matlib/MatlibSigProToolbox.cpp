@@ -123,7 +123,7 @@ CMatlibVector<CReal> Filter(const CMatlibVector<CReal>& fvB,
 							const CMatlibVector<CReal>& fvX, 
 							CMatlibVector<CReal>& fvZ)
 {
-	int						m, n, iLenCoeff;
+	int						m = 0, n = 0, iLenCoeff = 0;
 	const int				iSizeA = fvA.GetSize();
 	const int				iSizeB = fvB.GetSize();
 	const int				iSizeX = fvX.GetSize();
