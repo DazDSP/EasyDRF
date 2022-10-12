@@ -82,7 +82,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 
 	//PAPR feature - Improve average power of the data by Hilbert clipping DM 2022
 	//Required:
-	//IQ mixing carriers (cos and sin at the Fc = 1.75kHz) - Does this change with the DC freq setting? Yes!
+	//IQ mixing carriers (cos and sin at the Fc = 1.575kHz) - Does this change with the DC freq setting? Yes!
 	//Clipping thresholds for QAM4, QAM16 and QAM64 are -18,-15,-12 dB (almost ideal, could take a little more clipping)
 	//1. Mix the real signal down to 0Hz in I and Q channels (Weaver mode)
 	//2. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass
