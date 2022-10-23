@@ -1,16 +1,17 @@
 0 TX_Port
 Call Call
 4 TX_Sound_OUT_Device
-8 TX_Sound_IN_Device
+1 TX_Sound_IN_Device
 0 RX_Sound_OUT_Device
 0 RX_Sound_IN_Device
-0 Send_Text_Message
+1 Send_Text_Message
 8 Display_Type
 0 RX_Audfilt
 0 FAC_mute
-64 QAM
+16 QAM
 1 MODE
 1 BW
 1 Interleave
 0 FastReset
-4 Instances/RS
+7 Instances/RS
+116 146 557 457 WindowPosition

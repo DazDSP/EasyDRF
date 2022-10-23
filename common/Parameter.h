@@ -34,7 +34,7 @@
 #include "matlib/Matlib.h"
 
 
-#define DEFiInputBlockSize 38400 //define buffer size of transmit audio input buffer for 400mS @ 48000kHz stereo <-- Moved to Parameter.h
+#define DEFiInputBlockSize 38400 //define buffer size of transmit audio input buffer for 400mS @ 48000kHz stereo
 
 
 /* Classes ********************************************************************/

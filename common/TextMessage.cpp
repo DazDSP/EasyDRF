@@ -40,7 +40,8 @@ void CTextMessageEncoder::Encode(CVector<_BINARY>& pData)
 	/* Set data for this piece from segment data */
 	for (int i = 0; i < NUM_BYTES_TEXT_MESS_IN_AUD_STR; i++)
 	{
-		if (iByteCnt < CurTextMessage.GetSegSize(iSegCnt))
+	//	if (iByteCnt < CurTextMessage.GetSegSize(iSegCnt)) //original
+		if ((CurTextMessage.GetNumSeg() > 0) && (iByteCnt < CurTextMessage.GetSegSize(iSegCnt))) //edited DM - make sure there is at least one segment before trying to check it's size
 		{
 			for (j = 0; j < SIZEOF__BYTE; j++)
 				pData[i * SIZEOF__BYTE + j] =
@@ -60,7 +61,8 @@ void CTextMessageEncoder::Encode(CVector<_BINARY>& pData)
 
 	/* Take care of byte count, segment count and message count ------------- */
 	/* Check if current segment is completely done */
-	if (iByteCnt >=	CurTextMessage.GetSegSize(iSegCnt))
+	//if (iByteCnt >=	CurTextMessage.GetSegSize(iSegCnt))
+	if ((CurTextMessage.GetNumSeg() > 0) && (iByteCnt >= CurTextMessage.GetSegSize(iSegCnt))) //edited DM - make sure there is at least one segment before trying to check it's size
 	{
 		iByteCnt = 0;
 

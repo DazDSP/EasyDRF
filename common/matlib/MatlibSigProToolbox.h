@@ -3,6 +3,7 @@
  *
  * Author(s):
  *	Volker Fischer
+ *	Daz Man 2022
  *
  * Description:
  *	c++ Mathematic Library (Matlib), signal processing toolbox
@@ -37,6 +38,17 @@ CMatlibVector<CReal>	Randn(const int iLength);
 CMatlibVector<CReal>	Hann(const int iLen);
 CMatlibVector<CReal>	Hamming(const int iLen);
 
+//FIR fractional decimation filter DM
+CMatlibVector<CReal>	FIRFracDec(const CMatlibVector<CReal>& fvB,
+	const CMatlibVector<CReal>& fvX,
+	CMatlibVector<CReal>& fvY,
+	CMatlibVector<CReal>& fvZ);
+
+//FIR decimation filter DM
+CMatlibVector<CReal>	FIRFiltDec(const CMatlibVector<CReal>& fvB,
+	const CMatlibVector<CReal>& fvX,
+	CMatlibVector<CReal>& fvY,
+	CMatlibVector<CReal>& fvZ);
 
 /* Filter data with a recursive (IIR) or nonrecursive (FIR) filter */
 CMatlibVector<CReal>	Filter(const CMatlibVector<CReal>& fvB, 

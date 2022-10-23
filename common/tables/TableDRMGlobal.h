@@ -41,6 +41,7 @@
 #define VIRTUAL_INTERMED_FREQ			6000	// Hz
 #define REAL_SOUNDCRD_SAMPLE_RATE		48000   // Hz //added DM
 #define SOUNDCRD_SAMPLE_RATE			48000	// Hz
+#define	OFFSET							1225.0  //Tuning offset for PAPR 0Hz IF - DM 2022
 
 /* DRM parameters */
 #define NUM_FRAMES_IN_SUPERFRAME		3

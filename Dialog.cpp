@@ -152,6 +152,10 @@ char DMdecodestat[15]{}; //File decode status
 
 bool DMnewfile = TRUE;
 
+int FrameSize = 0; //for debugging text message mode DM
+int BlockSize = 0; //for debugging text message mode DM
+int TextBytes = 0; //for debugging text message mode DM
+int TextBytesi = 0; //for debugging text message mode DM
 
 int lasterror2 = 0; //a place for functions to return errors to...
 
@@ -261,7 +265,7 @@ void ClearBar(HWND hwnd) {
 //Stats window display - DM
 void sendinfo(HWND hwnd) {
 	char tempstr[300];
-//	lasterror2 = sprintf_s(tempstr, "RS%d Err:%d Ft:%d St:%d Ss:%d [%s] d%d tid%d-%d", RxRSlevel, lasterror, totsize, DecTotalSegs, DecSegSize, DMfilename, DecFileSize, DecTransportID, erasureswitch);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	//	lasterror2 = sprintf_s(tempstr, "RS%d Err:%d Ft:%d St:%d Ss:%d [%s] d%d tid%d-%d", RxRSlevel, lasterror, totsize, DecTotalSegs, DecSegSize, DMfilename, DecFileSize, DecTransportID, erasureswitch);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "RS%d E:%d Ft:%d St:%d Ss:%d [%s] RSf:%d tid:%d-%d hdr:%d", RxRSlevel, lasterror, totsize, DecTotalSegs, DecSegSize, DMfilename, RSfilesize, DecTransportID, erasureswitch, HdrFileSize);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	wsprintf(tempstr, "RS%d RSerr:%d fS:%d sS:%d File:%s", RxRSlevel, lasterror, totsize, DecTotalSegs, DMfilename); //added RS level info - in testing - DM
 //	lasterror2 = sprintf_s(tempstr, "Fsegt:%d Ssegt:%d Ss:%d [%s] RSf:%d tid:%d-%d Hdr:%d", totsize, DecTotalSegs, DecSegSize, DMfilename, RSfilesize, DecTransportID, erasureswitch, HdrFileSize);//RSfilesize //added RS level info - in testing - DM //DecFileSize
@@ -273,8 +277,9 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %2.1f %2.1f", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMSNRaverage, DMSNRmax);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s %d", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat, DMobjectnum);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
@@ -758,7 +763,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if ((UseTextMessage) && (TX_Running))
 		{
 			FILE * txtset = nullptr;
-			char textbuf[200]{};
+			char textbuf[200]{0};
 			txtset = fopen("textmessage.txt","rt");
 			if (txtset != NULL)
 			{
@@ -903,12 +908,15 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 					if (TX_Running) 
 					{	
 						DRMTransmitter.Init();
-						if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
-							MessageBox( hwnd,"Mode does not allow Voice","Wrong Mode",0);	//this should force return to receive mode... DM
-						DRMTransmitter.Send();
-						sprintf(dcbuf,"%d",(int)DRMTransmitter.GetCarOffset());
-						SetDlgItemText( hwnd, IDC_DCFREQ, dcbuf);
-
+						//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
+						if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC < 1040) {
+							MessageBox(hwnd, "Mode does not allow Voice", "Wrong Mode", 0);	//this should force return to receive mode... DM
+						}
+						else { //disable transmit mode - added DM
+							DRMTransmitter.Send();
+							sprintf(dcbuf, "%d", (int)DRMTransmitter.GetCarOffset());
+							SetDlgItemText(hwnd, IDC_DCFREQ, dcbuf);
+						}
 					}
 
 					SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
@@ -1690,7 +1698,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					sprintf(tempstr, "%d ", DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ======================== This is for speech mode DM
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
-					wsprintf(tempstr, "MSCbits = %d  AudioBits = %d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits);
+					wsprintf(tempstr, "MSCbits:%d  MaxBits:%d TxtStart:%d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits, FrameSize);
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive blocksize DM ================
 
 					ecodec = DRMReceiver.GetParameters()->Service[0].AudioParam.eAudioCoding;
@@ -1727,7 +1735,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					//These are now directly saved out of the respective routine, instead of here DM
 					//actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM - This is now updated directly inside the DataDecoder class
 					//actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
-					
+
 					sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
@@ -1976,7 +1984,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 										//cut extension off filename
 										filename[strlen(filename) - 3] = 0; //terminate the string early to cut off the extra .lz extension DM
 
-										LogData(filename,1); //log the SNR stats DM
+										LogData(filename, 1); //log the SNR stats DM
 
 										char savename[260] = "";
 										wsprintf(savename, "Rx Files\\%s", filename);
@@ -2002,7 +2010,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 									else {
 										//data is not compressed, save normally - no need for extra buffers
 										//Also - if incoming file is bigger than 512k (!) don't decompress it because it will overflow the buffers (can only happen if a *.lz file is sent (?), so save it normally)
-										LogData(filename,1); //log the SNR stats DM
+										LogData(filename, 1); //log the SNR stats DM
 
 										char savename[260] = "";
 										wsprintf(savename, "Rx Files\\%s", filename);
@@ -2101,7 +2109,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)" "); //added DM
 					filestate = FS_BLANK;
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT7), WM_SETTEXT, 0, (LPARAM)" "); //added DM
-					
+
 					//Clear bargraph DM
 					ClearBar(hwnd);
 
@@ -2185,6 +2193,11 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				PostWinMessage(MS_FAC_CRC, 3); //Grey out LEDs
 				PostWinMessage(MS_MSC_CRC, 3); //Grey out LEDs
 
+				//send debugging info to stats window DM
+				if (TransmParam->Service[0].eAudDataFlag == CParameter::SF_AUDIO) {
+					lasterror2 = sprintf_s(tempstr, "BlockSize:%d MaxBits:%d TxtStart:%d", BlockSize, TextBytes, TextBytesi);
+					lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
+				}
 			}
 
 
@@ -2707,7 +2720,7 @@ BOOL CALLBACK DRMRXSettingsDlgProc
 BOOL CALLBACK TextMessageDlgProc (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
 {
 	FILE * txtset = nullptr;
-	char textbuf[200];
+	char textbuf[200]{0};
 	int junk = 0; //added DM
     switch (message)
     {
@@ -2719,7 +2732,7 @@ BOOL CALLBACK TextMessageDlgProc (HWND hwnd, UINT message, UINT wParam, LPARAM l
 			fclose(txtset);
 		}
 		else 
-			strcpy(textbuf," \x0d\x0a This is a Test ");
+		strcpy(textbuf," \x0d\x0a This is a Test ");
 		SetDlgItemText( hwnd, IDC_TEXTMESSAGE, textbuf);		
 		if (UseTextMessage)
 			SendMessage (GetDlgItem (hwnd, IDC_USETEXTMESSAGE), BM_SETCHECK, (WPARAM)1, 0);
@@ -2737,6 +2750,7 @@ BOOL CALLBACK TextMessageDlgProc (HWND hwnd, UINT message, UINT wParam, LPARAM l
 				fprintf(txtset,"%s",&textbuf);
 				fclose(txtset);
 			}
+			
 			DRMTransmitter.GetAudSrcEnc()->ClearTextMessage();
 			if (UseTextMessage)
 			{
@@ -2777,7 +2791,7 @@ BOOL CALLBACK TextMessageDlgProc (HWND hwnd, UINT message, UINT wParam, LPARAM l
 BOOL CALLBACK RXTextMessageDlgProc
    (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
 {
-	char textbuf[200];
+	char textbuf[200]{0};
     switch (message)
     {
     case WM_INITDIALOG:
@@ -2978,8 +2992,9 @@ BOOL CALLBACK TXPictureDlgProc
 								//if it's become a colon it overflowed - set it to zero and inc the next digit instead
 								if (temp[templen] == 58) {
 									temp[templen] = 48; //set it to zero and carry it next
-									templen--; //next digit left
-									temp[templen] = temp[templen] + 1; //carry to next digit
+									templen--; //point to tens digit
+									temp[templen] = temp[templen] + 1; //increment tens to carry
+									templen++; //point to units digit again - DM fixed Oct 19, 2022
 								}
 								//a number was found - add the file to the list
 								//next filename to find is in temp
@@ -2996,7 +3011,11 @@ BOOL CALLBACK TXPictureDlgProc
 									hResult = FindClose(hFind); //close file handle
 									TXpicpospt++; //increment array pointer
 								}
-								//if file not found, quit
+								else {
+									//if file not found, exit this routine
+									maxmatch = 1; //DM fixed Oct 19, 2022
+									break; //DM fixed Oct 19, 2022
+								}
 							}
 						}
 						//no number found - try the next character

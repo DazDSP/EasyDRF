@@ -3,7 +3,8 @@
  *
  * Author(s):
  *	Volker Fischer
- *
+ *  Daz Man 2022
+ * 
  * Description:
  *	c++ Mathematic Library (Matlib), signal processing toolbox
  *
@@ -116,6 +117,76 @@ CMatlibVector<CReal> Randn(const int iLength)
 		(CReal) ((((CReal) 
 		rand() + rand() + rand() + rand() + rand() + rand() + rand()) 
 		/ RAND_MAX - 0.5) * /* sqrt(3) * 2 / sqrt(7) */ 1.3093));
+}
+
+//DM - fractional decimation FIR filter 
+CMatlibVector<CReal> FIRFracDec(const CMatlibVector<CReal>& fvB,
+	const CMatlibVector<CReal>& fvX,
+	CMatlibVector<CReal>& fvY,
+	CMatlibVector<CReal>& fvZ)
+{
+	int						m = 0, n = 0;
+	const int				iSizeB = fvB.GetSize(); //coeffs
+	const int				iSizeX = fvX.GetSize(); //input buffer
+	const int				iSizeY = fvY.GetSize(); //output buffer
+	const int				iSizeZ = fvZ.GetSize(); //state vector
+	const float				stepsize = (static_cast<float>(iSizeX) / static_cast<float>(iSizeY)); //compute the required step size from buffer size ratio
+	//FIR only
+	const int				iSizeXNew = iSizeX + iSizeZ;
+	CMatlibVector<CReal>	rvXNew(iSizeXNew);
+
+	/* Add old values to input vector */
+	rvXNew.Merge(fvZ, fvX);
+
+	/* Actual convolution */
+	for (m = 0; m < iSizeY; m++) //only fill the smaller output buffer
+	{
+		fvY[m] = static_cast<CReal>(0.0);
+		for (n = 0; n < iSizeB; n++) //loop for all coefficients
+		{
+			fvY[m] += fvB[n] * rvXNew[(int)((float)m * stepsize) + iSizeB - n - 1]; //do FIR MAC - only compute every nth sample
+			
+		}
+	}
+
+	/* Save last samples in state vector */
+	fvZ = rvXNew(iSizeXNew - iSizeZ + 1, iSizeXNew);
+
+	return fvY;
+}
+
+//DM - integer decimation FIR filter 
+CMatlibVector<CReal> FIRFiltDec(const CMatlibVector<CReal>& fvB,
+	const CMatlibVector<CReal>& fvX,
+	CMatlibVector<CReal>& fvY,
+	CMatlibVector<CReal>& fvZ)
+{
+	int						m = 0, n = 0;
+	const int				iSizeB = fvB.GetSize(); //coeffs
+	const int				iSizeX = fvX.GetSize(); //input buffer
+	const int				iSizeY = fvY.GetSize(); //output buffer
+	const int				iSizeZ = fvZ.GetSize(); //state vector
+
+	//FIR only
+	const int				iSizeXNew = iSizeX + iSizeZ;
+	CMatlibVector<CReal>	rvXNew(iSizeXNew);
+	const int rsF = iSizeX / iSizeY; //compute decimation ratio from buffer sizes
+
+	/* Add old values to input vector */
+	rvXNew.Merge(fvZ, fvX);
+
+	/* Actual convolution */
+	for (m = 0; m < iSizeY; m++) //only fill the smaller output buffer
+	{
+		fvY[m] = static_cast<CReal>(0.0);
+		for (n = 0; n < iSizeB; n++) //loop for all coefficients
+			fvY[m] += fvB[n] * rvXNew[(m* rsF) + iSizeB - n - 1]; //do FIR MAC - only compute every nth sample
+	}
+
+	/* Save last samples in state vector */
+	fvZ = rvXNew(iSizeXNew - iSizeZ + 1, iSizeXNew);
+
+	return fvY;
 }
 
 CMatlibVector<CReal> Filter(const CMatlibVector<CReal>& fvB, 

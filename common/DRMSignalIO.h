@@ -100,15 +100,14 @@ protected:
 
 	CReal			rDefCarOffset;
 	CRealVector		rvecA; 
-	CRealVector		rvecB; //Bandpass filter coeffs DM
-	CRealVector		rvecC; //Weaver PAPR lowpass filter coeffs DM 
-	CRealVector		rvecD; //Weaver PAPR lowpass filter coeffs DM 
-	CRealVector		rvecDD; //Decimation filter coeffs DM 
-	CRealVector		rvecE; //24k interpolation filter coeffs DM
-	CRealVector		rvecF; //48k interpolation filter coeffs DM
-	CRealVector		rvecZI; //48kHz state memory
-	CRealVector		rvecZQ; //48kHz state memory
-	CRealVector		rvecZDecI;  //12kHz state memory
+	CRealVector		rvec1; //OFDM bandpass filter coeffs DM
+//	CRealVector		rvec2; //Unused
+	CRealVector		rvec3; //Post clipper filter coeffs DM
+	CRealVector		rvec4; //OFDM and Overshoot Comp filter coeffs DM
+	CRealVector		rvec5; //24k interpolation filter coeffs DM
+	CRealVector		rvec6; //48k interpolation filter coeffs DM
+	CRealVector		rvecZI1; //48kHz state memory
+	CRealVector		rvecZQ1; //48kHz state memory
 	CRealVector		rvecDataDecI; //12kHz decimation buffer
 	CRealVector		rvecDataDecQ; //12kHz decimation buffer
 	CRealVector		rvecDataI;  //48kHz buffer
