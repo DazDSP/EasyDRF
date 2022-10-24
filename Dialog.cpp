@@ -157,6 +157,8 @@ int BlockSize = 0; //for debugging text message mode DM
 int TextBytes = 0; //for debugging text message mode DM
 int TextBytesi = 0; //for debugging text message mode DM
 
+bool PTT = FALSE; //PTT via COM ports
+
 int lasterror2 = 0; //a place for functions to return errors to...
 
 // Initialize File Path
@@ -484,12 +486,13 @@ void RxFunction(  void *dummy  )
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 	try
 	{
-		DRMReceiver.Start();	
+		DRMReceiver.Start();
 	}
 	catch (CGenErr GenErr)
 	{
 		RX_Running = FALSE;
 		MessageBox( messhwnd,"RX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options","RX Exception",0);	
+		PTToff(); //added for PTT control DM
 	}
 }
 
@@ -504,6 +507,7 @@ void TxFunction(  void *dummy  )
 	{
 		TX_Running = FALSE;
 		MessageBox( messhwnd,"TX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\n Try -r, -t or -p startup options","TX Exception",0);	
+		PTToff(); //added for PTT control DM
 	}
 }
 
@@ -517,27 +521,27 @@ void PlaySound(  void *dummy  )
 	{
 		if (Playtype == 1)
 		{
-			dotx();
+			PTTon();
 			PlaySound("tune.wav",nullptr,SND_FILENAME | SND_SYNC  | SND_NOSTOP | SND_NODEFAULT);
-			endtx();
+			PTToff();
 		}
 		else if (Playtype == 2)
 		{
-			dotx();
+			PTTon();
 			PlaySound("id.wav",nullptr,SND_FILENAME | SND_SYNC | SND_NOSTOP | SND_NODEFAULT);
-			endtx();
+			PTToff();
 		}
 		else if (Playtype == 3)
 		{
-			dotx();
+			PTTon();
 			PlaySound("g.wav",nullptr,SND_FILENAME | SND_SYNC | SND_NOSTOP | SND_NODEFAULT);
-			endtx();
+			PTToff();
 		}
 		else if (Playtype == 4)
 		{
-			dotx();
+			PTTon();
 			PlaySound("b.wav",nullptr,SND_FILENAME | SND_SYNC | SND_NOSTOP | SND_NODEFAULT);
-			endtx();
+			PTToff();
 		}
 	}
 	catch (CGenErr GenErr)
@@ -750,7 +754,8 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			catch(CGenErr)
 			{
 				TX_Running = FALSE;
-				MessageBox( hwnd,"Transmitter will NOT work\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options","TX Init Exception",0);	
+				MessageBox( hwnd,"Transmitter will NOT work\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options","TX Init Exception",0);
+				PTToff();
 			}
 		}
 
@@ -841,7 +846,8 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     case WM_CLOSE:
- 		comtx('0');
+		PTToff(); //added DM
+		comtx('0');
 		KillTimer(hwnd,1);
 		GetWindowRect(hwnd, &WindowPosition); //get window position so next time it starts in the same place on the desktop
 		savevar(); //save settings on exit
@@ -877,6 +883,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 		{
 			if (TX_Running) DRMTransmitter.NotSend();
 			IsRX = TRUE; //switch to receive mode
+			PTToff(); //added DM
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			if (RX_Running) DRMReceiver.Rec();
@@ -903,6 +910,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 					SetTXmode(FALSE);
 					DRMReceiver.NotRec();
 					IsRX = FALSE; //Switch off receiver mode
+					PTTon(); //added for com port control DM
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 					if (TX_Running) 
@@ -934,6 +942,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 		{
 			if (TX_Running) DRMTransmitter.NotSend();
 			IsRX = TRUE; //Switch from transmit to receive
+			PTToff(); //added for com port control DM
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			DRMReceiver.Rec();
@@ -2324,6 +2333,7 @@ BOOL CALLBACK SendBSRDlgProc
 			SetTXmode(TRUE);
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX = FALSE;
+			PTTon(); //added DM
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
@@ -2397,6 +2407,7 @@ BOOL CALLBACK AnswerBSRDlgProc
 				writeselsegments(1);
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX = FALSE;
+			PTTon(); //added DM
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
@@ -2917,6 +2928,7 @@ BOOL CALLBACK TXPictureDlgProc
 			SetTXmode(TRUE);
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX = FALSE;
+			PTTon(); //added DM
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
@@ -3572,4 +3584,20 @@ void DrawBar(HWND hwnd) {
 		ReleaseDC(hwnd, hdc);
 	}
 	BGbusy = 0; //flag that the thread has terminated
+}
+
+void PTTon() {
+	//check if it's off
+	if (PTT != TRUE) {
+		dotx(); //activate PTT
+		PTT = TRUE;
+	}
+}
+
+void PTToff() {
+	//check if it's on 
+	if (PTT == TRUE) {
+		endtx(); //deactivate PTT
+		PTT = FALSE;
+	}
 }
