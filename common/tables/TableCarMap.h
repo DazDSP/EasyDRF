@@ -168,6 +168,10 @@ const int iScatPilGainRobModB[2][NUM_BOOSTED_SCAT_PILOTS] = {
 	{1, 3, 49, 51}
 };
 
+const int iScatPilGainRobModE[2][NUM_BOOSTED_SCAT_PILOTS] = {
+	{1,29, 0, 0},
+	{1,31, 0, 0}
+};
 
 /* Dummy cells for the MSC ****************************************************/
 /* Already normalized */
@@ -179,11 +183,6 @@ const _COMPLEX cDummyCells64QAM[2] = {
 const _COMPLEX cDummyCells16QAM[2] = {
 	_COMPLEX(0.3162277660f,  0.3162277660f),
 	_COMPLEX(0.3162277660f, -0.3162277660f)
-};
-
-const int iScatPilGainRobModE[2][NUM_BOOSTED_SCAT_PILOTS] = {
-	{1,29, 0, 0},
-	{1,31, 0, 0}
 };
 
 #endif // !defined(TABLE_CAR_MAP_H__3B0_CA63_4344_BB2B_23E7912__INCLUDED_)

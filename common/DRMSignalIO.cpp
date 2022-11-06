@@ -29,6 +29,9 @@
 #include "DRMSignalIO.h"
 #include "settings.h" //added DM
 
+#include "../Dialog.h"
+#include "../resource.h"
+
 //PAPR processing DM
 float oscpo = 0.0; //sinewave phase increment
 int PAPRt = 0; //clipping threshold
@@ -58,51 +61,86 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 {
 	int i = 0; //init DM
 
-	//48kHz samplerate
+	if ((paintmode == 0) || (paintmode == 2)) {
+		//if (1 == 1) {
 
-	/* Filtering of output signal (FIR filter) ------------------------------ */
-	/* Transfer input data in Matlib library vector */
-	for (i = 0; i < iInputBlockSize; i++)
-	{
-		rvecDataI[i] = (*pvecInputData)[i].real() * rNormFactor * 0.5; //compensate amplitude here * 0.5 because now it's IQ DM
-		rvecDataQ[i] = (*pvecInputData)[i].imag() * rNormFactor * 0.5; //compensate amplitude here * 0.5 because now it's IQ DM
+			//48kHz samplerate
+
+			/* Filtering of output signal (FIR filter) ------------------------------ */
+			/* Transfer input data in Matlib library vector */
+		for (i = 0; i < iInputBlockSize; i++)
+		{
+			rvecDataI[i] = (*pvecInputData)[i].real() * rNormFactor * 0.5; //compensate amplitude here * 0.5 because now it's IQ DM
+			rvecDataQ[i] = (*pvecInputData)[i].imag() * rNormFactor * 0.5; //compensate amplitude here * 0.5 because now it's IQ DM
+		}
+
+		//Filter 1 - antialias filter the entire buffer at 48kHz samplerate (6kHz stopband lowpass)
+		//This new filter only computes every 4th sample, so it needs the smaller output buffer specified as the destination DM
+		rvecDataDecI = FIRFiltDec(rvec1, rvecDataI, rvecDataDecI, rvecZI1); //filter I
+		rvecDataDecQ = FIRFiltDec(rvec1, rvecDataQ, rvecDataDecQ, rvecZQ1); //filter Q
+
+		//PAPR feature - Improve average power of the data by Hilbert clipping DM 2022
+		//Required:
+		//IQ mixing carriers (cos and sin at the Fc = 1.575kHz) - This changes with the DC freq setting
+		//Clipping thresholds for QAM4, QAM16 and QAM64 are -18,-15,-12 dB (almost ideal, could take a little more clipping)
+		//1. Mix the IQ signal down to centre on 0Hz in OFDM.cpp
+		//2. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass to reduce OFDM sidelobes
+		//3. Hilbert clip the IQ for PAPR gain
+		//4. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass again
+		//5. Hilbert clip the IQ again with overshoot compensation
+		//6. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass again (ideally, a slightly wider filter for less overshoot)
+		//7. Mix the IQ back to the original audio frequency again
+		//All of this is now performed at a 12kHz samplerate for lower CPU use
+	} //paintmode if
+
+//Add WFText audio here ================================================================================================================
+	if (paintmode == 1) {
+		//Add WFText here so PAPR clips it - may need a custom clip level
+		//paintmode == 1 which is for WFText
+		//encode bitmap buffer and write to sound buffer at 12kHz
+		//the block size here might not be very big...
+		//it was easier to write all the sound data to one big buffer, then read it out as needed...
+
+#define WFSCALE 32767 //scale this for the correct clipping level
+		//do we have audio to play?
+		if (audio.GetSize() > 0) {
+			//copy as many samples as needed
+			for (i = 0; i < iInputBlockSize / 4; i++) {
+				rvecDataDecI[i] = audio[readout].real() * WFSCALE;
+				rvecDataDecQ[i] = audio[readout].imag() * WFSCALE;
+				readout++;
+				if (readout >= audio.GetSize()) {
+					readout = 0;
+					paintmode = -1; //keep OFDM audio muted until TX turns off
+					i = iInputBlockSize / 4 + 1; //exit loop
+					audio.Init(0); //clear the buffer and release the memory
+					OnCommand(mainwindow, IDB_START, 0); //switch to receive
+				}
+			}
+		}
 	}
-
-#define PAPR 1
-#if PAPR == 1
-
-	//Filter 1 - antialias filter the entire buffer at 48kHz samplerate (6kHz stopband lowpass)
-	//This new filter only computes every 4th sample, so it needs the smaller output buffer specified as the destination DM
-	rvecDataDecI = FIRFiltDec(rvec1, rvecDataI, rvecDataDecI, rvecZI1); //filter I
-	rvecDataDecQ = FIRFiltDec(rvec1, rvecDataQ, rvecDataDecQ, rvecZQ1); //filter Q
-
-	//PAPR feature - Improve average power of the data by Hilbert clipping DM 2022
-	//Required:
-	//IQ mixing carriers (cos and sin at the Fc = 1.575kHz) - This changes with the DC freq setting
-	//Clipping thresholds for QAM4, QAM16 and QAM64 are -18,-15,-12 dB (almost ideal, could take a little more clipping)
-	//1. Mix the IQ signal down to centre on 0Hz in OFDM.cpp
-	//2. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass to reduce OFDM sidelobes
-	//3. Hilbert clip the IQ for PAPR gain
-	//4. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass again
-	//5. Hilbert clip the IQ again with overshoot compensation
-	//6. Lowpass filter the IQ at 1.25kHz for a 2.5kHz bandpass again (ideally, a slightly wider filter for less overshoot)
-	//7. Mix the IQ back to the original audio frequency again
-	//All of this is now performed at a 12kHz samplerate for lower CPU use
+//======================================================================================================================================
 
 	float const Fc = OFFSET + rDefCarOffset; //Hz Weaver mixing frequency
-	float const Fcp = (Fc / (SOUNDCRD_SAMPLE_RATE/4)) * crPi * 2;
+	float const Fcp = (Fc / (SOUNDCRD_SAMPLE_RATE / 4)) * crPi * 2;
 
 	//Filter 2 - Prefilter to remove OFDM sidelobes - use same coeffs as the post clipper filter (NUM3)
 	//lowpass filter the entire buffer at 12kHz samplerate
 	rvecDataDecI = Filter(rvec3, rvecA, rvecDataDecI, rvecZDecI2); //filter I
 	rvecDataDecQ = Filter(rvec3, rvecA, rvecDataDecQ, rvecZDecQ2); //filter Q
 
+	PAPRt = 6553; //try -13dB //8192; //default PAPR clipping threshold is -12dB for QAM64
+	//if (getqam() == 2) PAPRt = 8192; //these need to be ints
+	if (getqam() == 1) PAPRt = 5792; //QAM16 -15dB
+	if (getqam() == 0) PAPRt = 4096; //QAM4  -18dB
+	if (moderestore != -1) PAPRt = 4096; //Tuning tone and waterfall text mode
+
 	//Hilbert clip the IQ signal
-	for (i = 0; i < iInputBlockSize/4; i++) {
+	for (i = 0; i < iInputBlockSize / 4; i++) {
 		int const I = rvecDataDecI[i];
 		int const Q = rvecDataDecQ[i];
 		int const amp = max(sqrt(I * I + Q * Q), PAPRt); //vectorsum and threshold
-		int const peak = max(amp,max(max(p3, p4),max(p1, p2))); //peak stretcher
+		int const peak = max(amp, max(max(p3, p4), max(p1, p2))); //peak stretcher
 
 		//update peak history
 		p4 = p3;
@@ -110,9 +148,9 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		p2 = p1;
 		p1 = amp;
 
-		float gain = (float)23166/peak; //limit at -3dBFS (levels are int!) 0dBFS = 32767
-		rvecDataDecI[i] = Id2*gain;
-		rvecDataDecQ[i] = Qd2*gain;
+		float gain = (float)23166 / peak; //limit at -3dBFS (levels are int!) 0dBFS = 32767
+		rvecDataDecI[i] = Id2 * gain;
+		rvecDataDecQ[i] = Qd2 * gain;
 
 		//update IQ history for delay compensation
 		Id2 = Id1;
@@ -127,7 +165,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 
 	//Apply overshoot compensation
 	//Hilbert clip the IQ signal
-	for (i = 0; i < iInputBlockSize/4; i++) {
+	for (i = 0; i < iInputBlockSize / 4; i++) {
 		int const I = rvecDataDecI[i];
 		int const Q = rvecDataDecQ[i];
 		int constexpr oc = 23166; //Overshoot clip level is -3dBFS
@@ -140,7 +178,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		op2 = op1;
 		op1 = amp;
 
-		float gain = (float)23166/peak; //limit at -3dBFS (levels are int!)
+		float gain = (float)23166 / peak; //limit at -3dBFS (levels are int!)
 		rvecDataDecI[i] = oId2 * gain;
 		rvecDataDecQ[i] = oQd2 * gain;
 
@@ -150,14 +188,14 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		oQd2 = oQd1;
 		oQd1 = Q;
 	}
-	
+
 	//Filter 4 - Overshoot compensation filter (same coeffs as OFDM sidelobes filter)
 	//lowpass filter the entire buffer at 12kHz
 	rvecDataDecI = Filter(rvec4, rvecA, rvecDataDecI, rvecZDecI4); //filter I
 	rvecDataDecQ = Filter(rvec4, rvecA, rvecDataDecQ, rvecZDecQ4); //filter Q
 
 	//convert 0Hz IF back to normal baseband output frequency
-	for (i = 0; i < iInputBlockSize/4; i++)
+	for (i = 0; i < iInputBlockSize / 4; i++)
 	{
 		//Generate carriers
 		float Icar = cos(oscpo);
@@ -169,48 +207,50 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		int I = rvecDataDecI[i];
 		int Q = rvecDataDecQ[i];
 		rvecDataDecI[i] = (I * Qcar) - (Q * Icar); //positive frequency shift
-//		rvecDataDecQ[i] = (I * Icar) + (Q * Qcar); //positive frequency shift
+		//rvecDataDecQ[i] = (I * Icar) + (Q * Qcar); //positive frequency shift
 	}
+
+//TEST WFtext IQ quality here ==================================================================================================
+//==============================================================================================================================
 
 	//Interpolate by 2 (zero-stuff)
 	int w = 0;
-	for (i = 0; i < iInputBlockSize/4; i++) {
+	for (i = 0; i < iInputBlockSize / 4; i++) {
 		rvecData2I[w] = rvecDataDecI[i];
-//		rvecData2Q[w] = rvecDataDecQ[i];
+		//rvecData2Q[w] = rvecDataDecQ[i];
 		w += 1;
 		rvecData2I[w] = 0;
-//		rvecData2Q[w] = 0;
+		//rvecData2Q[w] = 0;
 		w += 1;
 	}
 	//Filter 5 - Filter at 24kHz samplerate
 	rvecData2I = Filter(rvec5, rvecA, rvecData2I, rvecZDecI5); //interpolation filter DM
-//	rvecData2Q = Filter(rvec5, rvecA, rvecData2Q, rvecZDecQ5); //interpolation filter DM
+	//rvecData2Q = Filter(rvec5, rvecA, rvecData2Q, rvecZDecQ5); //interpolation filter DM
 
 	//Interpolate by 2 (zero-stuff)
 	w = 0;
-	for (i = 0; i < iInputBlockSize/2; i++) {
+	for (i = 0; i < iInputBlockSize / 2; i++) {
 		rvecDataI[w] = rvecData2I[i];
-//		rvecDataQ[w] = rvecData2Q[i];
+		//rvecDataQ[w] = rvecData2Q[i];
 		w += 1;
 		rvecDataI[w] = 0;
-//		rvecDataQ[w] = 0;
+		//rvecDataQ[w] = 0;
 		w += 1;
 	}
 	//Filter 6 - Filter at 48kHz samplerate
 	rvecDataI = Filter(rvec6, rvecA, rvecDataI, rvecZI6); //interpolation filter DM
-//	rvecDataQ = Filter(rvec6, rvecA, rvecDataQ, rvecZQ6); //interpolation filter DM
+	//rvecDataQ = Filter(rvec6, rvecA, rvecDataQ, rvecZQ6); //interpolation filter DM
 
-#endif //PAPR
-
-	//Read out data to sound buffer:
-	/* Convert vector type. Fill vector with symbols (collect them) */
+//Read out data to sound buffer:
+/* Convert vector type. Fill vector with symbols (collect them) */
 	const int iNs2 = iInputBlockSize * 2;  //added DM -- sizes adjusted to fix soundcard samplerate problems
+	const float OutLevel = (float)max(0.3535, (float)TxLevel); //allow output level to be set to -12dB
 	for (i = 0; i < iNs2; i += 2) //added DM
 	{
 		const int iCurIndex = iBlockCnt * iNs2 + i; //added DM
 
 		//Normal audio output uses real I channel only - Q is also available
-		const short sCurOutReal = (short)(rvecDataI[i / 2]); // *rNormFactor); //added DM
+		const short sCurOutReal = (short)(rvecDataI[i / 2]) * OutLevel; // *rNormFactor); //added DM
 		//const short sCurOutImag = (short)(rvecDataQ[i / 2]); // * rNormFactor); //added DM
 
 		/* Use real valued signal as output for both sound card channels */
@@ -237,7 +277,7 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	/* Init vector for storing a complete DRM frame number of OFDM symbols */
 	iBlockCnt = 0;
 	iNumBlocks = TransmParam.iNumSymPerFrame;
-	
+
 	const int iTotalSize = TransmParam.iSymbolBlockSize * 2 /* Stereo */ * iNumBlocks; //@ //Added DM
 	//const int iTotalSize = TransmParam.iSymbolBlockSize * iNumBlocks; //@ //edited DM
 
@@ -253,31 +293,26 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	rvec4.Init(FILTER_TAP_NUM4); //OFDM and Overshoot Compensation filter (wider)
 	rvec5.Init(FILTER_TAP_NUM5); //12k to 24k interpolation filter
 	rvec6.Init(FILTER_TAP_NUM6); //24k to 48k interpolation filter
-	
+
 	/* Choose correct filter for chosen DRM bandwidth. Also, adjust offset
 	   frequency for different modes. E.g., 5 kHz mode is on the right side
 	   of the DC frequency */
-	//Ham-DRM is always on the right side of the DC frequency (positive) DM 
-	
-	//PAPR code is added here
-	//The QAM mode is needed to compute the clipping level
-	//getqam() results:
-	// 0 = QAM4
-	// 1 = QAM16
-	// 2 = QAM64
+	   //Ham-DRM is always on the right side of the DC frequency (positive) DM 
 
-	//PAPR clipping calcs (Normalized to FS)
-	// 0 = 6dB = 0.5
-	// 1 = 3dB = 0.707
-	// 2 = 0dB = 1
+	   //PAPR code is added here
+	   //The QAM mode is needed to compute the clipping level
+	   //getqam() results:
+	   // 0 = QAM4
+	   // 1 = QAM16
+	   // 2 = QAM64
 
-	//Full scale (0dBFS) = 1 = 32767
-	//Normalized clipper input level = -12dB = 0.25 = 8192
+	   //PAPR clipping calcs (Normalized to FS)
+	   // 0 = 6dB = 0.5
+	   // 1 = 3dB = 0.707
+	   // 2 = 0dB = 1
 
-	PAPRt = 6553; //try -13dB //8192; //default PAPR clipping threshold is -12dB for QAM64
-	//if (getqam() == 2) PAPRt = 8192; //these need to be ints
-	if (getqam() == 1) PAPRt = 5792; //QAM16 -15dB
-	if (getqam() == 0) PAPRt = 4096; //QAM4  -18dB
+	   //Full scale (0dBFS) = 1 = 32767
+	   //Normalized clipper input level = -12dB = 0.25 = 8192
 
 #if selectBW //not used now DM
 //	float* pCurFilt = fTransmFilt2_5c; //added init DM
@@ -288,8 +323,8 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	switch (TransmParam.GetSpectrumOccup())
 	{
 	case SO_0:
-//		pCurFilt = fTransmFilt4_5;
-//		pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
+		//		pCurFilt = fTransmFilt4_5;
+		//		pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
 		pCurFilt = filter_taps2; //decimated version - same for both bandwidths DM
 
 		/* Completely on the right side of DC */
@@ -298,8 +333,8 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 		break;
 
 	case SO_1:
-//		pCurFilt = fTransmFilt5;
-		//pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
+		//		pCurFilt = fTransmFilt5;
+				//pCurFilt = fTransmFilt2_5c; //A correct bandwidth filter works better! DM
 		pCurFilt = filter_taps2; //decimated version - same for both bandwidths DM
 
 		/* Completely on the right side of DC */
@@ -324,7 +359,7 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 
 	/* Only FIR filter */
 	rvecA.Init(1);
-	rvecA[0] = (CReal) 1.0;
+	rvecA[0] = (CReal)1.0;
 
 	/* Filter state memory (init with zeros) and data vector */
 	rvecZI1.Init(FILTER_TAP_NUM1 - 1, (CReal)0.0);
@@ -343,18 +378,18 @@ void CTransmitData::InitInternal(CParameter& TransmParam)
 	//Data buffer sizes match the input and output data length at the scaled samplerate used DM
 	rvecDataI.Init(TransmParam.iSymbolBlockSize); //48kHz DM
 	rvecDataQ.Init(TransmParam.iSymbolBlockSize); //48kHz DM
-	rvecData2I.Init(TransmParam.iSymbolBlockSize/2); //24kHz DM
-	rvecData2Q.Init(TransmParam.iSymbolBlockSize/2); //24kHz DM
-	rvecDataDecI.Init(TransmParam.iSymbolBlockSize/4); //12kHz DM
-	rvecDataDecQ.Init(TransmParam.iSymbolBlockSize/4); //12kHz DM
+	rvecData2I.Init(TransmParam.iSymbolBlockSize / 2); //24kHz DM
+	rvecData2Q.Init(TransmParam.iSymbolBlockSize / 2); //24kHz DM
+	rvecDataDecI.Init(TransmParam.iSymbolBlockSize / 4); //12kHz DM
+	rvecDataDecQ.Init(TransmParam.iSymbolBlockSize / 4); //12kHz DM
 
 	/* All robustness modes and spectrum occupancies should have the same output
 	   power. Calculate the normaization factor based on the average power of
 	   symbol (the number 3000 was obtained through output tests) */
-	// bei 3000 -> +- 6000
-	// bei 9000 -> +- 20000 achtung, 12000 ist zuviel -> foldback
-	// moeglich +-32000
-	rNormFactor = (CReal) 6000.0 / Sqrt(TransmParam.rAvPowPerSymbol);
+	   // bei 3000 -> +- 6000
+	   // bei 9000 -> +- 20000 achtung, 12000 ist zuviel -> foldback
+	   // moeglich +-32000
+	rNormFactor = (CReal)6000.0 / Sqrt(TransmParam.rAvPowPerSymbol);
 
 	/* Define block-size for input */
 	iInputBlockSize = TransmParam.iSymbolBlockSize;
@@ -444,7 +479,7 @@ void CReceiveData::ProcessDataInternal(CParameter& Parameter)
 	/* Read data from file ---------------------------------------------- */
 	for (i = 0; i < iOutputBlockSize; i++)
 	{
-		/* If enf-of-file is reached, stop simulation */
+		/* If end-of-file is reached, stop simulation */
 		float tIn;
 
 		if (fscanf_s(pFileReceiver, "%e\n", &tIn) == EOF)
@@ -612,3 +647,4 @@ _REAL CSignalLevelMeter::Level()
 {
 	return rCurLevel / _MAXSHORT;
 }
+

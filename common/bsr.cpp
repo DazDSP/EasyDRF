@@ -35,7 +35,6 @@
 
 //extern CDRMTransmitter	DRMTransmitter; //edited DM
 
-#define numstredele 5
 
 //Maybe these should be in Dialog.cpp or Dialog.h ??
 //These appear to be for multi-window BSR requests
@@ -48,8 +47,8 @@ HWND txbsrhwnd[NO_BSR_WIND]; //edited DM
 BOOL txbsr_onscreen_arr[NO_BSR_WIND]; //edited DM
 int  txhasharr[NO_BSR_WIND]; //edited DM
 
-string sentfilenamearr[numstredele] = {" "};
-string sentfilenamenodirarr[numstredele] = {" "};
+string sentfilenamearr[numstredele] = { " " };
+string sentfilenamenodirarr[numstredele] = { " " };
 int sentfilehasharr[numstredele] = { 0 };
 //CVector<short>  vecsToSendarr[numstredele];
 int sentfilept = 0;

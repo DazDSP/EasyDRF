@@ -74,6 +74,16 @@ public:
 	int GetPicSegmTot() 
 		{return DataEncoder.GetSliShowEnc()->GetPicSegmTot(); }					 
 
+	void GetTxSpeechBuffer(CVector<_REAL>& scopeData) {
+
+		/* Init output vectors */
+		//vecrData.Init(19200, (_REAL)0.0); //initialize this on program start instead
+		for (int j = 0; j < 19200; j++) {
+			scopeData[j] = speechIN[j]; //copy speech buffer for Oscilloscope display
+		}
+		return;
+	};
+
 protected:
 	CTextMessageEncoder TextMessage{};
 	_BOOLEAN			bUsingTextMessage{};
@@ -96,6 +106,16 @@ class CAudioSourceDecoder : public CReceiverModul<_BINARY, _SAMPLE>
 public:
 	CAudioSourceDecoder();
 	virtual ~CAudioSourceDecoder();
+
+	void GetSpeechBuffer(CVector<_REAL>& scopeData) {
+	
+		/* Init output vectors */
+		//vecrData.Init(19200, (_REAL)0.0); //initialize this on program start instead
+		for (int j = 0; j < 19200; j++) {
+			scopeData[j] = speechLPF[j]; //copy speech buffer for Oscilloscope display
+		}
+		return;
+	};
 
 	int getdecodperc();
 

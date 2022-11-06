@@ -46,6 +46,7 @@
 /* Time constant for IIR averaging of PSD estimation */
 #define TICONST_PSD_EST_OFDM			((CReal) 1.0) /* sec */
 
+extern int paintmode;
 
 /* Classes ********************************************************************/
 class COFDMModulation : public CTransmitterModul<_COMPLEX, _COMPLEX>

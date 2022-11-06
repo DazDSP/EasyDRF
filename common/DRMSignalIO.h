@@ -37,6 +37,13 @@
 
 #include "../sound/sound.h"
 
+extern int paintmode;
+extern int moderestore;
+//extern CVector<short> audio;
+extern CComplexVector audio;
+extern int readout;
+extern int IsRX2;
+extern HWND mainwindow;
 
 /* Definitions ****************************************************************/
 #define	METER_FLY_BACK				15
@@ -182,6 +189,5 @@ protected:
 	virtual void InitInternal(CParameter& ReceiverParam);
 	virtual void ProcessDataInternal(CParameter& ReceiverParam);
 };
-
 
 #endif // !defined(DRMSIGNALIO_H__3B0BA660_CA63_4344_B_23E7A0D31912__INCLUDED_)

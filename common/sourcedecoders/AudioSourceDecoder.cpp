@@ -95,6 +95,8 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 				speechIN[k] = (*pvecInputData)[k]; //copy directly
 			}
 
+#define fixLPC 0
+#if (fixLPC == 0)
 			//then filter and decimate the 19200 samples to 3240 samples
 			i = 0;
 			speechLPFDec = FIRFracDec(rvecS, speechIN, speechLPFDec, rvecZS); //antialias filter and fractional decimation
@@ -113,6 +115,45 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 					(*pvecOutputData)[i * 54 + k] = encbytes[k]; //copy the encoded data DM
 				}
 			}
+#endif //(fixLPC == 0)
+
+#if (fixLPC == 1)
+			//This fix is to try to window and overlap the LPC-10 buffers TODO
+			//then filter and decimate the 19200 samples to 3200 samples
+			i = 0;
+			//This will be an integer resample with this mod...
+			speechLPFDec = FIRFracDec(rvecS, speechIN, speechLPFDec, rvecZS); //antialias filter and fractional decimation
+			k = 0;
+			//int t = 0;
+		
+			for (i = 0; i < lpcblocks; i++) { //do all blocks
+				if (i == 0) {
+					//first block needs the 20 old samples added
+					for (j = 0; j < 20; j++) {
+						wavdata[j] = (short)olddata[j]; //copy 20 old samples only at the start of the 400mS frame
+					}
+					//first block only reads 160 samples in
+					for (j = 0; j < LPC10_SAMPLES_PER_FRAME - 20; j++) //Read 160 samples in
+					{
+						wavdata[20 + j] = (short)speechLPFDec[20 + j];
+					}
+				}
+				else {
+					for (j = 0; j < LPC10_SAMPLES_PER_FRAME; j++) //Read 180 samples in
+					{
+						wavdata[j] = (short)speechLPFDec[i * (LPC10_SAMPLES_PER_FRAME - 20) + j];
+					}
+				}
+				lpc10_bit_encode(wavdata, encbytes, es);
+				for (k = 0; k < LPC10_BITS_IN_COMPRESSED_FRAME; k++) {
+					(*pvecOutputData)[i * 54 + k] = encbytes[k]; //copy the encoded data DM
+				}
+				//save old data for overlap
+				for (j = 0; j < 20; j++) {
+					olddata[j] = (short)wavdata[j+160]; //save last 10 samples
+				}
+			}
+#endif //(fixLPC == 0)
 
 			//Make N bit checksum DM new
 			for (i = 0; i < lpcsum; i++)
@@ -285,7 +326,12 @@ void CAudioSourceEncoder::InitInternal(CParameter& TransmParam)
 
 		//Init new resampling filter and buffers DM
 		speechIN.Init(DEFiInputBlockSize / 2); //48kHz DM
+#if (fixLPC == 0)
 		speechLPFDec.Init(lpcblocks * 180); //downsampled buffer for LPC-10 is a fixed size of 3240 samples
+#endif
+#if (fixLPC == 1)
+		speechLPFDec.Init(lpcblocks * 160); //downsampled buffer for LPC-10 is a fixed size of 3200 samples
+#endif
 		speechLPFDecSpeex.Init(3200); //downsampled buffer for Speex is a fixed size of 3200 samples
 		rvecS.Init(FILTER_TAP_NUMS); //48k rate decimation filter coeffs
 		rvecZS.Init(FILTER_TAP_NUMS - 1, (CReal)0.0);
@@ -636,7 +682,12 @@ void CAudioSourceDecoder::InitInternal(CParameter& ReceiverParam)
 
 		//Decoder filters
 		speechLPF.Init(DEFiInputBlockSize / 2); //speech buffer is 19200 samples
+#if (fixLPC == 0)
 		speechLPFDec.Init((lpcblocks * 180)); //this buffer is 3240 samples for LPC-10
+#endif
+#if (fixLPC == 1)
+		speechLPFDec.Init(lpcblocks * 160); //this buffer is 3200 samples for LPC-10
+#endif
 		speechLPFDec2.Init(size1); //larger buffer for upsampling
 		rvecS.Init(FILTER_TAP_NUMS); //
 		rvecZS.Init(FILTER_TAP_NUMS - 1, (CReal)0.0);

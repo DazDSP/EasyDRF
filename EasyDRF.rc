@@ -85,12 +85,12 @@ BEGIN
     PUSHBUTTON      "B",IDC_BTONE,265,51,20,14
 END
 
-DLG_ABOUT DIALOGEX 0, 0, 259, 246
+DLG_ABOUT DIALOGEX 0, 0, 259, 260
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
 CAPTION "EasyDRF Info"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,113,223,36,14
+    DEFPUSHBUTTON   "OK",IDOK,113,237,36,14
     CTEXT           "EasyDRF is based on WinDRM by HB9TLK",IDC_STATIC,6,19,247,9
     CTEXT           "WinDRM was based on the DREAM software by",IDC_STATIC,6,34,247,9
     CTEXT           "Volker Fisher and Alexander Kurpiers",IDC_STATIC,6,44,247,9
@@ -103,10 +103,11 @@ BEGIN
     CTEXT           "SPEEX  ( www.speex.org )",IDC_STATIC,7,107,247,9
     CTEXT           "( www.tu-darmstadt.de/fb/et/uet/fguet/mitarbeiter/vf/DRM/DRM.html )",IDC_STATIC,6,67,247,9
     CTEXT           "Copyright (C) 2004, 2005",IDC_STATIC,7,166,247,9
-    CTEXT           "Updated code by Daz Man 2021",IDC_STATIC,7,206,247,9
+    CTEXT           "Updated code by Daz Man 2021, 2022",IDC_STATIC,7,220,247,9
     CTEXT           "EasyDRF is a HamDRM Windows application",IDC_STATIC,6,5,247,9
     CTEXT           "Reed-Solomon coding uses the Schifra library, under GPL",IDC_STATIC,5,181,247,9
     CTEXT           "LZMAlib and zlib used under GPL",IDC_STATIC,5,192,247,9
+    CTEXT           "Waterfall text font is from ChirpHel by DF6NM ",IDC_STATIC,7,205,247,9
 END
 
 DLG_PICTURE_TX DIALOGEX 0, 0, 220, 365
@@ -182,7 +183,7 @@ BEGIN
     GROUPBOX        "Interleave",IDC_STATIC,90,14,72,57
     GROUPBOX        "MSC Coding",IDC_STATIC,90,82,72,55
     GROUPBOX        "MSC Protection",IDC_STATIC,19,82,58,55
-    EDITTEXT        IDC_DCOFFS,102,169,48,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_DCOFFS,102,156,48,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
     RADIOBUTTON     "A",ID_MODE_ROBMODEA,30,25,26,10
     RADIOBUTTON     "B",ID_MODE_ROBMODEB,30,40,26,10
     RADIOBUTTON     "E",ID_MODE_ROBMODEE,30,54,26,10
@@ -193,13 +194,14 @@ BEGIN
     RADIOBUTTON     "16 QAM",ID_MSCCODING_16QAM,102,109,45,10
     RADIOBUTTON     "64 QAM",ID_MSCCODING_64QAM,102,121,45,10
     GROUPBOX        "BandWidth",IDC_STATIC,19,145,58,55
-    GROUPBOX        "DC Offset",IDC_STATIC,90,146,72,54
+    GROUPBOX        "DC Offset",IDC_STATIC,90,145,72,34
     RADIOBUTTON     "2.5 KHz",ID_SETTINGS_BW_25,30,161,41,10
-    RADIOBUTTON     "2.3 KHz",ID_SETTINGS_BW_23,30,177,41,10
+    RADIOBUTTON     "2.3 KHz",ID_SETTINGS_BW_23,30,183,41,10
     PUSHBUTTON      "Default",ID_SET_B_DEFAULT,43,207,34,14
     PUSHBUTTON      "Speed",ID_SET_A_MAXSPEED,84,207,31,14
     RADIOBUTTON     "4 QAM",ID_MSCCODING_4QAM,102,97,38,10
     PUSHBUTTON      "Robust",ID_SET_B_ROBUST,7,207,30,14
+    RADIOBUTTON     "-12dB Output",ID_TXLEVEL,102,183,60,10
 END
 
 DLG_TEXTMESSAGE DIALOGEX 200, 10, 207, 119
@@ -303,7 +305,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 254
         TOPMARGIN, 7
-        BOTTOMMARGIN, 237
+        BOTTOMMARGIN, 251
     END
 
     DLG_PICTURE_TX, DIALOG
@@ -443,7 +445,7 @@ BEGIN
         POPUP "Text Message"
         BEGIN
             MENUITEM "Edit TX Text Message",        ID_SETTINGS_TEXTMESSAGE
-            MENUITEM "Allow RX Text Message",       ID_SETTINGS_TEXTMESSAGE_OPENRXTEXTMESSAGE, CHECKED
+            MENUITEM "Allow RX Text Message",       ID_SETTINGS_TEXTMESSAGE_OPENRXTEXTMESSAGE
         END
         POPUP "File Transfer"
         BEGIN
@@ -476,6 +478,7 @@ BEGIN
         MENUITEM "Impulse Response",            ID_SETTINGS_DISPLAY_IMPULSERESPONSE
         MENUITEM "FAC Phase",                   ID_SETTINGS_DISPLAY_FACPHASE
         MENUITEM "MSC Phase/Amplitude",         ID_SETTINGS_DISPLAY_MSCPHASE
+        MENUITEM "Audio Scope",                 ID_SETTINGS_DISPLAY_OSCILLOSCOPE
     END
     POPUP "Settings"
     BEGIN

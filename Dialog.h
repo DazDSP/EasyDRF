@@ -35,6 +35,7 @@
 void PostWinMessage(unsigned int MessID, int iMessageParam);
 void updateLEDs(void);
 void DrawBar(HWND hwnd);
+int setdisplay(int type);
 
 // procedures called by Windows
 // Main dialog handler
@@ -91,6 +92,7 @@ void   __cdecl writebsrselsegments(int inst = 1);
 // auto sends 2 instance if (noseg < 50), 3 if (noseg < 10), 4 if (noseg < 3)
 
 void PTTon();
+void PTToffD();
 void PTToff();
 
 #endif

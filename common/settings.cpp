@@ -36,7 +36,7 @@
 #include "callsign2.h" //edit by DM
 #include "settings.h"
 
-HANDLE hComm = NULL;;
+HANDLE hComm = nullptr;;
 
 
 void comtx(char port)
@@ -44,10 +44,10 @@ void comtx(char port)
 	DWORD errcode;
 	struct _DCB dcb;
 
-	if (hComm != NULL)
+	if (hComm != nullptr)
 	{
 		CloseHandle(hComm);
-		hComm = NULL;
+		hComm = nullptr;
 		if (port == '0') return;
 	}
 	if (port == '1')
@@ -116,8 +116,8 @@ void comtx(char port)
 						0);
 	if (hComm == INVALID_HANDLE_VALUE)
 	{
-		ClearCommError(hComm,&errcode,NULL);
-		hComm = NULL;
+		ClearCommError(hComm,&errcode, nullptr);
+		hComm = nullptr;
 	}
 	else
 	{
@@ -127,7 +127,7 @@ void comtx(char port)
 		dcb.fOutxCtsFlow = 0;
 		dcb.fOutxDsrFlow = 0;
 		SetCommState(hComm,&dcb);
-		ClearCommError(hComm,&errcode,NULL);
+		ClearCommError(hComm,&errcode, nullptr);
 	}
 }
 
@@ -161,14 +161,14 @@ void enddtr(void)
 }
 
 
-FILE * set = NULL;
+FILE * set = nullptr;
 char txport = '0';
 int soundouttx = 0;
 int soundintx = 0;
 int soundoutrx = 0;
 int soundinrx = 0;
 bool istxinsatnce = false;
-BOOL usetext = false;
+//BOOL usetext = false;
 int audfiltrx = 0;
 int muteonfac = 0;
 int qamtype = 16;
@@ -177,6 +177,7 @@ int interleave = 0;
 int specoccuppa = 0;
 int fastres = 0;
 char dataisok = 0;
+int AllowRXText = 1;
 
 void savevar(void)
 {
@@ -188,25 +189,29 @@ void savevar(void)
 	set = fopen("settings.txt","wt");
 	if (fastreset) fastres = 1;
 	else fastres = 0;
-	if (set != NULL)
+	if (set != nullptr)
 	{
-		fprintf(set,"%c TX_Port\n",txport);
+		fprintf(set, "%c TX_Port\n", txport);
 		fprintf(set, "%s Call\n", getcall());
-		fprintf(set,"%d TX_Sound_OUT_Device\n",soundouttx);
-		fprintf(set,"%d TX_Sound_IN_Device\n",soundintx);
-		fprintf(set,"%d RX_Sound_OUT_Device\n",soundoutrx);
-		fprintf(set,"%d RX_Sound_IN_Device\n",soundinrx);
-		fprintf(set,"%d Send_Text_Message\n",usetext);
-		fprintf(set,"%d Display_Type\n",disptype);
-		fprintf(set,"%d RX_Audfilt\n",audfiltrx);
-		fprintf(set,"%d FAC_mute\n",muteonfac);
-		fprintf(set,"%d QAM\n",qamtype);
-		fprintf(set,"%d MODE\n",modetype);
-		fprintf(set,"%d BW\n",specoccuppa);
-		fprintf(set,"%d Interleave\n",interleave);
+		fprintf(set, "%d TX_Sound_OUT_Device\n", soundouttx);
+		fprintf(set, "%d TX_Sound_IN_Device\n", soundintx);
+		fprintf(set, "%d RX_Sound_OUT_Device\n", soundoutrx);
+		fprintf(set, "%d RX_Sound_IN_Device\n", soundinrx);
+//		fprintf(set, "%d Send_Text_Message\n", usetext);
+		fprintf(set, "%d Send_Text_Message\n", UseTextMessage);
+//		fprintf(set, "%d Display_Type\n", disptype);
+		fprintf(set, "%d Display_Type\n", Display);
+		fprintf(set, "%d RX_Audfilt\n", audfiltrx);
+		fprintf(set, "%d FAC_mute\n", muteonfac);
+		fprintf(set, "%d QAM\n", qamtype);
+		fprintf(set, "%d MODE\n", modetype);
+		fprintf(set, "%d BW\n", specoccuppa);
+		fprintf(set, "%d Interleave\n", interleave);
 		fprintf(set, "%d FastReset\n", fastres);
 		fprintf(set, "%d Instances/RS\n", ECCmode); //added DM
 		fprintf(set, "%d %d %d %d WindowPosition\n", WindowPosition); //added DM
+		fprintf(set, "%d TxLevel\n", TxLevel); //added DM
+		fprintf(set, "%d Allow_Text_Message\n", AllowRXTextMessage);
 		fclose(set);
 	}
 }
@@ -214,35 +219,45 @@ void savevar(void)
 void getvar(void)
 {
 	set = fopen("settings.txt","rt");
-	if (set != NULL)
+	if (set != nullptr)
 	{
 		char rubbish[100];
 		char thecall[20];
-		fscanf(set,"%c %s",&txport,&rubbish);
-		fscanf(set,"%s %s",&thecall,&rubbish);
-		fscanf(set,"%d %s",&soundouttx,&rubbish);
-		fscanf(set,"%d %s",&soundintx,&rubbish);
-		fscanf(set,"%d %s",&soundoutrx,&rubbish);
-		fscanf(set,"%d %s",&soundinrx,&rubbish);
-		fscanf(set,"%d %s",&usetext,&rubbish);
-		fscanf(set,"%d %s",&disptype,&rubbish);
-		fscanf(set,"%d %s",&audfiltrx,&rubbish);
-		fscanf(set,"%d %s",&muteonfac,&rubbish);
-		fscanf(set,"%d %s",&qamtype,&rubbish);
-		fscanf(set,"%d %s",&modetype,&rubbish);
-		fscanf(set,"%d %s",&specoccuppa,&rubbish);
-		fscanf(set,"%d %s",&interleave,&rubbish);
+		fscanf(set, "%c %s", &txport, &rubbish);
+		fscanf(set, "%s %s", &thecall, &rubbish);
+		fscanf(set, "%d %s", &soundouttx, &rubbish);
+		fscanf(set, "%d %s", &soundintx, &rubbish);
+		fscanf(set, "%d %s", &soundoutrx, &rubbish);
+		fscanf(set, "%d %s", &soundinrx, &rubbish);
+//		fscanf(set, "%d %s", &usetext, &rubbish);
+		fscanf(set, "%d %s", &UseTextMessage, &rubbish);
+//		fscanf(set, "%d %s", &disptype, &rubbish);
+		fscanf(set, "%d %s", &Display, &rubbish);
+		fscanf(set, "%d %s", &audfiltrx, &rubbish);
+		fscanf(set, "%d %s", &muteonfac, &rubbish);
+		fscanf(set, "%d %s", &qamtype, &rubbish);
+		fscanf(set, "%d %s", &modetype, &rubbish);
+		fscanf(set, "%d %s", &specoccuppa, &rubbish);
+		fscanf(set, "%d %s", &interleave, &rubbish);
 		fscanf(set, "%d %s", &fastres, &rubbish);
 		fscanf(set, "%d %s", &ECCmode, &rubbish); //added DM
 		fscanf(set, "%d %d %d %d %s", &WindowX, &WindowY, &rubbish, &rubbish, &rubbish); //added DM
+		fscanf(set, "%d %s", &TxLevel, &rubbish); //added DM
+		fscanf(set, "%d %s", &AllowRXText, &rubbish);
 		fclose(set);
+		disptype = Display;
+		if (disptype == 9) disptype = 0; //scope uses display type zero
+		if (!TxLevel) TxLevel = 0; //if setting not found, set it to zero
+		if (!AllowRXText) AllowRXTextMessage = TRUE; //if setting not found, make it TRUE
+		if (AllowRXText == 0) AllowRXTextMessage = FALSE;
+		if (AllowRXText == 1) AllowRXTextMessage = TRUE;
 		if (audfiltrx == 1) rxaudfilt = TRUE;
 		else rxaudfilt = FALSE;
 		if (muteonfac == 1) rtsonfac = TRUE;
 		else rtsonfac = FALSE;
 		if (muteonfac == 2) dtronfac = TRUE;
 		else dtronfac = FALSE;
-		if (muteonfac == 3) {rtsonfac = TRUE; dtronfac = TRUE; }
+		if (muteonfac == 3) { rtsonfac = TRUE; dtronfac = TRUE; }
 		if (qamtype <= 4) qamtype = 4;
 		else if (qamtype >= 64) qamtype = 64;
 		else qamtype = 16;
@@ -256,7 +271,7 @@ void getvar(void)
 		else if (specoccuppa >= 1) specoccuppa = 1;
 		if (fastres == 1) fastreset = TRUE;
 		else fastreset = FALSE;
-		setcall(thecall);		
+		setcall(thecall);
 		dataisok = 1;
 	}
 }
@@ -351,12 +366,13 @@ void setsoundout(int dev, char rtx)
 
 void settext(BOOL ison)
 {
-	usetext = ison;
+	UseTextMessage = ison; //added DM
 	savevar();
 }
 
 BOOL gettext(void)
 {
-	return usetext;
+	return UseTextMessage; //DM
+
 }
 

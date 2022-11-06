@@ -65,6 +65,7 @@
 #define DLG_MIXERSETTING                162
 #define DLG_SENDBSR                     163
 #define DLG_ANSWERBSR                   164
+#define ID_TXLEVEL                      165
 #define IDM_O_RX_I_DRIVERS0             200
 #define IDM_O_TX_O_DRIVERS0             250
 #define IDM_O_VO_I_DRIVERS0             300
@@ -164,6 +165,7 @@
 #define ID_SETTINGS_FILETRANSFER_SHOWONLYONE 40041
 #define ID_SETTINGS_PTTPORT_DTRHIGHONFAC 40042
 #define ID_SETTINGS_LOADLASTRXFILE      40043
+#define ID_SETTINGS_DISPLAY_OSCILLOSCOPE         40045
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -172,7 +174,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        166
-#define _APS_NEXT_COMMAND_VALUE         40045
+#define _APS_NEXT_COMMAND_VALUE         40046
 #define _APS_NEXT_CONTROL_VALUE         1063
 #define _APS_NEXT_SYMED_VALUE           102
 #endif

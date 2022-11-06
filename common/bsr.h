@@ -31,13 +31,14 @@
 #include "DrmTransmitter.h" //edited DM
 
 #define NO_BSR_WIND 6 //added DM
+#define numstredele 5
 
 //These appear to be for multi-window BSR requests
 extern BOOL bsr_onscreen_arr[]; //added DM
 extern HWND bsrhwnd[]; //added DM
 extern int hasharr[]; //added DM
 extern string bsrcall[]; //added DM
-										
+								
 extern BOOL txbsr_onscreen_arr[]; //added DM
 extern HWND txbsrhwnd[]; //added DM
 extern int  txhasharr[]; //added DM

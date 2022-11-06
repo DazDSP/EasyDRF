@@ -41,30 +41,40 @@ void COFDMModulation::ProcessDataInternal(CParameter& TransmParam)
 
 	/* Copy input vector in matlib vector and place bins at the correct
 	   position */
-	for (i = iShiftedKmin; i < iEndIndex; i++)
+	if (paintmode == 0) {
+		//Normal data operation
+		for (i = iShiftedKmin; i < iEndIndex; i++)
 		veccFFTInput[i] = (*pvecInputData)[i - iShiftedKmin];
+	}
+	else if (paintmode == 2) {
+		//Tuning tones mode
+		float lev = 4;
+		veccFFTInput[iShiftedKmin + 7] = CComplex(lev, 0.0); //Tone bins in IFFT for Mode B
+		veccFFTInput[iShiftedKmin + 23] = CComplex(lev, 0.0); //
+		veccFFTInput[iShiftedKmin + 31] = CComplex(lev, 0.0); //
+	}
 
 	/* Calculate inverse fast Fourier transformation */
 	veccFFTOutput = Ifft(veccFFTInput, FftPlan);
 
 	/* Copy complex FFT output in output buffer and scale */
 	for (i = 0; i < iDFTSize; i++)
-		(*pvecOutputData)[i + iGuardSize] = veccFFTOutput[i] * (CReal) iDFTSize;
+		(*pvecOutputData)[i + iGuardSize] = veccFFTOutput[i] * (CReal)iDFTSize;
 
 
 	/* Copy data from the end to the guard-interval (Add guard-interval) */
 	for (i = 0; i < iGuardSize; i++)
 		(*pvecOutputData)[i] = (*pvecOutputData)[iDFTSize + i];
-	
+
 	/* Shift spectrum to desired IF ----------------------------------------- */
 	//This now shifts down to a zero-IF for PAPR processing DM 2022
 	/* Only apply shifting if phase is not zero */
-	if (cExpStep != _COMPLEX((_REAL) 1.0, (_REAL) 0.0))
+	if (cExpStep != _COMPLEX((_REAL)1.0, (_REAL)0.0))
 	{
 		for (i = 0; i < iOutputBlockSize; i++)
 		{
 			(*pvecOutputData)[i] = (*pvecOutputData)[i] * Conj(cCurExp);
-			
+
 			/* Rotate exp-pointer on step further by complex multiplication
 			   with precalculated rotation vector cExpStep. This saves us from
 			   calling sin() and cos() functions all the time (iterative

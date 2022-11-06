@@ -16,11 +16,15 @@
   --------------------------------------------------------------------*/
 
 #include "Parameter.h"
+extern BOOL UseTextMessage;
+extern BOOL AllowRXTextMessage;
+extern int  TxLevel;
 extern RECT WindowPosition;
 extern int	WindowX;
 extern int	WindowY;
 
 extern int disptype;
+extern int Display;
 extern BOOL rxaudfilt;
 extern BOOL rtsonfac;
 extern BOOL dtronfac;
