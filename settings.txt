@@ -14,6 +14,6 @@ Call Call
 1 Interleave
 0 FastReset
 0 Instances/RS
-300 669 741 980 WindowPosition
+96 566 537 877 WindowPosition
 1 TxLevel
 0 Allow_Text_Message

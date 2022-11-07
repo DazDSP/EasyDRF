@@ -101,7 +101,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		//the block size here might not be very big...
 		//it was easier to write all the sound data to one big buffer, then read it out as needed...
 
-#define WFSCALE 32767 //scale this for the correct clipping level
+#define WFSCALE 32000 //scale this for the correct clipping level
 		//do we have audio to play?
 		if (audio.GetSize() > 0) {
 			//copy as many samples as needed
@@ -112,9 +112,9 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 				if (readout >= audio.GetSize()) {
 					readout = 0;
 					paintmode = -1; //keep OFDM audio muted until TX turns off
-					i = iInputBlockSize / 4 + 1; //exit loop
 					audio.Init(0); //clear the buffer and release the memory
 					OnCommand(mainwindow, IDB_START, 0); //switch to receive
+					break; //exit the for loop
 				}
 			}
 		}

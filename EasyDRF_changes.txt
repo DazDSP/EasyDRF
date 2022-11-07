@@ -1,3 +1,10 @@
+EasyDRF Changes - by Daz Man November 8th, 2022
+* Waterfall text now scaled to better fit display
+* Waterfall text now supports up to 20 characters
+* "Voice Tx" is now displayed in Info when transmitting digital voice
+* Slight waterfall text buffering improvements
+
+
 EasyDRF Changes - by Daz Man November 6th, 2022
 * 1 second PTT delay added to prevent cutting off transmit audio
 * G, B, and ID buttons now generate waterfall text directly, using chirped IFFT
@@ -5,6 +12,7 @@ EasyDRF Changes - by Daz Man November 6th, 2022
 * Digital Voice mode Oscilloscope added
 * -12dB level setting added in Tx Settings menu
 * BSR request window filename bug fixed
+
 
 EasyDRF Changes - by Daz Man October 24th, 2022
 * PTT via COM port switching is now functional

@@ -48,7 +48,7 @@
 #include "common/callsign2.h"
 #include "RS-defs.h" //added DM
 
-extern int WFtext(int select);
+extern void WFtext(int select);
 
 CDRMReceiver	DRMReceiver;
 CDRMTransmitter	DRMTransmitter;
@@ -922,8 +922,10 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
 			SetDlgItemText(hwnd, IDC_EDIT6,  " "); //added DM
 			if (strlen(rxdevice) >=1) SelectSrc(rxdevice);
+			if (paintmode > -1) {
+				WFtext(99); //stop WF text if playing
+			}
 			paintmode = 0; //DM
-
 		}
 		break;
 	case IDC_IDTONE:
@@ -1021,15 +1023,18 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			DRMReceiver.Rec();
-			SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
-			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
+			SendMessage(GetDlgItem(hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
+			SendMessage(GetDlgItem(hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
-			SetDlgItemText(hwnd, IDC_EDIT,   " ");
-			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT3,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT6,  " "); //added DM
-			if (strlen(rxdevice) >=1) SelectSrc(rxdevice);
+			SetDlgItemText(hwnd, IDC_EDIT, " ");
+			SetDlgItemText(hwnd, IDC_EDIT2, " ");
+			SetDlgItemText(hwnd, IDC_EDIT3, " ");
+			SetDlgItemText(hwnd, IDC_EDIT4, " ");
+			SetDlgItemText(hwnd, IDC_EDIT6, " "); //added DM
+			if (strlen(rxdevice) >= 1) SelectSrc(rxdevice);
+			if (paintmode > -1) {
+				WFtext(99); //stop WF text if playing
+			}
 			paintmode = 0; //DM
 
 			if (moderestore != -1) {
@@ -2302,6 +2307,8 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
 						if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SSTV)
 							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
+						
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)"Voice TX");
 					}
 					else
 					{

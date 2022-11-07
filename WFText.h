@@ -3,7 +3,7 @@
 #include "common/libs/fftw.h"
 
 
-int WFtext(int select);
+void WFtext(int select);
 void sendtext(void);
 void calccostab(void);
 void calcwtab(void);
@@ -108,6 +108,6 @@ long long int chrmask[96] = {
 0x203010302030100,
 0x70784c464c787000 };
 
-//Text resampler FIR filter
-#define FILTER_TAP_NUMT 5
-static double filter_tapsT[FILTER_TAP_NUMT] = { 0, -0.1, 0.8, -0.1, 0 };
+//Text resampler FIR filter - no filtering is needed
+#define FILTER_TAP_NUMT 1
+static double filter_tapsT[FILTER_TAP_NUMT] = { 1 };
