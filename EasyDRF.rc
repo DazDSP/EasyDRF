@@ -225,24 +225,22 @@ BEGIN
     DEFPUSHBUTTON   "Save",IDSAVE,7,93,50,14,NOT WS_VISIBLE
 END
 
-DLG_HELP DIALOG 0, 0, 261, 209
+DLG_HELP DIALOGEX 0, 0, 261, 209
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Main Problems"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,204,188,50,14
-    LTEXT           "EasyDRF runs on WinXP with 1 or 2 soundcards.",IDC_STATIC,17,18,158,10
-    LTEXT           "on Win2000 it needs TWO soundcards to run.",IDC_STATIC,17,28,153,8
-    LTEXT           "if you have only 1 soundcard and Win2000 you can choose to run only the TX or only the RX or only Picture mode.  Use the startup options",IDC_STATIC,17,41,217,26
+    LTEXT           "EasyDRF runs on WinXP or later with 1 or 2 soundcards.",IDC_STATIC,17,18,185,10
+    LTEXT           "On Win2000 it needs TWO soundcards to run.",IDC_STATIC,17,28,153,8
+    LTEXT           "If you have only 1 soundcard and Win2000 you can choose to run only the TX or only the RX or only Picture mode.  Use the startup options",IDC_STATIC,17,41,217,26
     LTEXT           "EasyDRF.exe -r   for Receive only     ",IDC_STATIC,17,71,210,8
     LTEXT           "EasyDRF.exe -t   for Transmit only",IDC_STATIC,17,79,237,8
     LTEXT           "EasyDRF.exe -p   for Picture mode only, RX and TX ",IDC_STATIC,17,87,171,8
-    GROUPBOX        "First",IDC_STATIC,8,7,246,101
-    GROUPBOX        "Second",IDC_STATIC,8,116,246,56
-    LTEXT           "The TUNE and ID buttons will always play the sound on the default soundcard. There is no way to change that.  And, those buttons work only with WinXP !",IDC_STATIC,17,126,222,29
-    GROUPBOX        "More Info to come...",IDC_STATIC,8,176,172,26
-    LTEXT           "",IDC_STATIC,17,188,145,8
-    LTEXT           "Tune plays tune.wav,    ID -> id.wav,    G -> g.wav,    B -> b.wav",IDC_STATIC,17,157,222,8
+    GROUPBOX        "Note:",IDC_STATIC,8,7,246,101
+    GROUPBOX        "More info:",IDC_STATIC,8,116,246,56
+    LTEXT           "http://homepages.ihug.com.au/~daz2002/tech/EasyDRF",IDC_STATIC,17,144,222,8
+    LTEXT           "EasyDRF Website:",IDC_STATIC,17,132,222,8
 END
 
 DLG_RXSETTINGS DIALOGEX 0, 0, 120, 129
@@ -436,7 +434,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Callsign",                    ID_SETTINGS_CALLSIGN
         MENUITEM SEPARATOR
-        POPUP "Codec"
+        POPUP "Voice Codec"
         BEGIN
             MENUITEM "SPEEX",                       ID_CODEC_SPEEX
             MENUITEM "LPC 10",                      ID_CODEC_LPC10, CHECKED
@@ -478,7 +476,7 @@ BEGIN
         MENUITEM "Impulse Response",            ID_SETTINGS_DISPLAY_IMPULSERESPONSE
         MENUITEM "FAC Phase",                   ID_SETTINGS_DISPLAY_FACPHASE
         MENUITEM "MSC Phase/Amplitude",         ID_SETTINGS_DISPLAY_MSCPHASE
-        MENUITEM "Audio Scope",                 ID_SETTINGS_DISPLAY_OSCILLOSCOPE
+        MENUITEM "Digital Voice Scope",         ID_SETTINGS_DISPLAY_OSCILLOSCOPE
     END
     POPUP "Settings"
     BEGIN

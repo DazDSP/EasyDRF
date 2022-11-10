@@ -81,9 +81,9 @@ public:
 	_BOOLEAN GetSlideShowPartActSegs(CVector<_BINARY>& vbSegs);
 	_BOOLEAN GetSlideShowBSR(int * iNumSeg, string * bsrname, char * path);
 	EAppType GetAppType() {return eAppType;}
-	int GetTotSize(void);
-	int GetActSize(void);
-	int GetActPos(void);
+	unsigned int GetTotSize(void);
+	unsigned int GetActSize(void);
+	unsigned int GetActPos(void);
 
 protected:
 	class CDataUnit

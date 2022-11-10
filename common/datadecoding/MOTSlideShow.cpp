@@ -126,7 +126,7 @@ void CMOTSlideShowEncoder::AddFileName(const string& strFileName, const string& 
 			strFileNamenoDirX = strFileNamenoDir.c_str(); //copy normal filename
 		}
 		
-		//Only add the new header if using the new RS mode
+		//Only add the new header if using the new RS mode - Disable RS if BSR.bin is being sent ************* TODO
 		int HeaderSize = 0;
 		if (ECCmode > 3) {
 			//Daz Man:

@@ -101,7 +101,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		//the block size here might not be very big...
 		//it was easier to write all the sound data to one big buffer, then read it out as needed...
 
-#define WFSCALE 32000 //scale this for the correct clipping level
+#define WFSCALE 31000 //scale this for the correct clipping level
 		//do we have audio to play?
 		if (audio.GetSize() > 0) {
 			//copy as many samples as needed

@@ -233,7 +233,7 @@ void WFtext(int select) {
                         for (int ifft = startpos; ifft < TextDFTSize - startpos; ifft++) {
                             int iffts = ifft - startpos;
                             float a = textLPFs[iffts]; //read a pixel
-                            float a2 = a * 18 / sqrt(iffts + 256); //Does this help even the amplitudes?
+                            //float a2 = a * 18 / sqrt(iffts + 256); //Does this help even the amplitudes?
                             float ph = (crPi / TextDFTSize) * ((ifft * ifft) * CHIRPRATE); //Chirp the FFT input for best results
                             veccFFTInputT[ifft] = CComplex(cos(ph) * a, sin(ph) * a);
                         }

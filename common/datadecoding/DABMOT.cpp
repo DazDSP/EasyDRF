@@ -60,6 +60,7 @@ void CMOTDABEnc::SetMOTObject(CMOTObject& NewMOTObject, CVector<short> vecsDataI
 	const int iPicSizeBits = NewMOTObject.vecbRawData.Size();
 	const int iPicSizeBytes = iPicSizeBits / SIZEOF__BYTE;
 	const string strFileName = NewMOTObject.strName;
+	EncFileSize = iPicSizeBytes; //Also set it here to send in the segment header DM (try to do this through the classes for neatness TODO DM)
 
 	/* File name size is restricted (in this implementation) to 128 (2^7) bytes.
 	   If file name is longer, cut it. TODO: better solution: set Ext flag in
@@ -139,7 +140,6 @@ void CMOTDABEnc::SetMOTObject(CMOTObject& NewMOTObject, CVector<short> vecsDataI
 	/* BodySize: This 28-bit field, coded as an unsigned binary number,
 	   indicates the total size of the body in bytes */
 	MOTObjectRaw.Header.vecbiData.Enqueue((uint32_t)iPicSizeBytes, 28); //The file size is sent in the file header here DM
-	EncFileSize = iPicSizeBytes; //Also set it here to send in the segment header DM (try to do this through the classes for neatness TODO DM)
 
 	/* HeaderSize: This 13-bit field, coded as an unsigned binary number,
 	   indicates the total size of the header in bytes */
@@ -864,7 +864,6 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 						erasures[RSsw][i] = 0;
 					}
 				
-					CompTotalSegs = 0; //
 				}
 			}
 		}
@@ -968,7 +967,7 @@ _BOOLEAN CMOTDABDec::AddDataGroup(CVector<_BINARY>& vecbiNewData)
 		//check if the Transport ID changes, and if the RS data didn't decode then attempt decode immediately before data gets overwritten by the new data
 		//this will need another RS check higher up in the file...
 
-		if (DecFileSize > 0) {
+		if ((DecFileSize > 0) && (DecSegSize > 0)) {
 			DecTotalSegs = (int)ceil((_REAL)DecFileSize / DecSegSize); //compute total segments from file size
 			DecTotalSegs = min(DecTotalSegs, 32767); //ensure the size isn't ridiculous if there is a version mismatch
 		}
@@ -1236,7 +1235,7 @@ void GetName(CMOTObjectRaw& MOTObjectRaw)
 	unsigned char	ucDatafield = 0;
 	MOTObjectRaw.Header.vecbiData.ResetBitAccess();
 	HdrFileSize = (int) MOTObjectRaw.Header.vecbiData.Separate(28); //Read file size from header
-
+	
 	const int iHeaderSize = (int) MOTObjectRaw.Header.vecbiData.Separate(13);
 	i = (int) MOTObjectRaw.Header.vecbiData.Separate(15);
 	int iSizeRec = iHeaderSize - 7;
@@ -1319,7 +1318,7 @@ _BOOLEAN	CMOTDABDec::GetActBSR(int * iNumSeg, string * bsr_name, char * path, in
 	}
 	else
 	{
-		int segsize = 116; //why is this set here? A default? Appears that way... DM
+		unsigned int segsize = 116; //why is this set here? A default? Appears that way... DM
 		int i = 0;
 		int sct = 0;
 		wsprintf(filenam,"%s%s",path,"bsr.bin");
@@ -1380,7 +1379,7 @@ _BOOLEAN	CMOTDABDec::GetActMOTObject(CMOTObject& NewMOTObject)
 		return FALSE;
 	if (MOTObjectRaw.Header.bReady == TRUE) //modified DM
 	{
-		int segsize = 116;
+		unsigned int segsize = 116;
 		int i = 0; //init DM
 
 		/* Lock resources */
@@ -1435,9 +1434,8 @@ void CMOTDABDec::DecodeObject(CMOTObjectRaw& MOTObjectRaw)
 	/* HeaderSize and BodySize */
 	const int iBodySize = (int) MOTObjectRaw.Header.vecbiData.Separate(28); //this is the incoming file total size in bytes from the file header DM
 	
-	HdrFileSize = iBodySize; //Added DM
+	//HdrFileSize = iBodySize; //Added DM
 
-	CompTotalSegs = (int)ceil((_REAL)iBodySize / DecSegSize); //Added DM
 
 	const int iHeaderSize = (int) MOTObjectRaw.Header.vecbiData.Separate(13);
 

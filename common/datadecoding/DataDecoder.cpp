@@ -504,15 +504,15 @@ _BOOLEAN CDataDecoder::GetSlideShowBSR(int * iNumSeg, string * bsrname, char * p
 	return MOTSlideShow[0].GetPartBSR(iNumSeg,bsrname,path);
 }
 
-int CDataDecoder::GetTotSize(void) 
+unsigned int CDataDecoder::GetTotSize(void)
 { 
 	return MOTSlideShow[iServPacketID].GetTotSize(); 
 }
-int CDataDecoder::GetActSize(void) 
+unsigned int CDataDecoder::GetActSize(void)
 { 
 	return MOTSlideShow[iServPacketID].GetActSize(); 
 }
-int CDataDecoder::GetActPos(void) 
+unsigned int CDataDecoder::GetActPos(void)
 { 
 	return MOTSlideShow[iServPacketID].GetActPos(); 
 }

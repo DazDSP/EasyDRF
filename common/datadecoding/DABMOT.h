@@ -159,10 +159,10 @@ public:
 	_BOOLEAN	GetActMOTObject(CMOTObject& NewMOTObject);
 	_BOOLEAN	GetActBSR(int * iNumSeg, string * bsr_name, char * path, int * iHash);
 	void		GetMOTObject(CMOTObject& NewMOTObject) {NewMOTObject = MOTObject; /* Simply copy object */}
-	int GetObjectTotSize() {
+	unsigned int GetObjectTotSize() {
 		//this isn't computing the total segments after the first file, even when all the info has been received... DM
-		int a = MOTObjectRaw.BodyRx.vvbiSegment.Size(); //try the original method first DM
-		int b = 0;
+		unsigned int a = MOTObjectRaw.BodyRx.vvbiSegment.Size(); //try the original method first DM
+		unsigned int b = 0;
 		//Prevent divide by zero
 		if (DecSegSize > 0) {
 			//if HdrFileSize > 0 always use it

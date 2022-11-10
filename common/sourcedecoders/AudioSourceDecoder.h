@@ -77,9 +77,10 @@ public:
 	void GetTxSpeechBuffer(CVector<_REAL>& scopeData) {
 
 		/* Init output vectors */
-		//vecrData.Init(19200, (_REAL)0.0); //initialize this on program start instead
-		for (int j = 0; j < 19200; j++) {
-			scopeData[j] = speechIN[j]; //copy speech buffer for Oscilloscope display
+		if (speechIN.GetSize() > 0) {
+			for (int j = 0; j < 19200; j++) {
+				scopeData[j] = speechIN[j]; //copy speech buffer for Oscilloscope display
+			}
 		}
 		return;
 	};

@@ -88,9 +88,9 @@ public:
 	_BOOLEAN GetActSegments(CVector<_BINARY>& NewSeg);
 	_BOOLEAN GetPartBSR(int * iNumSeg, string * bsrname, char * path);
 
-	int GetTotSize(void) { return MOTDAB.GetObjectTotSize(); }; //Original code - this fails after the first file.. Why? DM It's related to the way the incoming raw data array is sized...
-	int GetActSize(void) { return MOTDAB.GetObjectActSize(); };
-	int GetActPos(void)  { return MOTDAB.GetObjectActPos(); };
+	unsigned int GetTotSize(void) { return MOTDAB.GetObjectTotSize(); }; //Original code - this fails after the first file.. Why? DM It's related to the way the incoming raw data array is sized...
+	unsigned int GetActSize(void) { return MOTDAB.GetObjectActSize(); };
+	unsigned int GetActPos(void)  { return MOTDAB.GetObjectActPos(); };
 
 
 protected:

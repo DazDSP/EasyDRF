@@ -1,3 +1,7 @@
+EasyDRF Changes - by Daz Man November 10th, 2022
+* BSR total segment display bugfix
+
+
 EasyDRF Changes - by Daz Man November 8th, 2022
 * Waterfall text now scaled to better fit display
 * Waterfall text now supports up to 20 characters

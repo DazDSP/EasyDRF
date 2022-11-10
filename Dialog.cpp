@@ -88,13 +88,13 @@ unsigned int HdrFileSize = 0; //Decoder current file size DM
 unsigned int SerialFileSize = 0;
 int unsigned RSfilesize = 0; //The size of the RS encoded data (this is the number of 255 byte blocks)
 
-int totsize = 0; //total segment count global DM
-int actsize = 0; //Decoder active segment count global DM
-int actpos = 0; //Decoder active position global DM
+unsigned int totsize = 0; //total segment count global DM
+unsigned int actsize = 0; //Decoder active segment count global DM
+unsigned int actpos = 0; //Decoder active position global DM
 
 unsigned int DecSegSize = 0; //Decoder Segment Size copy
 unsigned int DecTotalSegs = 0; //Decoder total segments - the actual int being used...
-unsigned int CompTotalSegs = 0; //Computed total segments
+//unsigned int CompTotalSegs = 0; //Computed total segments - no longer needed
 
 unsigned int RScount = 0; //save RS attempts count
 unsigned int RSpsegs = 0; //save RS segs on last attempt
@@ -172,9 +172,9 @@ int DMobjectnum = 0;
 int DMrxokarray[50]{ 0 };
 float DMSNRavarray[50]{ 0 };
 float DMSNRmaxarray[50]{ 0 };
-int DMgoodsegsarray[50]{ 0 };
-int DMtotalsegsarray[50]{ 0 };
-int DMpossegssarray[50]{ 0 };
+int unsigned DMgoodsegsarray[50]{ 0 };
+int unsigned DMtotalsegsarray[50]{ 0 };
+int unsigned DMpossegssarray[50]{ 0 };
 //int DMspeechmodecount = 0;  //not used yet...
 
 //moved from further down DM
@@ -290,7 +290,8 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %s", DMfilename, RSfilesize, DecTransportID, erasureswitch, DMdecodestat);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u D1:%u D2:%u D3:%u", DMfilename, lastRSbcERR, RSfilesize, debug1, debug2, debug3);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 	//compute the file save status message based on the number in filestate
@@ -1885,14 +1886,14 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)tempstr);
 
 					totsize = DRMReceiver.GetDataDecoder()->GetTotSize(); //Total segment count DM
-					totsize = max(totsize, CompTotalSegs);//Computed from old header DM
-					totsize = max(totsize, DecTotalSegs); //From new serial backup DM
-
+					//totsize = max(totsize, CompTotalSegs);//Computed from old header DM
+					//totsize = max(totsize, DecTotalSegs); //From new serial backup DM
+					// 
 					//These are now directly saved out of the respective routine, instead of here DM
 					//actsize = DRMReceiver.GetDataDecoder()->GetActSize(); //Current number of good segments DM - This is now updated directly inside the DataDecoder class
 					//actpos = DRMReceiver.GetDataDecoder()->GetActPos();   //Current incoming segment DM
 
-					sprintf(tempstr, "%d / %d / %d", totsize, actsize, actpos); //This is where the receiver stats are displayed DM
+					sprintf(tempstr, "%u / %u / %u", totsize, actsize, actpos); //This is the decoder Info display DM
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
 					/*
@@ -2325,7 +2326,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						wsprintf(tempstr, "%d / %d%%", numbits, percent);
 						SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
-						wsprintf(tempstr, "Sending data of %d bytes", EncFileSize); //added info - in testing - DM
+						wsprintf(tempstr, "Sending data of %u bytes", EncFileSize); //added info - in testing - DM
 						SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 						percent = DRMTransmitter.GetAudSrcEnc()->GetNoOfPic();
@@ -2438,7 +2439,7 @@ BOOL CALLBACK SendBSRDlgProc
 
 //try to get BSR filename to display...
 //			SetDlgItemText(hwnd, IDC_SENDBSR_FNAME, namebsrfile); //edited DM -- THIS DOES NOT WORK
-//			SetDlgItemText(hwnd, IDC_SENDBSR_FNAME, namebsrfile.c_str()); //edited DM
+//			SetDlgItemText(hwnd, IDC_SENDBSR_FNAME, namebsrfile.c_str()); //edited DM -- THIS DOES NOT WORK
 			SetDlgItemText(hwnd, IDC_SENDBSR_FNAME, DMfilename); //display filename - This works, but it relies on other code, and may not be in sync...
 			SetDlgItemInt( hwnd, IDC_BSRINST, txbsrposind, FALSE ); //display how many segments
 			SetDlgItemText( hwnd, IDC_SENDBSR_FROMCALL, consrxcall.c_str()); //display callsign
@@ -3631,133 +3632,137 @@ void DrawBar(HWND hwnd) {
 		//int height = rect.bottom - rect.top;
 	}
 	//read erasures buffer and convert it to a line graph
-	const int x = actpos; //get current segment number
+	unsigned const int x = actpos; //get current segment number
 	unsigned int y = totsize; //Total segment count DM
 
 	y = max(DecTotalSegs, y);
 	y = max(y, x);
 
-	if (y == 0) { y = 1; } //don't divide by zero!
+	//Check for a sane size value so it doesn't stall the system...
+	if (y < 32767) {
 
-	//The desired width is "width"
-	//the actual width is "y"
-	//the correction "n" is width/y
-	//to use int scaling, n*1000 = BarLastSeg*1000/y
+		if (y == 0) { y = 1; } //don't divide by zero!
 
-	int n = (width * 1000) / y;
-	//this executes every 100mS, so make sure it doesn't run too often
-	if ((BarLastSeg != x) && (CRCOK)) {
-		int d = 0;
+		//The desired width is "width"
+		//the actual width is "y"
+		//the correction "n" is width/y
+		//to use int scaling, n*1000 = BarLastSeg*1000/y
 
-		if (n > 1000) { n = 1000; } //Don't stretch bargraph
+		int n = (width * 1000) / y;
+		//this executes every 100mS, so make sure it doesn't run too often
+		if ((BarLastSeg != x) && (CRCOK)) {
+			int d = 0;
 
-		HDC hdc = GetDC(hwnd);
-		MoveToEx(hdc, BARL, BARY, nullptr);
-		/*
-		XFORM xForm;
-		xForm.eM11 = (FLOAT)2.0;
-		xForm.eM12 = (FLOAT)0.0;
-		xForm.eM21 = (FLOAT)0.0;
-		xForm.eM22 = (FLOAT)2.0;
-		xForm.eDx = 0;
-		xForm.eDy = 0;
-		SetWorldTransform(hdc, &xForm);
-		*/
-		//HPEN penz;
-		HPEN penx = nullptr;
-		HPEN penb = nullptr;
-		HPEN penr = nullptr;
-		HPEN peng = nullptr;
-		LOGBRUSH lbb;
-		lbb.lbStyle = BS_SOLID;
-		lbb.lbColor = RGB(0, 0, 0);
-		lbb.lbHatch = 0;
-		LOGBRUSH lbr;
-		lbr.lbStyle = BS_SOLID;
-		lbr.lbColor = RED; // RGB(255, 0, 0);
-		lbr.lbHatch = 0;
-		LOGBRUSH lbg;
-		lbg.lbStyle = BS_SOLID;
-		lbg.lbColor = GREEN; // RGB(60, 255, 0);
-		lbg.lbHatch = 0;
-		LOGBRUSH lbx;
-		lbx.lbStyle = BS_SOLID;
-		lbx.lbColor = GetSysColor(COLOR_3DFACE); //RGB(127, 127, 127);
-		lbx.lbHatch = 0;
+			if (n > 1000) { n = 1000; } //Don't stretch bargraph
 
-		constexpr int pwidth = 1;
-		penb = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbb, 0, nullptr); //Black for current segment
-		penr = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbr, 0, nullptr); //Red for no segment received
-		peng = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbg, 0, nullptr); //Green for good segment
-		penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
-		//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
+			HDC hdc = GetDC(hwnd);
+			MoveToEx(hdc, BARL, BARY, nullptr);
+			/*
+			XFORM xForm;
+			xForm.eM11 = (FLOAT)2.0;
+			xForm.eM12 = (FLOAT)0.0;
+			xForm.eM21 = (FLOAT)0.0;
+			xForm.eM22 = (FLOAT)2.0;
+			xForm.eDx = 0;
+			xForm.eDy = 0;
+			SetWorldTransform(hdc, &xForm);
+			*/
+			//HPEN penz;
+			HPEN penx = nullptr;
+			HPEN penb = nullptr;
+			HPEN penr = nullptr;
+			HPEN peng = nullptr;
+			LOGBRUSH lbb;
+			lbb.lbStyle = BS_SOLID;
+			lbb.lbColor = RGB(0, 0, 0);
+			lbb.lbHatch = 0;
+			LOGBRUSH lbr;
+			lbr.lbStyle = BS_SOLID;
+			lbr.lbColor = RED; // RGB(255, 0, 0);
+			lbr.lbHatch = 0;
+			LOGBRUSH lbg;
+			lbg.lbStyle = BS_SOLID;
+			lbg.lbColor = GREEN; // RGB(60, 255, 0);
+			lbg.lbHatch = 0;
+			LOGBRUSH lbx;
+			lbx.lbStyle = BS_SOLID;
+			lbx.lbColor = GetSysColor(COLOR_3DFACE); //RGB(127, 127, 127);
+			lbx.lbHatch = 0;
 
-		//Erase the last black line - for the 2nd/3rd pass etc.
-		if (x < BarLastSeg) {
-			SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
-			MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
-			LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
-		}
+			constexpr int pwidth = 1;
+			penb = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbb, 0, nullptr); //Black for current segment
+			penr = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbr, 0, nullptr); //Red for no segment received
+			peng = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, pwidth, &lbg, 0, nullptr); //Green for good segment
+			penx = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 6, &lbx, 0, nullptr); //Grey background erase
+			//penz = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 1, &lbx, 0, nullptr); //Grey background erase
+
+			//Erase the last black line - for the 2nd/3rd pass etc.
+			if (x < BarLastSeg) {
+				SelectObject(hdc, peng); //use green - because if there was a black line drawn, there must have been a good segment
+				MoveToEx(hdc, ((BarLastSeg * n) / 1000), BARB, nullptr);
+				LineTo(hdc, ((BarLastSeg * n) / 1000), BART); //erase
+			}
 #define GLOBALBARBUF 1 //if this is set, bargraph erasure data is read via the global erasure buffer, otherwise it is read via the class variables (not working)
 #if GLOBALBARBUF == 1
-		//data is good and we have a valid new segment - so update the graph
-		//copy from buffer and draw to the screen
-		//only read as far into the buffer as we need to...
-		for (i = 0; i < y; i++) {
-			//for each bit read, set the display red on 0 and green on 1
-			d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
-			if (d == 0) {
-				SelectObject(hdc, penr); //select red pen
-				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
+			//data is good and we have a valid new segment - so update the graph
+			//copy from buffer and draw to the screen
+			//only read as far into the buffer as we need to...
+			for (i = 0; i < y; i++) {
+				//for each bit read, set the display red on 0 and green on 1
+				d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
+				if (d == 0) {
+					SelectObject(hdc, penr); //select red pen
+					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
+				}
+				else {
+					SelectObject(hdc, peng);//select green pen
+					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+				}
 			}
-			else {
-				SelectObject(hdc, peng);//select green pen
-				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
-			}
-		}
 #endif
 #if GLOBALBARBUF == 0
-//this won't work, because vvbiSegment is buried in classes...
-		for (i = 0; i < vvbiSegment.Size(); i++) {
-			//for each bit read, set the display red on 0 and green on 1
-			//d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
-			if (vvbiSegment[i].Size() >= 1) {
-				SelectObject(hdc, peng);//select green pen
-				MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+			//this won't work, because vvbiSegment is buried in classes...
+			for (i = 0; i < vvbiSegment.Size(); i++) {
+				//for each bit read, set the display red on 0 and green on 1
+				//d = (erasures[RSsw][i >> 3] >> (i & 7)) & 1; //get the correct bit
+				if (vvbiSegment[i].Size() >= 1) {
+					SelectObject(hdc, peng);//select green pen
+					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a green line up
+				}
+				else {
+					SelectObject(hdc, penr); //select red pen
+					MoveToEx(hdc, (i * n) / 1000, BARB, nullptr); //
+					LineTo(hdc, (i * n) / 1000, BART); //draw a red line up
+				}
 			}
-			else {
-				SelectObject(hdc, penr); //select red pen
-				MoveToEx(hdc, (i* n) / 1000, BARB, nullptr); //
-				LineTo(hdc, (i* n) / 1000, BART); //draw a red line up
-			}
-		}
 #endif
-		SelectObject(hdc, penb);
-		MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
-		LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
+			SelectObject(hdc, penb);
+			MoveToEx(hdc, ((x * n) / 1000), BARB, nullptr);
+			LineTo(hdc, ((x * n) / 1000), BART); //draw a black tip on the line
 
-		//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
-		if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
+			//did the transport ID change? (new file) - check if the Total segment count has changed also, and redraw the window background where needed
+			if ((BarTransportID != DecTransportID) || (y != BarLastTot) || (x > BarLastTot)) {
 
-			SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
-			MoveToEx(hdc, ((x * n) / 1000) + 5, BARY, nullptr);
-			LineTo(hdc, BARR, BARY); //erase the rest of the window
-			BarTransportID = DecTransportID;
-			BarLastTot = y; //update totsegs
+				SelectObject(hdc, penx); //penx is the window background colour, and 6 pixels square
+				MoveToEx(hdc, ((x * n) / 1000) + 5, BARY, nullptr);
+				LineTo(hdc, BARR, BARY); //erase the rest of the window
+				BarTransportID = DecTransportID;
+				BarLastTot = y; //update totsegs
+			}
+
+			DeleteObject(penr);
+			DeleteObject(peng);
+			DeleteObject(penb);
+			DeleteObject(penx);
+			//DeleteObject(penz);
+
+			BarLastSeg = x;
+
+			ReleaseDC(hwnd, hdc);
 		}
-
-		DeleteObject(penr);
-		DeleteObject(peng);
-		DeleteObject(penb);
-		DeleteObject(penx);
-		//DeleteObject(penz);
-
-		BarLastSeg = x;
-
-		ReleaseDC(hwnd, hdc);
 	}
 	BGbusy = 0; //flag that the thread has terminated
 }

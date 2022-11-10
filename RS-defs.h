@@ -38,13 +38,13 @@ extern unsigned int DecFileSize; //Decoder current file size
 extern unsigned int HdrFileSize;
 extern unsigned int SerialFileSize; //Serial register for file size transmission
 
-extern int totsize; //Decoder total segment count global
-extern int actsize; //Decoder active segment count global
-extern int actpos; //Decoder active position global
+extern unsigned int totsize; //Decoder total segment count global
+extern unsigned int actsize; //Decoder active segment count global
+extern unsigned int actpos; //Decoder active position global
 
 extern unsigned int DecSegSize; //Decoder current segment size
 extern unsigned int DecTotalSegs;
-extern unsigned int CompTotalSegs;
+//extern unsigned int CompTotalSegs; //no longer needed
 
 extern bool CRCOK;
 
