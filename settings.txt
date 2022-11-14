@@ -8,12 +8,12 @@ Call Call
 8 Display_Type
 0 RX_Audfilt
 0 FAC_mute
-16 QAM
+4 QAM
 1 MODE
 1 BW
 1 Interleave
 0 FastReset
 0 Instances/RS
-596 665 1037 976 WindowPosition
+313 551 754 862 WindowPosition
 1 TxLevel
 0 Allow_Text_Message

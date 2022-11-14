@@ -36,6 +36,7 @@
 #include "../CRC.h"
 #include "../TextMessage.h"
 #include "../datadecoding/DataDecoder.h"
+#include "lpc10.h"
 
 /* Definitions ****************************************************************/
 /* Forgetting factor for audio blocks in case CRC was wrong */
@@ -79,7 +80,7 @@ public:
 		/* Init output vectors */
 		if (speechIN.GetSize() > 0) {
 			for (int j = 0; j < 19200; j++) {
-				scopeData[j] = speechIN[j]; //copy speech buffer for Oscilloscope display
+				scopeData.at(j) = speechIN[j]; //copy speech buffer for Oscilloscope display
 			}
 		}
 		return;

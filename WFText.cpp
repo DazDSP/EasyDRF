@@ -5,7 +5,7 @@
  *	Daz Man
  *
  * Description:
- *	WFText.cpp - Text to Waterfall converter by Daz Man 2022
+ *  WFText.cpp - Text to Waterfall converter by Daz Man 2022
  *  ASCII conversion table originally from ChirpHel by DF6NM.
  *
  ******************************************************************************

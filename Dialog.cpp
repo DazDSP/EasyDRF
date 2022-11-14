@@ -227,7 +227,6 @@ int txbsrposind = 0; //init DM
 BOOL bCloseMe = FALSE;
 
 HWND bsrhand;
-HWND mainwindow;
 
 int moderestore = -1;
 int qamrestore = -1;
@@ -255,8 +254,9 @@ int specocc = 0;
 
 /* Implementation of global functions *****************************************/
 int messtate[20] = { -1,-1,-1,-1,-1,-1,-1,-1,-1,-1 }; //was 10 DM
-HWND messhwnd;
+//HWND messhwnd; //replaced by mainwindow below
 HWND RXMessagehwnd;
+HWND mainwindow; //added DM
 
 void ClearBar(HWND hwnd) {
 	HDC hdc = GetDC(hwnd);
@@ -292,6 +292,7 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u D1:%u D2:%u D3:%u", DMfilename, lastRSbcERR, RSfilesize, debug1, debug2, debug3);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u B:%u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw, debug);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 	//compute the file save status message based on the number in filestate
@@ -382,7 +383,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam)
 }
 
 void updateLEDs(void) {
-	HWND hwnd = messhwnd; //main window
+	HWND hwnd = mainwindow; //main window
 	HDC hdc = GetDC(hwnd);
 
 	constexpr int x = 15; //x position of LEDs
@@ -426,7 +427,7 @@ static void PaintWaveData ( HWND hDlg , BOOL erase )
 {
     HWND hwndShowWave = GetDlgItem( hDlg, IDS_WAVE_PANE );
 
-	DrawBar(messhwnd); //This works much better here! DM
+	DrawBar(mainwindow); //This works much better here! DM
 	updateLEDs();
     InvalidateRect( hwndShowWave, nullptr, erase );
     UpdateWindow( hwndShowWave );
@@ -447,7 +448,7 @@ void RxFunction(  void *dummy  )
 	catch (CGenErr GenErr)
 	{
 		RX_Running = FALSE;
-		MessageBox( messhwnd,"RX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options","RX Exception",0);	
+		MessageBox(mainwindow, "RX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options", "RX Exception", 0);
 		PTToff(); //added for PTT control DM
 	}
 }
@@ -462,7 +463,7 @@ void TxFunction(  void *dummy  )
 	catch (CGenErr GenErr)
 	{
 		TX_Running = FALSE;
-		MessageBox( messhwnd,"TX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\n Try -r, -t or -p startup options","TX Exception",0);	
+		MessageBox(mainwindow, "TX Audio Setup Wrong\nWinDRM needs 2 soundcards or WinXP\n Try -r, -t or -p startup options", "TX Exception", 0);
 		PTToff(); //added for PTT control DM
 	}
 }
@@ -615,7 +616,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		HICON hIcon = LoadIcon(TheInstance, MAKEINTRESOURCE(IDI_ICON1));
 		SendMessage(hwnd, WM_SETICON, WPARAM(ICON_SMALL), LPARAM(hIcon));
 	}
-	messhwnd = hwnd;
+	mainwindow = hwnd;
 	SendMessage(GetDlgItem(hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
 	SendMessage(GetDlgItem(hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File");
 
@@ -971,8 +972,6 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 	case IDB_START: //Send voice mode
 		if (IsRX2)
 		{
-			mainwindow = hwnd; //save this for later
-
 			char dcbuf[20]{ 0 };
 			if (runmode != 'P')
 			{
@@ -984,18 +983,18 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 					PTTon(); //added for com port control DM
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
 					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
-					if (TX_Running) 
-					{	
+					if (TX_Running)
+					{
 						DRMTransmitter.Init();
 						//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
-						if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC < 1040) {
-							MessageBox(hwnd, "Mode does not allow Voice", "Wrong Mode", 0);	//this should force return to receive mode... DM
-						}
-						else { //disable transmit mode - added DM
-							DRMTransmitter.Send();
-							sprintf(dcbuf, "%d", (int)DRMTransmitter.GetCarOffset());
-							SetDlgItemText(hwnd, IDC_DCFREQ, dcbuf);
-						}
+						//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC < 1040) { //was 1040
+						//	MessageBox(hwnd, "Mode does not allow Voice", "Wrong Mode", 0);	//this should force return to receive mode... DM
+						//}
+						//else {
+						DRMTransmitter.Send();
+						sprintf(dcbuf, "%d", (int)DRMTransmitter.GetCarOffset());
+						SetDlgItemText(hwnd, IDC_DCFREQ, dcbuf);
+						//}
 					}
 
 					SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
@@ -1466,7 +1465,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		isspdisp++;
 		if (isspdisp >= 4) isspdisp = 0;
 
-		if (stoptx == 0) OnCommand(messhwnd, IDB_START, 0);
+		if (stoptx == 0) OnCommand(mainwindow, IDB_START, 0);
 		if (stoptx >= 0) stoptx--;
 
 		disptype = Display;
@@ -1855,7 +1854,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 					sprintf(tempstr, "%d ", DRMReceiver.GetAudSrcDec()->getdecodperc()); //may need updating DM ======================== This is for speech mode DM
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)tempstr);
 
-					wsprintf(tempstr, "MSCbits:%d  MaxBits:%d TxtStart:%d", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits, FrameSize);
+					wsprintf(tempstr, "MSCbits:%u  AudDecBits:%u Frame:%u", DRMReceiver.GetParameters()->iNumDecodedBitsMSC, DRMReceiver.GetParameters()->iNumAudioDecoderBits, FrameSize);
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //Added receive blocksize DM ================
 
 					ecodec = DRMReceiver.GetParameters()->Service[0].AudioParam.eAudioCoding;
@@ -2308,7 +2307,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
 						if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SSTV)
 							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SSTV");
-						
+
 						SendMessage(GetDlgItem(hwnd, IDC_EDIT5), WM_SETTEXT, 0, (LPARAM)"Voice TX");
 					}
 					else
@@ -2364,7 +2363,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 					//send debugging info to stats window DM
 					if (TransmParam->Service[0].eAudDataFlag == CParameter::SF_AUDIO) {
-						lasterror2 = sprintf_s(tempstr, "BlockSize:%d MaxBits:%d TxtStart:%d", BlockSize, TextBytes, TextBytesi);
+						lasterror2 = sprintf_s(tempstr, "BlockSize:%d TxtStart:%d TextEnd:%d", BlockSize, TextBytesi, TextBytes);
 						lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 					}
 				}
@@ -2499,18 +2498,18 @@ BOOL CALLBACK SendBSRDlgProc
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX2 = FALSE;
 			PTTon(); //added DM
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
 			{
 				char dcbuf[20];
 				DRMTransmitter.Init();
 				DRMTransmitter.Send();
 				sprintf(dcbuf,"%d",(int)DRMTransmitter.GetCarOffset());
-				SetDlgItemText( messhwnd, IDC_DCFREQ, dcbuf);
+				SetDlgItemText(mainwindow, IDC_DCFREQ, dcbuf);
 			}
-			SendMessage (GetDlgItem (messhwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
-			SendMessage (GetDlgItem (messhwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
+			SendMessage (GetDlgItem (mainwindow, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
+			SendMessage (GetDlgItem (mainwindow, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
 			TXpicpospt = 0;
 			
 			return TRUE;
@@ -2573,18 +2572,18 @@ BOOL CALLBACK AnswerBSRDlgProc
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX2 = FALSE;
 			PTTon(); //added DM
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
 			{
 				char dcbuf[20];
 				DRMTransmitter.Init();
 				DRMTransmitter.Send();
 				sprintf(dcbuf,"%d",(int)DRMTransmitter.GetCarOffset());
-				SetDlgItemText( messhwnd, IDC_DCFREQ, dcbuf);
+				SetDlgItemText(mainwindow, IDC_DCFREQ, dcbuf);
 			}
-			SendMessage (GetDlgItem (messhwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
-			SendMessage (GetDlgItem (messhwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");  
+			SendMessage (GetDlgItem (mainwindow, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
+			SendMessage (GetDlgItem (mainwindow, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
             return TRUE;
 		case IDCANCEL:
 			tmpno = GetDlgItemInt( hwnd, ID_ABSRINST, NULL, FALSE );
@@ -3106,8 +3105,8 @@ BOOL CALLBACK TXPictureDlgProc
 			if (RX_Running) DRMReceiver.NotRec();
 			IsRX2 = FALSE;
 			PTTon(); //added DM
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
-			EnableMenuItem(GetMenu(messhwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
+			EnableMenuItem(GetMenu(mainwindow), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
 			if (TX_Running)
 			{
 				char dcbuf[20];
@@ -3115,10 +3114,10 @@ BOOL CALLBACK TXPictureDlgProc
 				//if (callisok()) DRMTransmitter.Send(); //edited DM
 				DRMTransmitter.Send();
 				sprintf(dcbuf,"%d",(int)DRMTransmitter.GetCarOffset());
-				SetDlgItemText( messhwnd, IDC_DCFREQ, dcbuf);
+				SetDlgItemText(mainwindow, IDC_DCFREQ, dcbuf);
 			}
-			SendMessage(GetDlgItem(messhwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
-			SendMessage(GetDlgItem(messhwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
+			SendMessage(GetDlgItem(mainwindow, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
+			SendMessage(GetDlgItem(mainwindow, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
 			EndDialog (hwnd, 0);
 			return TRUE;
 		case ID_CHOOSEFILE:

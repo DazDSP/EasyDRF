@@ -64,20 +64,19 @@ void CMSCDemultiplexer::ProcessDataInternal(CParameter& ReceiverParam)
 
 	/* Lower protected part */
 	for (i = 0; i < AudStreamPos.iLenLow; i++)
-		(*pvecOutputData)[i + AudStreamPos.iLenHigh] =
-			(*pvecInputData)[i + AudStreamPos.iOffsetLow];
+		(*pvecOutputData)[i + AudStreamPos.iLenHigh] = (*pvecInputData)[i + AudStreamPos.iOffsetLow];
 
 
 	/* Data ----------------------------------------------------------------- */
-	/* Extract audio data from input-stream */
+	/* Extract data from input-stream */
 	/* Higher protected part */
 	for (i = 0; i < DataStreamPos.iLenHigh; i++)
 		(*pvecOutputData2)[i] = (*pvecInputData)[i + DataStreamPos.iOffsetHigh];
 
 	/* Lower protected part */
 	for (i = 0; i < DataStreamPos.iLenLow; i++)
-		(*pvecOutputData2)[i + DataStreamPos.iLenHigh] =
-			(*pvecInputData)[i + DataStreamPos.iOffsetLow];
+		(*pvecOutputData2)[i + DataStreamPos.iLenHigh] = (*pvecInputData)[i + DataStreamPos.iOffsetLow];
+
 }
 
 void CMSCDemultiplexer::InitInternal(CParameter& ReceiverParam)
@@ -87,12 +86,12 @@ void CMSCDemultiplexer::InitInternal(CParameter& ReceiverParam)
 	/* Audio ---------------------------------------------------------------- */
 	/* Check if current selected service is an audio service and get stream
 	   position */
-	if (ReceiverParam.Service[ReceiverParam.GetCurSelAudioService()].
-		eAudDataFlag == CParameter::SF_AUDIO)
+	if (ReceiverParam.Service[ReceiverParam.GetCurSelAudioService()].eAudDataFlag == CParameter::SF_AUDIO)
+
 	{
-		GetStreamPos(ReceiverParam, ReceiverParam.
-			Service[ReceiverParam.GetCurSelAudioService()].AudioParam.iStreamID,
-			AudStreamPos);
+		GetStreamPos(ReceiverParam, ReceiverParam.Service[ReceiverParam.GetCurSelAudioService()].AudioParam.iStreamID, AudStreamPos);
+
+
 	}
 	else
 	{

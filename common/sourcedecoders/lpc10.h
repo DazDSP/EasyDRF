@@ -31,8 +31,10 @@
 extern "C" {
 #endif
 
-#define LPC10_SAMPLES_PER_FRAME			180
-#define LPC10_ENCODED_FRAME_SIZE		7
+#define maxLPC10_SAMPLES_PER_FRAME 540
+extern int LPC10_SAMPLES_PER_FRAME;
+//#define LPC10_SAMPLES_PER_FRAME     180
+#define LPC10_ENCODED_FRAME_SIZE    7
 #define LPC10_BITS_IN_COMPRESSED_FRAME	54
 
 /* NOTE ON FRAME SIZE
@@ -57,16 +59,14 @@ typedef struct lpc10_d_state lpc10_decoder_state;
 
 lpc10_encoder_state * create_lpc10_encoder_state (void);
 void init_lpc10_encoder_state (lpc10_encoder_state *st);
-void lpc10_encode(short *in, unsigned char *out, lpc10_encoder_state *st);
-void lpc10_bit_encode(short *in, unsigned char *out, lpc10_encoder_state *st);
-int  vbr_lpc10_encode(short *in, unsigned char *out, lpc10_encoder_state *st);
+int lpc10_encode(short *in, unsigned char *out, lpc10_encoder_state *st);
+int vbr_lpc10_encode(short *in, unsigned char *out, lpc10_encoder_state *st);
 void destroy_lpc10_encoder_state (lpc10_encoder_state *st);
 
 lpc10_decoder_state * create_lpc10_decoder_state (void);
 void init_lpc10_decoder_state (lpc10_decoder_state *st);
-void lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st);
-void lpc10_bit_decode(unsigned char *in, short *out, lpc10_decoder_state *st);
-int  vbr_lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st, int *p);
+int lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st);
+int vbr_lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st, int *p);
 void destroy_lpc10_decoder_state (lpc10_decoder_state *st);
 
 #ifdef __cplusplus

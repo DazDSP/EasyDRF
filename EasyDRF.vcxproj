@@ -65,8 +65,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -106,7 +106,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;libucrt.lib;ucrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>libucrtd.lib;gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>libucrtd.lib;gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <SetChecksum>false</SetChecksum>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
@@ -155,7 +155,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>C:\Users\Win7\source\repos\EasyDRF\common\libs</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;lpc_10.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;winmm.lib;user32.lib;libfftw.lib;libspeex.lib;ptt.lib;mixer.lib;comdlg32.lib;Shell32.lib;graphwin.lib;LzmaLib.lib</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <SetChecksum>true</SetChecksum>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -208,6 +208,8 @@
     <ClCompile Include="common\RS\RS-coder.cpp" />
     <ClCompile Include="common\settings.cpp" />
     <ClCompile Include="common\sourcedecoders\AudioSourceDecoder.cpp" />
+    <ClCompile Include="common\sourcedecoders\lpc10dec.c" />
+    <ClCompile Include="common\sourcedecoders\lpc10enc.c" />
     <ClCompile Include="common\sync\FreqSyncAcq.cpp" />
     <ClCompile Include="common\sync\SyncUsingPil.cpp" />
     <ClCompile Include="common\sync\TimeSync.cpp" />
@@ -246,7 +248,6 @@
     <ClInclude Include="common\interleaver\BlockInterleaver.h" />
     <ClInclude Include="common\interleaver\SymbolInterleaver.h" />
     <ClInclude Include="common\libs\graphwin.h" />
-    <ClInclude Include="common\libs\lpc10.h" />
     <ClInclude Include="common\libs\poolid.h" />
     <ClInclude Include="common\list.h" />
     <ClInclude Include="common\matlib\Matlib.h" />
@@ -271,6 +272,8 @@
     <ClInclude Include="common\RS\RS-coder.h" />
     <ClInclude Include="common\settings.h" />
     <ClInclude Include="common\sourcedecoders\AudioSourceDecoder.h" />
+    <ClInclude Include="common\sourcedecoders\ftol.h" />
+    <ClInclude Include="common\sourcedecoders\lpc10.h" />
     <ClInclude Include="common\speex\speex.h" />
     <ClInclude Include="common\speex\speex_bits.h" />
     <ClInclude Include="common\speex\speex_callbacks.h" />

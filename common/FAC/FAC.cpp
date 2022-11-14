@@ -5,10 +5,14 @@
  * Author(s):
  *	Volker Fischer
  *  Francesco Lanza
- *
+ *  Daz Man 2022
+ * 
  * Description:
  *	FAC
  *
+ * Modified Nov 14, 2022 to allow QAM4 mode to work in Digital Voice mode
+ * by using the unused dummy bit 32.
+ * 
  ******************************************************************************
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -42,6 +46,7 @@ int streamlen =  0;
 void CFACTransmit::FACParam(CVector<_BINARY>* pbiFACData, CParameter& Parameter)
 {
 	static int	idatalen;
+	bool isaudio = false; //added DM
 
 	idatalen = Parameter.iNumDecodedBitsMSC / SIZEOF__BYTE;
 
@@ -126,6 +131,7 @@ void CFACTransmit::FACParam(CVector<_BINARY>* pbiFACData, CParameter& Parameter)
 	switch (Parameter.Service[0].eAudDataFlag)
 	{
 	case CParameter::SF_AUDIO:
+		isaudio = true;
 		(*pbiFACData).Enqueue(0 /* 0 */, 1);
 		/* Audio coding 2 bit */
 		switch (Parameter.Service[0].AudioParam.eAudioCoding)
@@ -194,6 +200,17 @@ void CFACTransmit::FACParam(CVector<_BINARY>* pbiFACData, CParameter& Parameter)
 	}
 
 	// total 31 bit
+
+	//This bit is normally a dummy bit
+	if ((isaudio) && (Parameter.eMSCCodingScheme == CParameter::CS_1_SM)) {
+	//Added DM TEST for signalling Voice mode is QAM4 =================================
+	if (Parameter.eMSCCodingScheme == CParameter::CS_1_SM)
+		(*pbiFACData).Enqueue(1, 1);  // QAM 4
+	else
+		(*pbiFACData).Enqueue(0, 1);  // others
+	//Added DM TEST for signalling Voice mode is QAM4 =================================
+	}
+	// total 32 bits
 
 	/* CRC ------------------------------------------------------------------ */
 	/* Calculate the CRC and put at the end of the stream */
@@ -266,15 +283,15 @@ void CFACTransmit::Init(CParameter& Parameter)
 string strlabel[3];
 int ilabelstate = 0;
 
-_BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData, 
-							   CParameter& Parameter)
+_BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
+	CParameter& Parameter)
 {
-/* 
-	First get new data from incoming data stream, then check if the new
-	parameter differs from the old data stored in the receiver. If yes, init
-	the modules to the new parameter 
-*/
-	CParameter::CAudioParam	AudParam;
+	/*
+		First get new data from incoming data stream, then check if the new
+		parameter differs from the old data stored in the receiver. If yes, init
+		the modules to the new parameter
+	*/
+	CParameter::CAudioParam	AudParam{}; //init DM
 	CParameter::CDataParam	DataParam{}; //init DM
 
 	/* CRC ------------------------------------------------------------------ */
@@ -284,10 +301,11 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 	(*pbiFACData).ResetBitAccess();
 
 	for (int i = 0; i < NUM_FAC_BITS_PER_BLOCK / SIZEOF__BYTE - 1; i++)
-		CRCObject.AddByte((_BYTE) (*pbiFACData).Separate(SIZEOF__BYTE));
+		CRCObject.AddByte((_BYTE)(*pbiFACData).Separate(SIZEOF__BYTE));
 
 	if (CRCObject.CheckCRC((*pbiFACData).Separate(8)) == TRUE)
 	{
+		bool isaudio = false; //added DM
 		bool ispec = false;
 		bool imscprot = false;
 		bool imscqam = false;
@@ -300,7 +318,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 
 
 		/* Channel parameters ----------------------------------------------- */
-		
+
 		Parameter.SetServID(0, 73);
 		Parameter.Service[0].iLanguage = 7;
 		Parameter.Service[0].iServiceDescr = 3;
@@ -389,19 +407,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 235;
-						packlen =  232; } 
+						packlen = 232;
+					}
 					else {					// QAM 16
 						streamlen = 163;
-						packlen =  160; }
+						packlen = 160;
+					}
 				}
 				else				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 196;
-						packlen =  193; }
+						packlen = 193;
+					}
 					else {					// QAM 16
 						streamlen = 130;
-						packlen =  127; } //127
+						packlen = 127;
+					} //127
 				}
 			}
 			else		// 2.3 khz B
@@ -410,19 +432,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 201;
-						packlen =  198; }
+						packlen = 198;
+					}
 					else {					// QAM 16
 						streamlen = 140;
-						packlen =  137; }
+						packlen = 137;
+					}
 				}
 				else 				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 168;
-						packlen =  165; }
+						packlen = 165;
+					}
 					else {					// QAM 16
 						streamlen = 112;
-						packlen =  109; }
+						packlen = 109;
+					}
 				}
 			}
 		}
@@ -435,19 +461,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 313;
-						packlen =  310; }
+						packlen = 310;
+					}
 					else {					// QAM 16
 						streamlen = 218;
-						packlen =  215; }
+						packlen = 215;
+					}
 				}
 				else				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 261;
-						packlen =  258; }
+						packlen = 258;
+					}
 					else {					// QAM 16
 						streamlen = 174;
-						packlen =  171; }
+						packlen = 171;
+					}
 				}
 			}
 			else		// 2.3 khz A
@@ -456,19 +486,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 288;
-						packlen =  285; }
+						packlen = 285;
+					}
 					else {					// QAM 16
 						streamlen = 200;
-						packlen =  197; }
+						packlen = 197;
+					}
 				}
 				else 				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 240;
-						packlen =  237; }
+						packlen = 237;
+					}
 					else {					// QAM 16
 						streamlen = 160;
-						packlen =  157; }
+						packlen = 157;
+					}
 				}
 			}
 		}
@@ -480,19 +514,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 163;
-						packlen =  160; }
+						packlen = 160;
+					}
 					else {					// QAM 16
 						streamlen = 113;
-						packlen =  110; }
+						packlen = 110;
+					}
 				}
 				else 				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 135;
-						packlen =  132; }
+						packlen = 132;
+					}
 					else {					// QAM 16
 						streamlen = 90;
-						packlen =  87; }
+						packlen = 87;
+					}
 				}
 			}
 			else
@@ -501,19 +539,23 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 149;
-						packlen =  146; }
+						packlen = 146;
+					}
 					else {					// QAM 16
 						streamlen = 103;
-						packlen =  100; }
+						packlen = 100;
+					}
 				}
 				else 				// prot level 0
 				{
 					if (imscqam) {			// QAM 64
 						streamlen = 124;
-						packlen =  121; }
+						packlen = 121;
+					}
 					else {					// QAM 16
 						streamlen = 83;
-						packlen =  80; }
+						packlen = 80;
+					}
 				}
 			}
 		}
@@ -524,6 +566,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 		case 0: /* 0 */
 			Parameter.SetNumOfServices(1, 0);
 			Parameter.SetAudDataFlag(0, CParameter::SF_AUDIO);
+			isaudio = true;
 
 			/* Load audio parameters class with current parameters */
 			AudParam = Parameter.GetAudioParam(0);
@@ -555,7 +598,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 			case 0: /* 0 */
 				AudParam.bTextflag = FALSE;
 				break;
-		
+
 			case 1: /* 1 */
 				AudParam.bTextflag = TRUE;
 				break;
@@ -583,35 +626,38 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 			// unused bit
 			if ((*pbiFACData).Separate(1) == 1)
 			{
-				imsclowqam = TRUE;
+				imsclowqam = TRUE; //this is for QAM4
 				if (Parameter.GetWaveMode() == RM_ROBUSTNESS_MODE_B)
 				{
 					if (ispec) {	// 2.5 khz B
 						streamlen = 78;
-						packlen =  75; 
-					} else {		// 2.3 khz B
-						streamlen = 67;
-						packlen =  64; 
+						packlen = 75;
 					}
-				} 
-				else if (Parameter.GetWaveMode() == RM_ROBUSTNESS_MODE_A) 
+					else {		// 2.3 khz B
+						streamlen = 67;
+						packlen = 64;
+					}
+				}
+				else if (Parameter.GetWaveMode() == RM_ROBUSTNESS_MODE_A)
 				{
 					if (ispec) {	// 2.5 khz A
 						streamlen = 104;
-						packlen =  101; 
-					} else {		// 2.3 khz A
+						packlen = 101;
+					}
+					else {		// 2.3 khz A
 						streamlen = 96;
-						packlen =  93; 
+						packlen = 93;
 					}
 				}
 				else
 				{
 					if (ispec) {	// 2.5 khz A
 						streamlen = 54;
-						packlen =  51; 
-					} else {		// 2.3 khz A
+						packlen = 51;
+					}
+					else {		// 2.3 khz A
 						streamlen = 49;
-						packlen =  46; 
+						packlen = 46;
 					}
 				}
 			}
@@ -619,16 +665,17 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 			Parameter.SetDataParam(0, DataParam);
 			break;
 		}
+		/*
 		// Set MSC coding scheme
 		if (imsclowqam)
-			Parameter.SetMSCCodingScheme(CParameter::CS_1_SM);  
+			Parameter.SetMSCCodingScheme(CParameter::CS_1_SM);
 		else if (imscqam)
 			Parameter.SetMSCCodingScheme(CParameter::CS_3_SM);
 		else
 			Parameter.SetMSCCodingScheme(CParameter::CS_2_SM);
 		// Set Stream Length
-		Parameter.SetStreamLen(0,streamlen);
-
+		Parameter.SetStreamLen(0, streamlen);
+		*/
 
 		/* Label */
 		{
@@ -640,7 +687,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 			{
 				/* Get character */
 				cNewChar = (*pbiFACData).Separate(7);
-	
+
 				/* Append new character */
 				if (cNewChar != 0)
 					strlabel[iframe].append(&cNewChar, 1);
@@ -648,7 +695,7 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 			if (iframe == 0) ilabelstate |= 1;
 			if (iframe == 1) ilabelstate |= 2;
 			if (iframe == 2) ilabelstate |= 4;
-			
+
 			if (ilabelstate == 7)
 			{
 				Parameter.Service[0].strLabel = "";
@@ -658,8 +705,65 @@ _BOOLEAN CFACReceive::FACParam(CVector<_BINARY>* pbiFACData,
 				cNewChar = 0;
 				Parameter.Service[0].strLabel.append(&cNewChar, 1);
 			}
-			
+
 		}
+		//Spare bit =================================================================================================
+		if ((isaudio) && ((*pbiFACData).Separate(1) == 1))
+		{
+			Parameter.SetMSCCodingScheme(CParameter::CS_1_SM); //set QAM4 in Voice mode if used DM
+
+			imsclowqam = TRUE; //this is for QAM4
+			if (Parameter.GetWaveMode() == RM_ROBUSTNESS_MODE_B)
+			{
+				if (ispec) {	// 2.5 khz B
+					streamlen = 78;
+					packlen = 75;
+				}
+				else {		// 2.3 khz B
+					streamlen = 67;
+					packlen = 64;
+				}
+			}
+			else if (Parameter.GetWaveMode() == RM_ROBUSTNESS_MODE_A)
+			{
+				if (ispec) {	// 2.5 khz A
+					streamlen = 104;
+					packlen = 101;
+				}
+				else {		// 2.3 khz A
+					streamlen = 96;
+					packlen = 93;
+				}
+			}
+			else
+			{
+				if (ispec) {	// 2.5 khz A
+					streamlen = 54;
+					packlen = 51;
+				}
+				else {		// 2.3 khz A
+					streamlen = 49;
+					packlen = 46;
+				}
+			}
+			DataParam.iPacketLen = packlen;
+			Parameter.SetDataParam(0, DataParam);
+		}
+		//===========================================================================================================
+
+		//This code is moved from higher up, so that modes aren't set more than once DM
+
+		// Set MSC coding scheme
+		if (imsclowqam)
+			Parameter.SetMSCCodingScheme(CParameter::CS_1_SM);
+		else if (imscqam)
+			Parameter.SetMSCCodingScheme(CParameter::CS_3_SM);
+		else
+			Parameter.SetMSCCodingScheme(CParameter::CS_2_SM);
+
+		// Set Stream Length
+		Parameter.SetStreamLen(0, streamlen);
+		//===========================================================================================================
 
 		/* CRC is ok, return TRUE */
 		return TRUE;
