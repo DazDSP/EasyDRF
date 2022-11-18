@@ -372,7 +372,6 @@ static void bsynz(float *coef, long ip, long *iv, float *sout, float *rms, float
             pulse = 2e3f;
         }
         exc[px - 1] += pulse;
-        //exc[px - 4] += pulse; //edit DM
         exc[px] -= pulse;
         /*  Load voiced excitation */
     } else {
@@ -408,7 +407,7 @@ static void bsynz(float *coef, long ip, long *iv, float *sout, float *rms, float
         k = 10 + i;
         sum = 0.f;
         for (j = 1; j <= 10; ++j) {
-            sum += coef[j] * exc[k - j]; //edit DM * 2 (removed)
+            sum += coef[j] * exc[k - j]; //convolution of 10 coefficients with excitation 1
         }
         sum *= *g2pass;
         exc2[k] = sum + exc[k];
@@ -418,7 +417,7 @@ static void bsynz(float *coef, long ip, long *iv, float *sout, float *rms, float
         k = 10 + i;
         sum = 0.f;
         for (j = 1; j <= 10; ++j) { //
-            sum += coef[j] * exc2[k - j]; //
+            sum += coef[j] * exc2[k - j]; //convolution of 10 coefficients with excitation 2
         }
         exc2[k] += sum;
         xssq += exc2[k] * exc2[k];

@@ -482,6 +482,7 @@ BEGIN
     BEGIN
         MENUITEM "TX Settings",                 ID_SETTINGS_DRMSETTINGS
         MENUITEM "RX Settings",                 ID_SETTINGS_DRMSETTINGSRX
+        MENUITEM "Voice Compressor",            ID_SETTINGS_VOICECOMPRESSOR
     END
     POPUP "BSR"
     BEGIN

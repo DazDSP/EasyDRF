@@ -449,3 +449,8 @@ old/
 /Release/EasyDRF-Sep04-2022.zip
 /Release/EasyDRF-current-old.exe
 /Release/EasyDRF.map
+/Release/EasyDRF-current-older.exe
+/Release/latest
+/common/sourcedecoders/lpc10dec-mods.c
+/common/sourcedecoders/lpc10decmods2.c
+/common/sourcedecoders/lpc10enc-mods.c

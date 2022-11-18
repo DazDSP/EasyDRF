@@ -255,6 +255,8 @@ void WFtext(int select) {
                 }
                 */
 
+#if USEPAPR == 1
+
                 //Feed into PAPR clipper
                 //This needs a 0Hz IF
                 //so frequency mix the FFT IQ output down to 0Hz
@@ -263,6 +265,7 @@ void WFtext(int select) {
                     audio[i] = audio[i] * Conj(Rotate);
                     Rotate *= SinStep;
                 }
+#endif //USEPAPR
             }
         }
     }

@@ -36,6 +36,7 @@
 
 #define DEFiInputBlockSize 38400 //define buffer size of transmit audio input buffer for 400mS @ 48000kHz stereo
 
+#define USEPAPR 1 //Use PAPR processing code. This changes the output to a 0Hz IF, adds the PAPR code and converts the 0Hz IF back to audio
 
 /* Classes ********************************************************************/
 class CParameter : public CCellMappingTable

@@ -69,8 +69,26 @@ char spoutp[20];
 char spoutpb[60];
 int nbBytes;
 
-float audioamp = 0; //for mike compressor
-float noisegate = 0;
+float audioamp = 0; //mike compressor smoothing
+float noisegate = 0; //noisegate smoothing
+int delayrec = 0;
+int delayrecng = 0;
+int lookaheadindex = 0;
+#define LAsamps 144 //3mS compressor lookahead delay at 48kHz
+vector<short> lookahead(LAsamps, 0);
+
+#define RD 2000 //2000 //recovery delay in mS
+#define NGRD 100 //50 //noisegate recovery delay in mS
+#define RECOVERYDELAY 48 * RD //compute recovery delay
+#define NGRECOVERYDELAY 48 * NGRD //compute noisegate recovery delay
+
+#define LPCscale 180 / 10
+
+//IIR highpass filter storage
+float i1 = 0;
+float i2 = 0;
+float o1 = 0;
+float o2 = 0;
 
 /*
 * Encoder                                                                      *
@@ -89,17 +107,127 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 			//Compress audio slightly for better volume
 			//Add noisegating to reduce noise
 			//Make the noisegating multiband TODO
+			int samp = 0;
+			int samp1 = 0;
+			int samp2 = 0;
 			for (i = 0; i < iInputBlockSize; i++) {
-				int samp = (*pvecInputData)[i]; //get a sample
-				float amp = (float)abs(samp); //rectify audio
-				audioamp = max(max((audioamp * 0.99998f), amp), 512.0f); //recovery Tc.. add some attack smoothing later?
-				float ng = min((amp * 100.0f), 32767.0f); //add gain and limit for noisegate
-				noisegate = max((float)(noisegate * 0.9999), ng); //smooth noisegate control level
-				float gain = ((float)30000.0f / audioamp); //compute gain for some slight headroom
-				(*pvecInputData)[i] = (samp * gain) * noisegate / 32767;  //compress and noisegate
-			}
-		}
+				samp = (*pvecInputData)[i]; //get a sample
 
+				//IIR highpass filter =======================================
+				constexpr float a0 = 0.995994340;
+				constexpr float a1 = -1.991988680;
+				constexpr float a2 = 0.995994340;
+				constexpr float b1 = -1.991967075;
+				constexpr float b2 = 0.992010284;
+
+				samp1 = samp * a0 + i1 * a1 + i2 * a2 - (o1 * b1 + o2 * b2);
+
+				i2 = i1;
+				o2 = o1;
+				i1 = samp;
+				o1 = samp1;
+				//===========================================================
+
+				//lookahead delay
+				//read old value and save new value
+				samp2 = lookahead.at(lookaheadindex); //read old value
+				lookahead.at(lookaheadindex) = samp1; //save new value
+				lookaheadindex += 1; //next index
+				if (lookaheadindex >= LAsamps) lookaheadindex = 0; //reset index
+
+				//float amp = max((float)abs(samp), (float)abs(samp2)); //rectify audio
+				float amp = abs(samp2); //rectify audio
+
+				//scan the lookahead buffer for the max (peak stretch)
+				for (j = 0; j < LAsamps; j++) {
+					amp = max(amp, (float)abs(lookahead.at(j)));
+				}
+
+				//Delayed recovery
+				//detect when input is higher and reset delayrec timer 
+				const float attack = min(amp, (audioamp * 1.04f)); //attack Tc rate limit
+				if (attack > audioamp) {
+					//always attack
+					//reset timer and attack but do not decay
+					delayrec = RECOVERYDELAY; //reset timer
+					audioamp = max(audioamp, attack); //
+				}
+				else {
+					//decrease delay count
+					if (delayrec > 0) {
+						//do not decay
+						delayrec -= 1; //count down if above zero
+					}
+					//decay only
+					//compute recovery Tc from delay
+					const float RTc = min((float)0.99999f + ((float)delayrec), 1.0f); //
+
+					//audioamp = (audioamp * 0.99998f); //recovery Tc
+					audioamp = (audioamp * RTc); //recovery Tc
+				}
+				audioamp = max(audioamp, 512.0f); //Threshold for compressor
+
+				const float ngattack = min(amp, noisegate + 10.0f); //noisegate attack rate limiting
+				//ngattack = min((ngattack * 100.0f), 32767.0f); //add gain and limit for noisegate
+
+				if (ngattack > noisegate) {
+					//always attack
+					delayrecng = NGRECOVERYDELAY; //reset timer
+					noisegate = min(max(noisegate, ngattack), 327.0f); //attack only and limit max
+				}
+				else {
+					//decrease delay count
+					if (delayrecng > 0) {
+						//do not decay
+						delayrecng -= 1; //count down if above zero
+					}
+					else {
+						//decay only
+						noisegate = noisegate * 0.999; //recovery Tc
+					}
+				}
+				const float noisegate2 = min(max((noisegate * 150.0f) - 6000.0f, 0.0f), 32767.0f); //add gain and limit for noisegate control
+
+
+				const float gain = ((float)30000.0f / audioamp); //compute gain for some slight headroom
+
+				if (DVcomp == TRUE) speechIN[i] = max(min((samp2 * gain) * (noisegate2 / 32767.0f), 32767.0f), -32768.0f);  //compress and noisegate (and clip any overflows) and put in new buffer
+				else speechIN[i] = samp2;  //do not compress or noisegate if compressor is off
+				
+				//Using pvecInputData as a scope output below may cause audio glitches:
+				//(*pvecInputData)[i] = audioamp; //check level detector output on scope
+				//(*pvecInputData)[i] = gain * 400; //check gain computation output on scope
+				//(*pvecInputData)[i] = noisegate2; //check noisegate output on scope
+			}
+#define WRITEAUDIOIN 0
+#if WRITEAUDIOIN == 1
+			//save audio input data to a file for testing
+			//open file (every 400mS)
+			FILE* set = nullptr;
+			if ((set = fopen("AUDIO-test.bin", "a+b")) == nullptr) {
+			}
+			else {
+				//if it opened OK...
+				//append to file
+				int a = 0;
+				for (k = 0; k < (iInputBlockSize); k++) {
+					a = speechIN[k];
+
+					//write the low byte first
+					putc((char)a, set);
+
+					a = a >> 8; //move high byte into low
+
+					//write the high byte last
+					putc((char)a, set);
+				}
+				//close file
+				fclose(set); //file is closed here - but only if it was opened
+			}
+#endif //WRITELPCBYTES == 1
+
+
+		}
 		// avail space:
 		// 2.25khz, msc=0 1920 bits PER SEC
 		// 2.25khz, msc=1 2400 bits PER SEC
@@ -118,16 +246,10 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 			//Make sure we have a destination to write to...
 			if (iOutputBlockSize > 0) {
 
-				//copy short data into vector
-				//read 19200 words (16 bits)
-				for (k = 0; k < iInputBlockSize; k++) {
-					speechIN[k] = (*pvecInputData)[k]; //copy directly
-				}
-
 				//Make sure these variables are current
 				//compute data sizes from iOutputBlockSize
 				if (iOutputBlockSize > 0) {
-					LPC10_SAMPLES_PER_FRAME = max(min((180 / max(lpcblocksT, 6)) * 18, maxLPC10_SAMPLES_PER_FRAME),180); //adapt to available bandwidth DM
+					LPC10_SAMPLES_PER_FRAME = max(min(((LPCscale * 10) / max(lpcblocksT, 6)) * 18, maxLPC10_SAMPLES_PER_FRAME),180); //adapt to available bandwidth DM
 					lpcblocksT = (((iOutputBlockSize / SIZEOF__BYTE) * SIZEOF__BYTE) - lpcsumT) / LPC10_BITS_IN_COMPRESSED_FRAME; //how many 54 bit blocks
 					lpciterT = (lpcblocksT * LPC10_BITS_IN_COMPRESSED_FRAME) / lpcsumT;
 					upsampleT = 35000 / (LPC10_SAMPLES_PER_FRAME * lpcblocksT);
@@ -222,19 +344,13 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 
 		if (TransmParam.Service[0].AudioParam.eAudioCoding == CParameter::AC_SPEEX)
 		{
-			if (iOutputBlockSize > 1040) { //don't try to encode Speex in QAM4 because the buffers will overrun DM
+			if (iOutputBlockSize > 1040) { //don't try to encode Speex if the buffers are smaller because the buffers will overrun DM
 				//SPEEX CODEC
 				// source:
 				// 19200 at 48000 sample/sec = 3200 at 8000samples/sec
 				// 3200 / 160 = 20 audio blocks, 0 byte spare
 				// destination
 				// 20 audio blocks * 6 bytes = 120 bytes = 960 bits
-
-				//copy the audio input
-				//read 19200 words (16 bits)
-				for (k = 0; k < iInputBlockSize; k++) {
-					speechIN[k] = (*pvecInputData)[k]; //copy directly
-				}
 
 				//Lowpass filter and decimate the audio input to 4kHz DM
 				speechLPFDecSpeex = FIRFiltDec(rvecS, speechIN, speechLPFDecSpeex, rvecZS); //4kHz antialias filter
@@ -496,7 +612,7 @@ void CAudioSourceDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 		//First, make sure all the variables are current
 		//compute LPC data sizes
 		if (iInputBlockSize > 0) {
-			LPC10_SAMPLES_PER_FRAME = max(min((180 / max(lpcblocksR, 6)) * 18, maxLPC10_SAMPLES_PER_FRAME), 180); //adapt to available bandwidth DM
+			LPC10_SAMPLES_PER_FRAME = max(min((180 / max(lpcblocksR, 6)) * LPCscale, maxLPC10_SAMPLES_PER_FRAME), 180); //adapt to available bandwidth DM
 			lpciterR = (lpcblocksR * LPC10_BITS_IN_COMPRESSED_FRAME) / lpcsumR;
 			upsampleR = 35000 / (LPC10_SAMPLES_PER_FRAME * lpcblocksR);
 
@@ -565,10 +681,38 @@ void CAudioSourceDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 
 				//copy data
 				iOutputBlockSize = DEFiInputBlockSize; //buffer is full and in stereo
+				float out = 0;
 				for (j = 0; j < iOutputBlockSize / 2; j++)
 				{
-					(*pvecOutputData)[j * 2] = speechLPF[j]; //copy all data in stereo
-					(*pvecOutputData)[j * 2 + 1] = speechLPF[j]; //copy all data in stereo
+					float in = speechLPF[j];
+
+					//IIR highpass filter =======================================
+					/*
+					//70Hz HPF
+					float a0 = 0.995994340;
+					float a1 = -1.991988680;
+					float a2 = 0.995994340;
+					float b1 = -1.991967075;
+					float b2 = 0.992010284;
+					*/
+					//100Hz HPF
+					float a0 = 0.994280829;
+					float a1 = -1.988561658;
+					float a2 = 0.994280829;
+					float b1 = -1.988517642;
+					float b2 = 0.988605674;
+
+					out = in * a0 + i1 * a1 + i2 * a2 - (o1 * b1 + o2 * b2);
+
+					i2 = i1;
+					o2 = o1;
+					i1 = in;
+					o1 = out;
+					//===========================================================
+
+
+					(*pvecOutputData)[j * 2] = out; //copy all data in stereo
+					(*pvecOutputData)[j * 2 + 1] = out; //copy all data in stereo
 				}
 
 				bAudioIsOK = TRUE;

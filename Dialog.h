@@ -36,6 +36,7 @@ void PostWinMessage(unsigned int MessID, int iMessageParam);
 void updateLEDs(void);
 void DrawBar(HWND hwnd);
 int setdisplay(int type);
+#define OSCDISP 0 //was 0 - The display type used for the digital voice oscilloscope
 
 // procedures called by Windows
 // Main dialog handler

@@ -120,6 +120,7 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 		}
 	}
 //======================================================================================================================================
+#if USEPAPR == 1
 
 	float const Fc = OFFSET + rDefCarOffset; //Hz Weaver mixing frequency
 	float const Fcp = (Fc / (SOUNDCRD_SAMPLE_RATE / 4)) * crPi * 2;
@@ -240,6 +241,8 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 	//Filter 6 - Filter at 48kHz samplerate
 	rvecDataI = Filter(rvec6, rvecA, rvecDataI, rvecZI6); //interpolation filter DM
 	//rvecDataQ = Filter(rvec6, rvecA, rvecDataQ, rvecZQ6); //interpolation filter DM
+
+#endif //USEPAPR
 
 //Read out data to sound buffer:
 /* Convert vector type. Fill vector with symbols (collect them) */

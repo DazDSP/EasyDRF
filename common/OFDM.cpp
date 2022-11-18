@@ -96,11 +96,15 @@ void COFDMModulation::InitInternal(CParameter& TransmParam)
 
 	/* Normalized offset correction factor for IF shift. Subtract the
 	   default IF frequency ("VIRTUAL_INTERMED_FREQ") */
-//	_REAL rNormCurFreqOffset = (_REAL) -2.0 * crPi * (rDefCarOffset - VIRTUAL_INTERMED_FREQ) / SOUNDCRD_SAMPLE_RATE;
-//	_REAL rNormCurFreqOffset = (_REAL)-2.0 * crPi * (-1225 - VIRTUAL_INTERMED_FREQ) / SOUNDCRD_SAMPLE_RATE;
-//	_REAL rNormCurFreqOffset = (_REAL)2.0 * crPi * (VIRTUAL_INTERMED_FREQ + 1225) / SOUNDCRD_SAMPLE_RATE; //Mix directly to 0Hz IF for PAPR stage DM
+	//_REAL rNormCurFreqOffset = (_REAL)-2.0 * crPi * (rDefCarOffset - VIRTUAL_INTERMED_FREQ) / SOUNDCRD_SAMPLE_RATE;
+	//_REAL rNormCurFreqOffset = (_REAL)-2.0 * crPi * (-1225 - VIRTUAL_INTERMED_FREQ) / SOUNDCRD_SAMPLE_RATE;
+	//_REAL rNormCurFreqOffset = (_REAL)2.0 * crPi * (VIRTUAL_INTERMED_FREQ + 1225) / SOUNDCRD_SAMPLE_RATE; //Mix directly to 0Hz IF for PAPR stage DM
+#if USEPAPR == 0
+	_REAL rNormCurFreqOffset = (_REAL)-2.0 * crPi * (rDefCarOffset - VIRTUAL_INTERMED_FREQ) / SOUNDCRD_SAMPLE_RATE;
+#endif
+#if USEPAPR == 1
 	_REAL rNormCurFreqOffset = (_REAL)2.0 * crPi * (VIRTUAL_INTERMED_FREQ + OFFSET) / SOUNDCRD_SAMPLE_RATE; //Mix directly to 0Hz IF for PAPR stage DM
-
+#endif
 	/* Rotation vector for exp() calculation */
 	cExpStep = _COMPLEX(cos(rNormCurFreqOffset), sin(rNormCurFreqOffset));
 

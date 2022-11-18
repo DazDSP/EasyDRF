@@ -167,11 +167,12 @@ int soundouttx = 0;
 int soundintx = 0;
 int soundoutrx = 0;
 int soundinrx = 0;
-bool istxinsatnce = false;
-//BOOL usetext = false;
+//bool istxinsatnce = false; //unused
+//BOOL usetext = false; //unused
 int audfiltrx = 0;
 int muteonfac = 0;
 int qamtype = 16;
+
 int modetype = 1;
 int interleave = 0;
 int specoccuppa = 0;
@@ -212,6 +213,7 @@ void savevar(void)
 		fprintf(set, "%d %d %d %d WindowPosition\n", WindowPosition); //added DM
 		fprintf(set, "%d TxLevel\n", TxLevel); //added DM
 		fprintf(set, "%d Allow_Text_Message\n", AllowRXTextMessage);
+		fprintf(set, "%d DV_Compressor\n", DVcomp);
 		fclose(set);
 	}
 }
@@ -244,10 +246,12 @@ void getvar(void)
 		fscanf(set, "%d %d %d %d %s", &WindowX, &WindowY, &rubbish, &rubbish, &rubbish); //added DM
 		fscanf(set, "%d %s", &TxLevel, &rubbish); //added DM
 		fscanf(set, "%d %s", &AllowRXText, &rubbish);
+		fscanf(set, "%d %s", &DVcomp, &rubbish);
 		fclose(set);
+
 		disptype = Display;
-		if (disptype == 9) disptype = 0; //scope uses display type zero
-		if (!TxLevel) TxLevel = 0; //if setting not found, set it to zero
+		if (disptype == 9) disptype = OSCDISP; //scope display type
+		if (!TxLevel) TxLevel = FALSE; //if setting not found, set it to FALSE
 		if (!AllowRXText) AllowRXTextMessage = TRUE; //if setting not found, make it TRUE
 		if (AllowRXText == 0) AllowRXTextMessage = FALSE;
 		if (AllowRXText == 1) AllowRXTextMessage = TRUE;
@@ -262,9 +266,8 @@ void getvar(void)
 		else if (qamtype >= 64) qamtype = 64;
 		else qamtype = 16;
 		if (modetype <= 0) modetype = 0;
-		if (modetype == 1) modetype = 1; //added DM
-		if (modetype == 2) modetype = 2; //added DM
-//		else if (modetype >= 1) modetype = 1;
+		else if (modetype >= 2) modetype = 2; //added DM
+		else modetype = 1; //added DM
 		if (interleave <= 0) interleave = 0;
 		else if (interleave >= 1) interleave = 1;
 		if (specoccuppa <= 0) specoccuppa = 0;

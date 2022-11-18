@@ -198,7 +198,7 @@ BOOL fastreset = FALSE;
 BOOL rtsonfac = FALSE;
 BOOL dtronfac = FALSE;
 BOOL dolog = FALSE;
-int TxLevel = 0; //for -12dB switching DM
+BOOL TxLevel = FALSE; //for -12dB switching DM
 BOOL AllowRXTextMessage = TRUE; //default to on, but allow to be turned off DM
 //int sensivity = 60; //no longer used DM
 
@@ -231,6 +231,9 @@ HWND bsrhand;
 int moderestore = -1;
 int qamrestore = -1;
 int paintmode = 0;
+
+BOOL DVcomp = TRUE; //use compressor by default
+int debug = 0; //for tests
 
 //string namebsrfile;
 char namebsrfile[300]; //edit DM - increased from 130 to 300 char
@@ -291,9 +294,10 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%d Bytes:%05d ID:%05d Bfr:%01d", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] Bytes:%05d ID:%05d-%01d %d%%", DMfilename, RSfilesize, DecTransportID, erasureswitch, RSpercent);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u D1:%u D2:%u D3:%u", DMfilename, lastRSbcERR, RSfilesize, debug1, debug2, debug3);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u dbg:%u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw, debug);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u B:%u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw, debug);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
+	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
+//	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 	//compute the file save status message based on the number in filestate
 	if (filestate == FS_BLANK) {
@@ -470,12 +474,7 @@ void TxFunction(  void *dummy  )
 
 void paintmodes(void) {
 
-	//change this to use a frequency swept sinewave that is gated on/off to draw text?
-
-	int i = 0;
-	int ww = 5;
-	float sc = 0.25;
-	int ddd = 8; // 16384;
+	//Send tuning tones or waterfall text
 
 	//Init for paint test
 	float fset = 0;
@@ -485,8 +484,8 @@ void paintmodes(void) {
 	if (paintmode == 1) {
 		//send waterfall text
 
-		moderestore = getmode();
-		qamrestore = getqam();
+		moderestore = getmode(); //this gets the mode from the transmitter
+		qamrestore = getqam(); //this gets the QAM level from the transmitter
 
 		//set Mode W, 64QAM for tones
 		DRMTransmitter.GetParameters()->InitCellMapTable(RM_ROBUSTNESS_MODE_B, DRMTransmitter.GetParameters()->GetSpectrumOccup());
@@ -757,14 +756,14 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//				DRMTransmitter.GetAudSrcEnc()->SetStartDelay(starttx_time_long); //Edited DM
 			DRMTransmitter.GetAudSrcEnc()->SetTheStartDelay(starttx_time_long); //Edited DM
 
-			TX_Running = TRUE;
+			TX_Running = TRUE; //this may mean "enabled" and not "transmitting"... DM
 			_beginthread(TxFunction, 0, nullptr);
 		}
 		catch (CGenErr)
 		{
 			TX_Running = FALSE;
 			MessageBox(hwnd, "Transmitter will NOT work\nWinDRM needs 2 soundcards or WinXP\nTry -r, -t or -p startup options", "TX Init Exception", 0);
-			PTToff();
+			PTToff(); //this might not be required DM
 		}
 	}
 
@@ -860,6 +859,10 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		SetTimer(hwnd,1,100,TimerProc); //Original is 100mS //TEST 50mS - This affects timing of Tx/Rx switching, as well as speeding up the graphics display
 
+		//Display Voice compressor checkmark
+		if (DVcomp == true) CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_VOICECOMPRESSOR, MF_BYCOMMAND | MF_CHECKED);
+		else CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_VOICECOMPRESSOR, MF_BYCOMMAND | MF_UNCHECKED);
+		
 		return TRUE;   
 		
     case WM_COMMAND:
@@ -890,13 +893,13 @@ char cmdstr[20];
 
 void OnCommand ( HWND hwnd, int ctrlid, int code)
 {
-    switch (ctrlid)
-    {
-    case IDB_STARTPIC: //Send a file
+	switch (ctrlid)
+	{
+	case IDB_STARTPIC: //Send a file
 		if (IsRX2)
 		{
 			//if (callisok())  //disabled for SW Broadcasting use - DM
-				DialogBox(TheInstance, MAKEINTRESOURCE (DLG_PICTURE_TX), hwnd, TXPictureDlgProc);
+			DialogBox(TheInstance, MAKEINTRESOURCE(DLG_PICTURE_TX), hwnd, TXPictureDlgProc);
 			//else
 				//DialogBox(TheInstance, MAKEINTRESOURCE (DLG_CALLSIGN), hwnd, CallSignDlgProc); //disabled for SW Broadcasting use - DM
 		}
@@ -909,21 +912,22 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			if (rxdisplaysave != -1) {
 				Display = rxdisplaysave; //Restore whatever mode was set previously DM
 				disptype = Display;
-				if (Display == 9) disptype = 0;
+				if (Display == 9) disptype = OSCDISP;
 				rxdisplaysave = -1;
 			}
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_ENABLED);
 			if (RX_Running) DRMReceiver.Rec();
-			SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
-			SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
+			SendMessage(GetDlgItem(hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"TX Voice");
+			SendMessage(GetDlgItem(hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"TX File"); //edited from Pic to File DM
 			SetDlgItemText(hwnd, IDC_DCFREQ, " ");
-			SetDlgItemText(hwnd, IDC_EDIT,   " ");
-			SetDlgItemText(hwnd, IDC_EDIT2,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT3,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT4,  " ");
-			SetDlgItemText(hwnd, IDC_EDIT6,  " "); //added DM
-			if (strlen(rxdevice) >=1) SelectSrc(rxdevice);
+			SetDlgItemText(hwnd, IDC_EDIT, " ");
+			SetDlgItemText(hwnd, IDC_EDIT2, " ");
+			SetDlgItemText(hwnd, IDC_EDIT3, " ");
+			SetDlgItemText(hwnd, IDC_EDIT4, " ");
+			SetDlgItemText(hwnd, IDC_EDIT6, " "); //added DM
+
+			if (strlen(rxdevice) >= 1) SelectSrc(rxdevice);
 			if (paintmode > -1) {
 				WFtext(99); //stop WF text if playing
 			}
@@ -938,8 +942,8 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				paintmodes();
 				WFtext(2);
 			}
-//			Playtype = 2;
-//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
+			//			Playtype = 2;
+			//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
 		}
 	case IDC_GTONE:
 		if ((TX_Running) && (!isplaying) && (messtate[MS_FAC_CRC] != 0))
@@ -949,8 +953,8 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				paintmodes();
 				WFtext(0);
 			}
-//			Playtype = 3;
-//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
+			//			Playtype = 3;
+			//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
 		}
 	case IDC_BTONE:
 		if ((TX_Running) && (!isplaying) && (messtate[MS_FAC_CRC] != 0))
@@ -960,8 +964,8 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				paintmodes();
 				WFtext(1);
 			}
-//			Playtype = 4;
-//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
+			//			Playtype = 4;
+			//			if (IsRX2) _beginthread(PlaySound, 0, NULL);
 		}
 	case IDC_TUNINGTONE: {
 		if (paintmode == 0) {
@@ -977,29 +981,29 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			{
 				//if (callisok()) 
 				//{
-					SetTXmode(FALSE);
-					DRMReceiver.NotRec();
-					IsRX2 = FALSE; //Switch off receiver mode
-					PTTon(); //added for com port control DM
-					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
-					EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
-					if (TX_Running)
-					{
-						DRMTransmitter.Init();
-						//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
-						//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC < 1040) { //was 1040
-						//	MessageBox(hwnd, "Mode does not allow Voice", "Wrong Mode", 0);	//this should force return to receive mode... DM
-						//}
-						//else {
-						DRMTransmitter.Send();
-						sprintf(dcbuf, "%d", (int)DRMTransmitter.GetCarOffset());
-						SetDlgItemText(hwnd, IDC_DCFREQ, dcbuf);
-						//}
-					}
+				SetTXmode(FALSE);
+				DRMReceiver.NotRec();
+				IsRX2 = FALSE; //Switch off receiver mode
+				PTTon(); //added for com port control DM
+				EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_GRAYED);
+				EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_DRMSETTINGS, MF_GRAYED);
+				if (TX_Running)
+				{
+					DRMTransmitter.Init();
+					//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC <= 980)
+					//if (DRMTransmitter.GetParameters()->iNumDecodedBitsMSC < 1040) { //was 1040
+					//	MessageBox(hwnd, "Mode does not allow Voice", "Wrong Mode", 0);	//this should force return to receive mode... DM
+					//}
+					//else {
+					DRMTransmitter.Send();
+					sprintf(dcbuf, "%d", (int)DRMTransmitter.GetCarOffset());
+					SetDlgItemText(hwnd, IDC_DCFREQ, dcbuf);
+					//}
+				}
 
-					SendMessage (GetDlgItem (hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
-					SendMessage (GetDlgItem (hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
-					if (strlen(txdevice) >=1) SelectSrc(txdevice);
+				SendMessage(GetDlgItem(hwnd, IDB_START), WM_SETTEXT, 0, (LPARAM)"RX");
+				SendMessage(GetDlgItem(hwnd, IDB_STARTPIC), WM_SETTEXT, 0, (LPARAM)"RX");
+				if (strlen(txdevice) >= 1) SelectSrc(txdevice);
 
 				//}
 				//else
@@ -1017,7 +1021,7 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 			if (rxdisplaysave != -1) {
 				Display = rxdisplaysave; //Restore whatever mode was set previously DM
 				disptype = Display;
-				if (Display == 9) disptype = 0;
+				if (Display == 9) disptype = OSCDISP;
 				rxdisplaysave = -1;
 			}
 			EnableMenuItem(GetMenu(hwnd), ID_SETTINGS_FILETRANSFER_SENDFILE, MF_ENABLED);
@@ -1059,81 +1063,93 @@ void OnCommand ( HWND hwnd, int ctrlid, int code)
 				moderestore = -1;
 			}
 		}
-        break;
- 
+		break;
+
 	case ID_PTTPORT_NONE:
-		settxport('0');	comtx(gettxport());	checkcomport(hwnd,'0');	break;
+		settxport('0');	comtx(gettxport());	checkcomport(hwnd, '0');	break;
 	case ID_PTTPORT_COM1:
-		settxport('1');	comtx(gettxport());	checkcomport(hwnd,'1');	break;
+		settxport('1');	comtx(gettxport());	checkcomport(hwnd, '1');	break;
 	case ID_PTTPORT_COM2:
-		settxport('2');	comtx(gettxport());	checkcomport(hwnd,'2');	break;
+		settxport('2');	comtx(gettxport());	checkcomport(hwnd, '2');	break;
 	case ID_PTTPORT_COM3:
-		settxport('3');	comtx(gettxport());	checkcomport(hwnd,'3');	break;
+		settxport('3');	comtx(gettxport());	checkcomport(hwnd, '3');	break;
 	case ID_PTTPORT_COM4:
-		settxport('4');	comtx(gettxport());	checkcomport(hwnd,'4');	break;
+		settxport('4');	comtx(gettxport());	checkcomport(hwnd, '4');	break;
 	case ID_PTTPORT_COM5:
-		settxport('5');	comtx(gettxport());	checkcomport(hwnd,'5');	break;
+		settxport('5');	comtx(gettxport());	checkcomport(hwnd, '5');	break;
 	case ID_PTTPORT_COM6:
-		settxport('6');	comtx(gettxport());	checkcomport(hwnd,'6');	break;
+		settxport('6');	comtx(gettxport());	checkcomport(hwnd, '6');	break;
 	case ID_PTTPORT_COM7:
-		settxport('7');	comtx(gettxport());	checkcomport(hwnd,'7');	break;
+		settxport('7');	comtx(gettxport());	checkcomport(hwnd, '7');	break;
 	case ID_PTTPORT_COM8:
-		settxport('8');	comtx(gettxport());	checkcomport(hwnd,'8');	break;
+		settxport('8');	comtx(gettxport());	checkcomport(hwnd, '8');	break;
 	case ID_SETTINGS_PTTPORT_RTSHIGHONFAC:
 		if (rtsonfac)
 			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_PTTPORT_RTSHIGHONFAC, MF_BYCOMMAND | MF_UNCHECKED);
 		else
 			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_PTTPORT_RTSHIGHONFAC, MF_BYCOMMAND | MF_CHECKED);
-		rtsonfac = ! rtsonfac;
+		rtsonfac = !rtsonfac;
 		break;
 	case ID_SETTINGS_PTTPORT_DTRHIGHONFAC:
 		if (dtronfac)
 			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_PTTPORT_DTRHIGHONFAC, MF_BYCOMMAND | MF_UNCHECKED);
 		else
 			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_PTTPORT_DTRHIGHONFAC, MF_BYCOMMAND | MF_CHECKED);
-		dtronfac = ! dtronfac;
+		dtronfac = !dtronfac;
 		break;
 
 	case ID_SOUNDCARD_OPENMIXER_RXINPUT:
 		snddev = getsoundin('r');
-		wsprintf(cmdstr,"-R -D %d",snddev);
+		wsprintf(cmdstr, "-R -D %d", snddev);
 		ShellExecute(NULL, "open", "sndvol.exe", cmdstr, NULL, SW_SHOWNORMAL); //updated for Win7 mixer DM
 		break;
 	case ID_SOUNDCARD_OPENMIXER_TXOUTPUT:
 		snddev = getsoundout('t');
-		wsprintf(cmdstr,"-D %d",snddev);
+		wsprintf(cmdstr, "-D %d", snddev);
 		ShellExecute(NULL, "open", "sndvol.exe", cmdstr, NULL, SW_SHOWNORMAL); //updated for Win7 mixer DM
 		break;
 	case ID_SOUNDCARD_OPENMIXER_VOICEINPUT:
 		snddev = getsoundin('t');
-		wsprintf(cmdstr,"-R -D %d",snddev);
+		wsprintf(cmdstr, "-R -D %d", snddev);
 		ShellExecute(NULL, "open", "sndvol.exe", cmdstr, NULL, SW_SHOWNORMAL); //updated for Win7 mixer DM
 		break;
 	case ID_SOUNDCARD_OPENMIXER_VOICEOUTPUT:
 		snddev = getsoundout('r');
-		wsprintf(cmdstr,"-D %d",snddev);
+		wsprintf(cmdstr, "-D %d", snddev);
 		ShellExecute(NULL, "open", "sndvol.exe", cmdstr, NULL, SW_SHOWNORMAL); //updated for Win7 mixer DM
 		break;
 	case ID_SOUNDCARD_AUTOMIXERSWITCH:
-		DialogBox(TheInstance, MAKEINTRESOURCE (DLG_MIXERSETTING), hwnd, MixerDlgProc);
+		DialogBox(TheInstance, MAKEINTRESOURCE(DLG_MIXERSETTING), hwnd, MixerDlgProc);
 		break;
 	case ID_ABOUT_TEST:
-		DialogBox(TheInstance, MAKEINTRESOURCE (DLG_ABOUT), hwnd, AboutDlgProc);
+		DialogBox(TheInstance, MAKEINTRESOURCE(DLG_ABOUT), hwnd, AboutDlgProc);
 		break;
 	case ID_ABOUT_HELP:
-		DialogBox(TheInstance, MAKEINTRESOURCE (DLG_HELP), hwnd, AboutDlgProc);
+		DialogBox(TheInstance, MAKEINTRESOURCE(DLG_HELP), hwnd, AboutDlgProc);
 		break;
 
 	case ID_SETTINGS_CALLSIGN:
-		DialogBox(TheInstance, MAKEINTRESOURCE (DLG_CALLSIGN), hwnd, CallSignDlgProc);
+		DialogBox(TheInstance, MAKEINTRESOURCE(DLG_CALLSIGN), hwnd, CallSignDlgProc);
 		break;
 
 	case ID_SETTINGS_DRMSETTINGS:
-		DialogBox(TheInstance, MAKEINTRESOURCE (DLG_DRMSETTINGS), hwnd, DRMSettingsDlgProc);
+		DialogBox(TheInstance, MAKEINTRESOURCE(DLG_DRMSETTINGS), hwnd, DRMSettingsDlgProc);
 		break;
 
 	case ID_SETTINGS_DRMSETTINGSRX:
-		CreateDialog(TheInstance, MAKEINTRESOURCE (DLG_RXSETTINGS), hwnd, DRMRXSettingsDlgProc);
+		CreateDialog(TheInstance, MAKEINTRESOURCE(DLG_RXSETTINGS), hwnd, DRMRXSettingsDlgProc);
+		break;
+
+	case ID_SETTINGS_VOICECOMPRESSOR:
+		//toggle Voice compressor on/off and display checkmark
+		if (DVcomp == true) {
+			DVcomp = false; //if it's on, turn it off
+			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_VOICECOMPRESSOR, MF_BYCOMMAND | MF_UNCHECKED);
+		}
+		else {
+			DVcomp = true; //if it's off, turn it on
+			CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_VOICECOMPRESSOR, MF_BYCOMMAND | MF_CHECKED);
+		}
 		break;
 
 	case ID_SETTINGS_TEXTMESSAGE:
@@ -1425,7 +1441,7 @@ int setdisplay(int type) {
 	}
 	else if ((type == 9) && (TransmParam->Service[0].eAudDataFlag != CParameter::SF_DATA)) {
 		Display = type;
-		disptype = 0;
+		disptype = OSCDISP;
 		return TRUE;
 	}
 	//only change these modes on receive
@@ -1438,7 +1454,8 @@ int setdisplay(int type) {
 }
 
 
-CVector<_REAL>		scopeData(19200,(_REAL)0.0); //initialize this here
+CVector<_REAL>		scopeData1(19200, (_REAL)0.0); //initialize this here
+//CVector<_REAL>		scopeData2(19200, (_REAL)0.0); //initialize this here
 CVector<_REAL>		vecrData;
 CVector<_REAL>		vecrScale;
 BOOL firstnorx = TRUE;
@@ -1469,7 +1486,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		if (stoptx >= 0) stoptx--;
 
 		disptype = Display;
-		if (Display == 9) disptype = 0;
+		if (Display == 9) disptype = OSCDISP;
 
 		if (IsRX2 && RX_Running)
 		{
@@ -1549,7 +1566,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 								//change to scope
 									Display = 9;
-									disptype = 0;
+									disptype = OSCDISP;
 								}
 							}
 						}
@@ -1573,21 +1590,24 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				newdata++;
 				if (Display == 9)	//Oscilloscope for voice input DM NEW
 				{
-					DCFreq = 5000; //move blue line off-screen DM
+					DCFreq = 5000; //move vertical blue line off-screen DM
 					if (paintmode == 0) {
-						DRMTransmitter.GetAudSrcEnc()->GetTxSpeechBuffer(scopeData); //this grabs a copy of the speech buffer output
+						DRMTransmitter.GetAudSrcEnc()->GetTxSpeechBuffer(scopeData1); //this grabs a copy of the speech buffer output
 					}
 					specarrlen = 145;
 					int frac = 19200 / specarrlen;
-					int tmp = 0;
+					int temp1 = 0;
 					int temp2 = 0;
+					int temp3 = 0;
 					for (i = 0; i < 19200; i++)
 					{
-						tmp = (int)(scopeData[i] * 0.0027) + 85;
-						temp2++;
-						if (temp2 >= frac) {
-							temp2 = 0;
-							specarr[i / frac] = tmp;
+						temp1 = (int)(scopeData1[i] * 0.0027) + 85;
+						//temp2 = (int)(scopeData2[i] * 0.0027) + 85;
+						temp3++;
+						if (temp3 >= frac) {
+							temp3 = 0;
+							specarr[i / frac] = temp1;
+							//specarrim[i / frac] = temp2;
 						}
 					}
 				}
@@ -1670,7 +1690,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 			{
 				DCFreq = 5000; //move blue line off-screen DM
 				if (paintmode == 0) {
-					DRMReceiver.GetAudSrcDec()->GetSpeechBuffer(scopeData); //this grabs a copy of the speech buffer output
+					DRMReceiver.GetAudSrcDec()->GetSpeechBuffer(scopeData1); //this grabs a copy of the speech buffer output
 				}
 				specarrlen = 145;
 				int frac = 19200 / specarrlen;
@@ -1678,7 +1698,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 				int temp2 = 0;
 				for (i = 0; i < 19200; i++)
 				{
-					tmp = (int)(scopeData[i] * 0.0027) + 85;
+					tmp = (int)(scopeData1[i] * 0.0027) + 85;
 					temp2++;
 					if (temp2 >= frac) {
 						temp2 = 0;
@@ -1859,7 +1879,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 
 					ecodec = DRMReceiver.GetParameters()->Service[0].AudioParam.eAudioCoding;
 					if (ecodec == CParameter::AC_LPC)
-						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
+						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC-10");
 					else if (ecodec == CParameter::AC_SPEEX)
 						SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
 					else if (ecodec == CParameter::AC_SSTV)
@@ -2278,12 +2298,13 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 		}
 			else if (!IsRX2 && TX_Running)
 			{
-				PostWinMessage(MS_IOINTERFACE, 3); //Grey out LEDs
-				PostWinMessage(MS_FREQ_FOUND, 3); //Grey out LEDs
-				PostWinMessage(MS_TIME_SYNC, 3); //Grey out LEDs
-				PostWinMessage(MS_FRAME_SYNC, 3); //Grey out LEDs
-				PostWinMessage(MS_FAC_CRC, 3); //Grey out LEDs
-				PostWinMessage(MS_MSC_CRC, 3); //Grey out LEDs
+				//Grey out LEDs
+				PostWinMessage(MS_IOINTERFACE, 3);
+				PostWinMessage(MS_FREQ_FOUND, 3);
+				PostWinMessage(MS_TIME_SYNC, 3);
+				PostWinMessage(MS_FRAME_SYNC, 3);
+				PostWinMessage(MS_FAC_CRC, 3);
+				PostWinMessage(MS_MSC_CRC, 3);
 
 				if (paintmode == 2) {
 					SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"TUNE");
@@ -2302,7 +2323,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT nMsg, UINT nIDEvent, DWORD dwTime)
 						level = (int)(170.0 * DRMTransmitter.GetReadData()->GetLevelMeter()); //this is for reading audio input level to the speech codecs DM
 
 						if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_LPC)
-							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC");
+							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"LPC-10");
 						if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SPEEX)
 							SendMessage(GetDlgItem(hwnd, IDC_EDIT3), WM_SETTEXT, 0, (LPARAM)"SPEEX");
 						if (TransmParam->Service[0].AudioParam.eAudioCoding == CParameter::AC_SSTV)
@@ -2670,8 +2691,8 @@ BOOL CALLBACK DRMSettingsDlgProc
 			SendMessage (GetDlgItem (hwnd, ID_SETTINGS_MSCPROTECTION_NORMAL), BM_SETCHECK, (WPARAM)1, 0);
 		else
 			SendMessage (GetDlgItem (hwnd, ID_SETTINGS_MSCPROTECTION_LOW), BM_SETCHECK, (WPARAM)1, 0);
-		if (TxLevel == 0) SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)1, 0); //if TxLevel == 0, then use -12dB output.
-		else SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)0, 0); //if TxLevel == 1, use -3dB. DM 2022
+		if (TxLevel == FALSE) SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)1, 0); //if TxLevel == FALSE, then use -12dB output.
+		else SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)0, 0); //if TxLevel == TRUE, use -3dB. DM 2022
 
 		TxDCFreq = DRMTransmitter.GetCarOffset();
 		sprintf(dcbuf,"%.1f",TxDCFreq);
@@ -2806,19 +2827,18 @@ BOOL CALLBACK DRMSettingsDlgProc
 			SendMessage(GetDlgItem(hwnd, ID_MSCCODING_64QAM), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, ID_MSCCODING_16QAM), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, ID_MSCCODING_4QAM), BM_SETCHECK, (WPARAM)1, 0);
-			DRMTransmitter.GetParameters()->InitCellMapTable(RM_ROBUSTNESS_MODE_B,
-				DRMTransmitter.GetParameters()->GetSpectrumOccup());
+			DRMTransmitter.GetParameters()->InitCellMapTable(RM_ROBUSTNESS_MODE_B, DRMTransmitter.GetParameters()->GetSpectrumOccup());
 			SendMessage(GetDlgItem(hwnd, ID_MODE_ROBMODEB), BM_SETCHECK, (WPARAM)1, 0);
 			SendMessage(GetDlgItem(hwnd, ID_MODE_ROBMODEA), BM_SETCHECK, (WPARAM)0, 0);
 			SendMessage(GetDlgItem(hwnd, ID_MODE_ROBMODEE), BM_SETCHECK, (WPARAM)0, 0); //added DM
 			break;
 		case ID_TXLEVEL:
-			if (TxLevel >= 1) {
-				TxLevel = 0; //toggle
+			if (TxLevel == TRUE) {
+				TxLevel = FALSE; //toggle
 				SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)1, 0); //-12dB setting is on when TxLevel is 0
 			}
 			else {
-				TxLevel = 1; //toggle
+				TxLevel = TRUE; //toggle
 				SendMessage(GetDlgItem(hwnd, ID_TXLEVEL), BM_SETCHECK, (WPARAM)0, 0); //-12dB setting is off when TxLevel is 1
 			}
 }

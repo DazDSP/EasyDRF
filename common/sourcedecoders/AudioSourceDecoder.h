@@ -46,6 +46,7 @@ extern int FrameSize;
 extern int BlockSize;
 extern int TextBytes;
 extern int TextBytesi;
+extern int DVcomp;
 
 /* Classes ********************************************************************/
 class CAudioSourceEncoder : public CTransmitterModul<_SAMPLE, _BINARY>
@@ -75,12 +76,18 @@ public:
 	int GetPicSegmTot() 
 		{return DataEncoder.GetSliShowEnc()->GetPicSegmTot(); }					 
 
-	void GetTxSpeechBuffer(CVector<_REAL>& scopeData) {
+	void GetTxSpeechBuffer(CVector<_REAL>& scopeData1) {
 
 		/* Init output vectors */
-		if (speechIN.GetSize() > 0) {
-			for (int j = 0; j < 19200; j++) {
-				scopeData.at(j) = speechIN[j]; //copy speech buffer for Oscilloscope display
+		//int s = speechIN.GetSize();
+		//Check if buffer exists
+		if (pvecInputData) {
+			int s = pvecInputData->size(); //get the size
+			if (s > 0) {
+				for (int j = 0; j < s; j++) {
+					scopeData1.at(j) = (*pvecInputData)[j]; //Mike input
+					//scopeData1.at(j) = speechIN[j]; //copy speech buffer for Oscilloscope display - Compressor output
+				}
 			}
 		}
 		return;
@@ -109,12 +116,12 @@ public:
 	CAudioSourceDecoder();
 	virtual ~CAudioSourceDecoder();
 
-	void GetSpeechBuffer(CVector<_REAL>& scopeData) {
+	void GetSpeechBuffer(CVector<_REAL>& scopeData1) {
 	
 		/* Init output vectors */
 		//vecrData.Init(19200, (_REAL)0.0); //initialize this on program start instead
 		for (int j = 0; j < 19200; j++) {
-			scopeData[j] = speechLPF[j]; //copy speech buffer for Oscilloscope display
+			scopeData1[j] = speechLPF[j]; //copy speech buffer for Oscilloscope display
 		}
 		return;
 	};
