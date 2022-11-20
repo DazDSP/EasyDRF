@@ -644,8 +644,8 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	if (AllowRXTextMessage == TRUE) CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_TEXTMESSAGE_OPENRXTEXTMESSAGE, MF_BYCOMMAND | MF_CHECKED);
 	else CheckMenuItem(GetMenu(hwnd), ID_SETTINGS_TEXTMESSAGE_OPENRXTEXTMESSAGE, MF_BYCOMMAND | MF_UNCHECKED);
 
-	//		numdev = DRMReceiver.GetSoundInterface()->GetNumDevIn(); //edited DM - may need rewriting to split it up into In/Out - YEP!
-			//Get a list of the input and output sound devices installed on the PC and list them in the menu:
+	//numdev = DRMReceiver.GetSoundInterface()->GetNumDevIn(); //edited DM - may need rewriting to split it up into In/Out - YEP!
+	//Get a list of the input and output sound devices installed on the PC and list them in the menu:
 	numdevIn = DRMReceiver.GetSoundInterface()->GetNumDevIn(); //edited DM
 	numdevOut = DRMReceiver.GetSoundInterface()->GetNumDevOut(); //edited DM
 	//SetMixerValues(numdevIn); //??? Find out what this does... DM ** REMOVED Sep 2022 because it crashes under Linux for some reason....

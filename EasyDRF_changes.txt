@@ -1,3 +1,7 @@
+EasyDRF Changes - by Daz Man November 20th, 2022
+* IIR speech filter bugfix
+
+
 EasyDRF Changes - by Daz Man November 18th, 2022
 * Digital Voice mode audio compressor updated
 * Digital Voice audio compressor on/off added to Settings menu

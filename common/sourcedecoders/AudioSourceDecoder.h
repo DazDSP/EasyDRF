@@ -48,6 +48,8 @@ extern int TextBytes;
 extern int TextBytesi;
 extern int DVcomp;
 
+float diir(float);
+
 /* Classes ********************************************************************/
 class CAudioSourceEncoder : public CTransmitterModul<_SAMPLE, _BINARY>
 {

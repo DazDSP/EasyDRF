@@ -90,6 +90,8 @@ float i2 = 0;
 float o1 = 0;
 float o2 = 0;
 
+int DMwavebytes = 0;
+
 /*
 * Encoder                                                                      *
 \******************************************************************************/
@@ -107,26 +109,13 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 			//Compress audio slightly for better volume
 			//Add noisegating to reduce noise
 			//Make the noisegating multiband TODO
-			int samp = 0;
-			int samp1 = 0;
+			float samp = 0;
+			float samp1 = 0;
 			int samp2 = 0;
 			for (i = 0; i < iInputBlockSize; i++) {
 				samp = (*pvecInputData)[i]; //get a sample
 
-				//IIR highpass filter =======================================
-				constexpr float a0 = 0.995994340;
-				constexpr float a1 = -1.991988680;
-				constexpr float a2 = 0.995994340;
-				constexpr float b1 = -1.991967075;
-				constexpr float b2 = 0.992010284;
-
-				samp1 = samp * a0 + i1 * a1 + i2 * a2 - (o1 * b1 + o2 * b2);
-
-				i2 = i1;
-				o2 = o1;
-				i1 = samp;
-				o1 = samp1;
-				//===========================================================
+				samp1 = diir(samp); //IIR highpass filter
 
 				//lookahead delay
 				//read old value and save new value
@@ -202,27 +191,91 @@ void CAudioSourceEncoder::ProcessDataInternal(CParameter& TransmParam)
 #define WRITEAUDIOIN 0
 #if WRITEAUDIOIN == 1
 			//save audio input data to a file for testing
-			//open file (every 400mS)
 			FILE* set = nullptr;
-			if ((set = fopen("AUDIO-test.bin", "a+b")) == nullptr) {
+			string filewrite = "AUDIO-test.wav";
+			//does file exist? if not, create the file and write a header
+			//open file in read binary mode
+			if ((set = fopen(filewrite.c_str(), "r+b")) == nullptr) {
+				//if file does not exist, write a WAV header for a 48kHz mono file
+				const char WaveHdr[44] = {	//use mono PCM
+					'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ',
+					16,0,0,0,
+					1,0,
+					1,0,
+					REAL_SOUNDCRD_SAMPLE_RATE, REAL_SOUNDCRD_SAMPLE_RATE >> 8,REAL_SOUNDCRD_SAMPLE_RATE >> 16,REAL_SOUNDCRD_SAMPLE_RATE >> 24,
+					REAL_SOUNDCRD_SAMPLE_RATE<<1, REAL_SOUNDCRD_SAMPLE_RATE >> 7,REAL_SOUNDCRD_SAMPLE_RATE >> 15,REAL_SOUNDCRD_SAMPLE_RATE >> 23,
+					2,0, 16,0, 'd', 'a', 't', 'a', 0,0,0,0 //leave size blank
+				};
+				if ((set = fopen(filewrite.c_str(), "w+b")) == nullptr) {
+					//error - can't open the file for writing
+				}
+				else {
+					//no error - file is open for writing
+					for (int h = 0; h < 44; h++) {
+						//write one WAV header byte at a time
+						putc((char)WaveHdr[h], set);
+					}
+					//close file
+					fclose(set); //file is closed here - but only if it was opened
+				}
 			}
 			else {
-				//if it opened OK...
-				//append to file
-				int a = 0;
-				for (k = 0; k < (iInputBlockSize); k++) {
-					a = speechIN[k];
-
-					//write the low byte first
-					putc((char)a, set);
-
-					a = a >> 8; //move high byte into low
-
-					//write the high byte last
-					putc((char)a, set);
-				}
-				//close file
+				//file exists and opened OK - close first then append data
 				fclose(set); //file is closed here - but only if it was opened
+
+				//open file (every 400mS) and append data
+				if ((set = fopen(filewrite.c_str(), "a+b")) == nullptr) {
+					//error - can't open the file for writing
+				}
+				else {
+					//if it opened OK...
+					//keep track of bytes written?
+
+					//append to file
+					int a = 0;
+					for (k = 0; k < (iInputBlockSize); k++) {
+						a = speechIN[k];
+
+						//write the low byte first
+						putc((char)a, set);
+
+						a = a >> 8; //move high byte into low
+
+						//write the high byte last
+						putc((char)a, set);
+
+						//DMwavebytes += 2;
+					}
+					//check current file size
+					lasterror = fseek(set, 0, SEEK_END);
+					DMwavebytes = ftell(set); //find size
+
+					//close file
+					fclose(set);
+
+					//open file in write binary mode
+					if ((set = fopen(filewrite.c_str(), "r+b")) == nullptr) {
+						//error - file did not open
+					}
+					else {
+						//update header size
+
+						DMwavebytes -= 8;
+
+						lasterror = fseek(set, 4, SEEK_SET); //seek start +4
+						lasterror = fwrite((const void*)&DMwavebytes, size_t(4), size_t(1), set);
+						
+						DMwavebytes -= 36; //subtract header size - 8
+
+						lasterror = fseek(set, 40, SEEK_SET); //seek start +40
+						lasterror = fwrite((const void*)&DMwavebytes, size_t(4), size_t(1), set);
+
+
+						//close file
+						fclose(set); //file is closed here - but only if it was opened
+					}
+				}
+
 			}
 #endif //WRITELPCBYTES == 1
 
@@ -685,34 +738,10 @@ void CAudioSourceDecoder::ProcessDataInternal(CParameter& ReceiverParam)
 				for (j = 0; j < iOutputBlockSize / 2; j++)
 				{
 					float in = speechLPF[j];
+					out = diir(in); //IIR HPF
 
-					//IIR highpass filter =======================================
-					/*
-					//70Hz HPF
-					float a0 = 0.995994340;
-					float a1 = -1.991988680;
-					float a2 = 0.995994340;
-					float b1 = -1.991967075;
-					float b2 = 0.992010284;
-					*/
-					//100Hz HPF
-					float a0 = 0.994280829;
-					float a1 = -1.988561658;
-					float a2 = 0.994280829;
-					float b1 = -1.988517642;
-					float b2 = 0.988605674;
-
-					out = in * a0 + i1 * a1 + i2 * a2 - (o1 * b1 + o2 * b2);
-
-					i2 = i1;
-					o2 = o1;
-					i1 = in;
-					o1 = out;
-					//===========================================================
-
-
-					(*pvecOutputData)[j * 2] = out; //copy all data in stereo
-					(*pvecOutputData)[j * 2 + 1] = out; //copy all data in stereo
+					(*pvecOutputData)[j * 2] = in; //copy all data in stereo
+					(*pvecOutputData)[j * 2 + 1] = in; //copy all data in stereo
 				}
 
 				bAudioIsOK = TRUE;
@@ -1021,3 +1050,38 @@ CAudioSourceDecoder::~CAudioSourceDecoder()
 	speex_bits_destroy(&decbits);
 	speex_decoder_destroy(dec_state);
 }
+
+
+#define NCoef 2
+float diir(float NewSample) {
+	float ACoef[NCoef + 1] = {
+		0.99078491131761548000,
+		-1.98156982263523100000,
+		0.99078491131761548000
+	};
+
+	float BCoef[NCoef + 1] = {
+		1.00000000000000000000,
+		-1.98148850914612360000,
+		0.98165828261866650000
+	};
+
+	static float y[NCoef + 1]; //output samples
+	static float x[NCoef + 1]; //input samples
+	int n;
+
+	//shift the old samples
+	for (n = NCoef; n > 0; n--) {
+		x[n] = x[n - 1];
+		y[n] = y[n - 1];
+	}
+
+	//Calculate the new output
+	x[0] = NewSample;
+	y[0] = ACoef[0] * x[0];
+	for (n = 1; n <= NCoef; n++)
+		y[0] += ACoef[n] * x[n] - BCoef[n] * y[n];
+
+	return y[0];
+}
+

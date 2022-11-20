@@ -36,12 +36,12 @@
 class CWaveFile
 {
 public:
-	CWaveFile() : pFile(NULL), iBytesWritten(0) {}
-	virtual ~CWaveFile() {if (pFile != NULL) Close();}
+	CWaveFile() : pFile(nullptr), iBytesWritten(0) {}
+	virtual ~CWaveFile() {if (pFile != nullptr) Close();}
 
 	void Open(const string strFileName)
 	{
-		if (pFile != NULL)
+		if (pFile != nullptr)
 			Close();
 
 		const CWaveHdr WaveHeader =
@@ -55,17 +55,16 @@ public:
 		};
 
 		pFile = fopen(strFileName.c_str(), "wb");
-		if (pFile != NULL)
+		if (pFile != nullptr)
 		{
 			iBytesWritten = sizeof(CWaveHdr);
-			fwrite((const void*) &WaveHeader, size_t(sizeof(CWaveHdr)),
-				size_t(1), pFile);
+			fwrite((const void*) &WaveHeader, size_t(sizeof(CWaveHdr)), size_t(1), pFile);
 		}
 	}
 
 	void AddStereoSample(const _SAMPLE sLeft, const _SAMPLE sRight)
 	{
-		if (pFile != NULL)
+		if (pFile != nullptr)
 		{
 			iBytesWritten += 2 * sizeof(_SAMPLE);
 			fwrite((const void*) &sLeft, size_t(2), size_t(1), pFile);
@@ -75,7 +74,7 @@ public:
 
 	void Close()
 	{
-		if (pFile != NULL)
+		if (pFile != nullptr)
 		{
 			const _UINT32BIT iFileLength = iBytesWritten - 8;
 			fseek(pFile, 4 /* offset */, SEEK_SET /* origin */);
