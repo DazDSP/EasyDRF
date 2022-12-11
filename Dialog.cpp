@@ -297,7 +297,7 @@ void sendinfo(HWND hwnd) {
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u dbg:%u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw, debug);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 //	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u B:%u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw, debug);//RSfilesize //added RS level info - in testing - DM //DecFileSize
 	lasterror2 = sprintf_s(tempstr, "[%-s] E:%u Bytes:%05u ID:%05u Bfr:%01u", DMfilename, lastRSbcERR, RSfilesize, DecTransportID, RSsw);//RSfilesize //added RS level info - in testing - DM //DecFileSize
-//	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
+	lasterror2 = SendMessage(GetDlgItem(hwnd, IDC_EDIT6), WM_SETTEXT, 0, (LPARAM)tempstr); //send to stats window DM
 
 	//compute the file save status message based on the number in filestate
 	if (filestate == FS_BLANK) {

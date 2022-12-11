@@ -463,3 +463,13 @@ old/
 /common/sourcedecoders/lpc10-WB.h
 /common/sourcedecoders/AudioSourceDecoder-WB.h
 /common/sourcedecoders/AudioSourceDecoder-WB.cpp
+/common/sourcedecoders/lpc10dec-mods2.c
+/common/sourcedecoders/lpc10dec-mods3.c
+*.cpp
+/Release/EasyDRF-Download.exe
+/common/sourcedecoders/AudioSourceDecoder-backup.h
+/common/sourcedecoders/lpc10dec-backup.h
+/common/sourcedecoders/lpc10enc-backup.h
+/common/celp
+/common/sourcedecoders/junk
+/itpp

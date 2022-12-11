@@ -132,6 +132,8 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <MinimalRebuild>true</MinimalRebuild>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -272,7 +274,6 @@
     <ClInclude Include="common\RS\RS-coder.h" />
     <ClInclude Include="common\settings.h" />
     <ClInclude Include="common\sourcedecoders\AudioSourceDecoder.h" />
-    <ClInclude Include="common\sourcedecoders\ftol.h" />
     <ClInclude Include="common\sourcedecoders\lpc10.h" />
     <ClInclude Include="common\speex\speex.h" />
     <ClInclude Include="common\speex\speex_bits.h" />
@@ -309,6 +310,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EasyDRF.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PropertySheet.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
