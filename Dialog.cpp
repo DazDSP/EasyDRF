@@ -476,11 +476,6 @@ void paintmodes(void) {
 
 	//Send tuning tones or waterfall text
 
-	//Init for paint test
-	float fset = 0;
-
-	complex<double> rotstep = _COMPLEX(cos(fset), sin(fset));
-
 	if (paintmode == 1) {
 		//send waterfall text
 
@@ -657,7 +652,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		string drivnam = DRMReceiver.GetSoundInterface()->GetDeviceNameIn(i); //get the device name for this i value
 		AppendMenu(hMenu, MF_ENABLED, IDM_O_RX_I_DRIVERS0 + i, drivnam.c_str()); //add a menu item for this device NO CHECK MARK
 	}
-	AppendMenu(hMenu, MF_SEPARATOR, -1, NULL);
+	AppendMenu(hMenu, MF_SEPARATOR, -1, nullptr);
 	AppendMenu(hMenu, MF_ENABLED, -1, "TX Output");
 	for (i = 0; i < numdevOut; i++)
 	{
@@ -666,14 +661,14 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	if (runmode != 'P')
 	{
-		AppendMenu(hMenu, MF_SEPARATOR, -1, NULL);
+		AppendMenu(hMenu, MF_SEPARATOR, -1, nullptr);
 		AppendMenu(hMenu, MF_ENABLED, -1, "Voice Input");
 		for (i = 0; i < numdevIn; i++)
 		{
 			string drivnam = DRMReceiver.GetSoundInterface()->GetDeviceNameIn(i); //edited DM
 			AppendMenu(hMenu, MF_ENABLED, IDM_O_VO_I_DRIVERS0 + i, drivnam.c_str());
 		}
-		AppendMenu(hMenu, MF_SEPARATOR, -1, NULL);
+		AppendMenu(hMenu, MF_SEPARATOR, -1, nullptr);
 		AppendMenu(hMenu, MF_ENABLED, -1, "Voice Output");
 		for (i = 0; i < numdevOut; i++)
 		{
@@ -778,7 +773,7 @@ BOOL CALLBACK DialogProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		FILE* txtset = nullptr;
 		char textbuf[200]{ 0 };
 		txtset = fopen("textmessage.txt", "rt");
-		if (txtset != NULL)
+		if (txtset != nullptr)
 		{
 			junk = fscanf(txtset, "%[^\0]", &textbuf); //edited DM
 			fclose(txtset);

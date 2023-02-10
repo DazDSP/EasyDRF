@@ -311,9 +311,6 @@
   <ItemGroup>
     <ResourceCompile Include="EasyDRF.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="PropertySheet.props" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
