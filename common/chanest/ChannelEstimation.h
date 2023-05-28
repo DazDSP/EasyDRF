@@ -48,7 +48,7 @@
 
 /* Definitions ****************************************************************/
 #define LEN_WIENER_FILT_FREQ_RMA		6 //was 6
-#define LEN_WIENER_FILT_FREQ_RMB		11 //was 11
+#define LEN_WIENER_FILT_FREQ_RMB		4 //was 11 * Length 4 tracks rapid fading better DM
 #define LEN_WIENER_FILT_FREQ_RME		11 //was 11
 
 /* Time constant for IIR averaging of fast signal power estimation */
