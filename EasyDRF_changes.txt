@@ -1,3 +1,9 @@
+EasyDRF Changes - by Daz Man August 10th, 2023
+* Radio Carpathia prefix added to stats logging
+* Segment bargraph better scaled to window width
+* Transmit frequency stability improvement
+
+
 EasyDRF Changes - by Daz Man May 28th, 2023
 * Mode B frequency tracking filter shortened
 

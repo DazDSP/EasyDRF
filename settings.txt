@@ -14,7 +14,7 @@ Call Call
 1 Interleave
 0 FastReset
 0 Instances/RS
-313 551 754 862 WindowPosition
+313 551 764 877 WindowPosition
 1 TxLevel
 1 Allow_Text_Message
 1 DV_Compressor

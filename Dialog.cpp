@@ -3661,13 +3661,13 @@ void DrawBar(HWND hwnd) {
 		//the actual width is "y"
 		//the correction "n" is width/y
 		//to use int scaling, n*1000 = BarLastSeg*1000/y
-
-		int n = (width * 1000) / y;
+#define SCALE 968
+		int n = (width * SCALE) / y;
 		//this executes every 100mS, so make sure it doesn't run too often
 		if ((BarLastSeg != x) && (CRCOK)) {
 			int d = 0;
 
-			if (n > 1000) { n = 1000; } //Don't stretch bargraph
+			if (n > SCALE) { n = SCALE; } //Don't stretch bargraph
 
 			HDC hdc = GetDC(hwnd);
 			MoveToEx(hdc, BARL, BARY, nullptr);

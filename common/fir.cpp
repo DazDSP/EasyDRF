@@ -34,8 +34,8 @@ void FirInit(int dftsize,ESpecOcc spec)
 	int i;
 	no_dft = dftsize;
 
-	for (i=0;i<zffiltlen;i++)
-		coeff[i] = coeff[i];
+	//for (i=0;i<zffiltlen;i++) //This did nothing except waste time! DM
+	//	coeff[i] = coeff[i];
 }
 
 void DoFir (_COMPLEX * samples,_COMPLEX * outsamples)

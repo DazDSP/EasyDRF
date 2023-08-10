@@ -57,7 +57,7 @@ void LogData(char* fn, bool saved) {
 	//ps = active position
 
 	//format is SWRG-nnn-nn.ext or SWRGtest-nnn-nn.ext or RNEInn-sssss.ext or RNEInn.ext
-	int mode = 0; //mode 0 = none, 1 = SWRG, 2 = RNEI
+	int mode = 0; //mode 0 = none, 1 = SWRG, 2 = RNEI or RCAR
 #define SWRG 1
 #define RNEI 2
 	int n = 0;
@@ -74,6 +74,7 @@ void LogData(char* fn, bool saved) {
 		//SWRG or RNEI detection
 		if (strcmp(filenumber, "SWRG") == 0) { mode = SWRG; } //SWRG mode
 		else if (strcmp(filenumber, "RNEI") == 0) { mode = RNEI; } //RNEI mode
+		else if (strcmp(filenumber, "RCAR") == 0) { mode = RNEI; } //RNEI mode
 
 		if (mode > 0) {
 			//filename must be SWRG*.* or RNEI*.*

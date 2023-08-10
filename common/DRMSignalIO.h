@@ -134,6 +134,9 @@ protected:
 
 	CReal			rNormFactor;
 
+	CComplex WURotate;
+	CComplex WUSinStep;
+
 	virtual void InitInternal(CParameter& TransmParam);
 	virtual void ProcessDataInternal(CParameter& Parameter);
 };

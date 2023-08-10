@@ -122,9 +122,6 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 //======================================================================================================================================
 #if USEPAPR == 1
 
-	float const Fc = OFFSET + rDefCarOffset; //Hz Weaver mixing frequency
-	float const Fcp = (Fc / (SOUNDCRD_SAMPLE_RATE / 4)) * crPi * 2;
-
 	//Filter 2 - Prefilter to remove OFDM sidelobes - use same coeffs as the post clipper filter (NUM3)
 	//lowpass filter the entire buffer at 12kHz samplerate
 	rvecDataDecI = Filter(rvec3, rvecA, rvecDataDecI, rvecZDecI2); //filter I
@@ -199,16 +196,23 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 	for (i = 0; i < iInputBlockSize / 4; i++)
 	{
 		//Generate carriers
-		float Icar = cos(oscpo);
-		float Qcar = sin(oscpo);
-		oscpo -= Fcp; //add phase increment for next pass
-		if (oscpo < -crPi) oscpo += 2 * crPi; //wrap phase at 2Pi
+		//float Icar = cos(oscpo);
+		//float Qcar = sin(oscpo);
+		//oscpo -= Fcp; //add phase increment for next pass
+		//if (oscpo < -crPi) oscpo += 2 * crPi; //wrap phase at 2Pi
+		float Icar = WURotate.real();
+		float Qcar = WURotate.imag();
+
 
 		//Convert to audio
 		int I = rvecDataDecI[i];
 		int Q = rvecDataDecQ[i];
 		rvecDataDecI[i] = (I * Qcar) - (Q * Icar); //positive frequency shift
 		//rvecDataDecQ[i] = (I * Icar) + (Q * Qcar); //positive frequency shift
+
+		WURotate *= WUSinStep; //Rotate phase
+		CReal gain = 1 / Max(0.5, sqrt(SqMag(WURotate)));
+		WURotate *= gain; //Hilbert clip to limit level
 	}
 
 //TEST WFtext IQ quality here ==================================================================================================
@@ -277,6 +281,11 @@ void CTransmitData::ProcessDataInternal(CParameter& Parameter)
 
 void CTransmitData::InitInternal(CParameter& TransmParam)
 {
+	float const Fc = OFFSET + rDefCarOffset; //Hz Weaver mixing frequency
+	float const Fcp = (-Fc / (SOUNDCRD_SAMPLE_RATE / 4)) * crPi * 2;
+	WUSinStep = CComplex(cos(Fcp), sin(Fcp));
+	WURotate = (_REAL)1.0;
+
 	/* Init vector for storing a complete DRM frame number of OFDM symbols */
 	iBlockCnt = 0;
 	iNumBlocks = TransmParam.iNumSymPerFrame;
